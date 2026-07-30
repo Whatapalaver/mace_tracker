@@ -1,6 +1,7 @@
 class Session < ApplicationRecord
   belongs_to :exercise
   belongs_to :session_shape
+  has_many :session_sets, dependent: :destroy
 
   validates :date, presence: true
 
