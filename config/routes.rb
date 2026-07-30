@@ -15,6 +15,8 @@ Rails.application.routes.draw do
     resources :session_sets, only: [ :new, :create ]
   end
 
+  get "stats" => "stats#show", as: :stats
+
   # Defines the root path route ("/")
   root "sessions#new"
 end
