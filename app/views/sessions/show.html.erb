@@ -7,24 +7,35 @@
   <dl class="grid grid-cols-2 gap-2">
     <dt class="text-gray-500">Weight</dt>
     <dd><%= @session.planned_weight_kg %> kg</dd>
-    <dt class="text-gray-500">Work / Rest</dt>
-    <dd><%= @session.planned_work_seconds %>s / <%= @session.planned_rest_seconds %>s</dd>
-    <dt class="text-gray-500">Planned sets</dt>
-    <dd><%= @session.planned_sets %></dd>
+    <% case @session.session_shape.name %>
+    <% when SessionShape::INTERVAL_WORK %>
+      <dt class="text-gray-500">Work / Rest</dt>
+      <dd><%= @session.planned_work_seconds %>s / <%= @session.planned_rest_seconds %>s</dd>
+      <dt class="text-gray-500">Planned sets</dt>
+      <dd><%= @session.planned_sets %></dd>
+    <% when SessionShape::FIXED_REPS_FOR_TIME %>
+      <dt class="text-gray-500">Target reps</dt>
+      <dd><%= @session.target_reps %></dd>
+    <% when SessionShape::EMOM %>
+      <dt class="text-gray-500">Target reps / min</dt>
+      <dd><%= @session.target_reps_per_minute %></dd>
+    <% end %>
   </dl>
 </section>
 
 <%= render SessionOutputsComponent.new(calculator: @calculator) %>
 
-<section class="mb-6 rounded-lg border border-gray-200 bg-white p-4 text-sm">
-  <h2 class="mb-2 font-semibold">Pace progression</h2>
-  <% if @pace_series.values.all?(&:empty?) %>
-    <p class="text-sm text-gray-500">Not enough data yet for the same weight and work duration.</p>
-  <% else %>
-    <%= line_chart @pace_series, xtitle: "Date", ytitle: "Pace (reps/sec)" %>
-    <p class="mt-2 text-xs text-gray-500">Click a series in the legend to toggle best vs. average pace.</p>
-  <% end %>
-</section>
+<% if @pace_series %>
+  <section class="mb-6 rounded-lg border border-gray-200 bg-white p-4 text-sm">
+    <h2 class="mb-2 font-semibold">Pace progression</h2>
+    <% if @pace_series.values.all?(&:empty?) %>
+      <p class="text-sm text-gray-500">Not enough data yet for the same weight and work duration.</p>
+    <% else %>
+      <%= line_chart @pace_series, xtitle: "Date", ytitle: "Pace (reps/sec)" %>
+      <p class="mt-2 text-xs text-gray-500">Click a series in the legend to toggle best vs. average pace.</p>
+    <% end %>
+  </section>
+<% end %>
 
 <section class="mb-6">
   <div class="mb-2 flex items-center justify-between">

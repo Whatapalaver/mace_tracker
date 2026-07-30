@@ -22,4 +22,27 @@ RSpec.describe SessionShape, type: :model do
       expect(other_user).to be_valid
     end
   end
+
+  describe ".global_ordered" do
+    it "returns global shapes in a fixed canonical order, not alphabetical" do
+      create(:session_shape, :emom)
+      create(:session_shape, :interval_work)
+      create(:session_shape, :fixed_reps_for_time)
+      create(:session_shape, name: "custom", user_id: 42)
+
+      expect(SessionShape.global_ordered.map(&:name)).to eq(
+        %w[interval_work fixed_reps_for_time emom]
+      )
+    end
+  end
+
+  describe "#label" do
+    it "returns a human-friendly label for known shapes" do
+      expect(build(:session_shape, :emom).label).to eq("EMOM")
+    end
+
+    it "humanizes the name for an unrecognized shape" do
+      expect(build(:session_shape, name: "custom_shape").label).to eq("Custom shape")
+    end
+  end
 end

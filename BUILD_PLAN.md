@@ -41,7 +41,7 @@ worker, no offline data queue) — wired up after Phase 2.
 - [x] `fixed_reps_for_time`: validations + `Progression::FixedRepsForTimeCalculator`
       + spec
 - [x] `emom`: validations + `Progression::EmomCalculator` + spec
-- [ ] Shape-aware session form (Stimulus) + system spec across all 3 shapes
+- [x] Shape-aware session form (Stimulus) + system spec across all 3 shapes
 
 ## Phase 4 — Cumulative (lifetime) outputs
 - [ ] `Progression::LifetimeStats` (total_reps, total_volume) + spec + chart

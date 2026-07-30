@@ -8,6 +8,7 @@ RSpec.describe "Sessions", type: :request do
       get new_session_path
 
       expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Interval work", "Fixed reps for time", "EMOM")
     end
 
     it "prompts to add an exercise first when none exist" do
@@ -20,11 +21,15 @@ RSpec.describe "Sessions", type: :request do
 
   describe "POST /sessions" do
     let(:exercise) { create(:exercise) }
+    let(:interval_work_shape) { create(:session_shape, :interval_work) }
+    let(:fixed_reps_for_time_shape) { create(:session_shape, :fixed_reps_for_time) }
+    let(:emom_shape) { create(:session_shape, :emom) }
 
     let(:valid_params) do
       {
         date: "2026-07-30",
         exercise_id: exercise.id,
+        session_shape_id: interval_work_shape.id,
         planned_weight_kg: "10.0",
         planned_work_seconds: "300",
         planned_rest_seconds: "600",
@@ -32,12 +37,36 @@ RSpec.describe "Sessions", type: :request do
       }
     end
 
-    it "creates a session with the interval_work shape and redirects to it" do
+    it "creates an interval_work session and redirects to it" do
       expect {
         post sessions_path, params: { session: valid_params }
       }.to change(Session, :count).by(1)
 
       expect(Session.last.session_shape.name).to eq(SessionShape::INTERVAL_WORK)
+      expect(response).to redirect_to(session_path(Session.last))
+    end
+
+    it "creates a fixed_reps_for_time session" do
+      params = {
+        date: "2026-07-30", exercise_id: exercise.id, session_shape_id: fixed_reps_for_time_shape.id,
+        planned_weight_kg: "10.0", target_reps: "100"
+      }
+
+      post sessions_path, params: { session: params }
+
+      expect(Session.last.session_shape.name).to eq(SessionShape::FIXED_REPS_FOR_TIME)
+      expect(response).to redirect_to(session_path(Session.last))
+    end
+
+    it "creates an emom session" do
+      params = {
+        date: "2026-07-30", exercise_id: exercise.id, session_shape_id: emom_shape.id,
+        planned_weight_kg: "10.0", target_reps_per_minute: "20"
+      }
+
+      post sessions_path, params: { session: params }
+
+      expect(Session.last.session_shape.name).to eq(SessionShape::EMOM)
       expect(response).to redirect_to(session_path(Session.last))
     end
 
@@ -77,6 +106,22 @@ RSpec.describe "Sessions", type: :request do
 
       expect(response.body).to include("Pace progression")
       expect(response.body).not_to include("Not enough data yet")
+    end
+
+    it "does not render a pace chart for fixed_reps_for_time sessions" do
+      session = create(:session, :fixed_reps_for_time)
+
+      get session_path(session)
+
+      expect(response.body).not_to include("Pace progression")
+    end
+
+    it "does not render a pace chart for emom sessions" do
+      session = create(:session, :emom)
+
+      get session_path(session)
+
+      expect(response.body).not_to include("Pace progression")
     end
   end
 end
