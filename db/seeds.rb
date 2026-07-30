@@ -20,3 +20,54 @@
     shape.description = attrs[:description]
   end
 end
+
+[
+  { name: "Mace 360", arm: "single" },
+  { name: "Mace 360", arm: "double" },
+  { name: "Mace 10-2", arm: "single" },
+  { name: "Mace 10-2", arm: "double" }
+].each do |attrs|
+  Exercise.find_or_create_by!(name: attrs[:name], arm: attrs[:arm], user_id: nil)
+end
+
+mace_10_2_double = Exercise.find_by!(name: "Mace 10-2", arm: "double", user_id: nil)
+interval_work = SessionShape.find_by!(name: SessionShape::INTERVAL_WORK, user_id: nil)
+fixed_reps_for_time = SessionShape.find_by!(name: SessionShape::FIXED_REPS_FOR_TIME, user_id: nil)
+
+[
+  {
+    name: "Time to 108",
+    exercise: mace_10_2_double,
+    session_shape: fixed_reps_for_time,
+    planned_weight_kg: 8,
+    target_reps: 108
+  },
+  {
+    name: "5 x 5",
+    exercise: mace_10_2_double,
+    session_shape: interval_work,
+    planned_weight_kg: 10,
+    planned_work_seconds: 300,
+    planned_rest_seconds: 300,
+    planned_sets: 5
+  },
+  {
+    name: "5min sprint",
+    exercise: mace_10_2_double,
+    session_shape: interval_work,
+    planned_weight_kg: 10,
+    planned_work_seconds: 300,
+    planned_rest_seconds: 0,
+    planned_sets: 1
+  }
+].each do |attrs|
+  BenchmarkPreset.find_or_create_by!(name: attrs[:name]) do |preset|
+    preset.exercise = attrs[:exercise]
+    preset.session_shape = attrs[:session_shape]
+    preset.planned_weight_kg = attrs[:planned_weight_kg]
+    preset.planned_work_seconds = attrs[:planned_work_seconds]
+    preset.planned_rest_seconds = attrs[:planned_rest_seconds]
+    preset.planned_sets = attrs[:planned_sets]
+    preset.target_reps = attrs[:target_reps]
+  end
+end
