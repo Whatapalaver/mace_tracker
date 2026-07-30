@@ -19,7 +19,7 @@ worker, no offline data queue) — wired up after Phase 2.
 - [x] `Exercise` (name, arm enum, notes, nullable user_id) + spec
 - [x] `SessionShape` (name, description, nullable user_id) + seeds for the
       three shapes + spec
-- [ ] `Session` (planned_* fields, shape-conditional validations) + spec
+- [x] `Session` (planned_* fields, shape-conditional validations) + spec
 - [ ] `SessionSet` (reps, weight override, durations) + spec
 
 ## Phase 2 — Interval work vertical slice
