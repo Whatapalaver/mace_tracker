@@ -64,8 +64,16 @@ worker, no offline data queue) — wired up after Phase 2.
 All six phases above are done: three session shapes end-to-end (model to
 chart), lifetime cumulative stats, benchmark presets with a start-from-preset
 flow and benchmarks-only chart filter, an installable mobile-first PWA shell,
-and token-based read-only coach sharing. 150 passing specs (model, request,
-component, service, and system specs with headless Chrome), clean rubocop.
+and token-based read-only coach sharing. 160 passing specs (model, request,
+component, service, task, and system specs with headless Chrome), clean
+rubocop.
+
+## Post-v1: seed data
+- [x] Real global `Exercise`/`BenchmarkPreset` seed data in `db/seeds.rb`
+      (safe to run in production, idempotent)
+- [x] `rake demo:seed` — dev/test-only fake sample session history (one
+      session per shape) so charts/stats aren't empty locally; refuses to
+      run outside `Rails.env.local?`
 
 ## Explicitly deferred (see context.md)
 - Wearable/HR ingestion, adherence (planned vs actual) charts, user-defined
