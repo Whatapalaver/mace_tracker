@@ -38,6 +38,21 @@ RSpec.describe Session, type: :model do
         session = build(:session, target_reps: nil, target_reps_per_minute: nil)
         expect(session).to be_valid
       end
+
+      it "allows planned_rest_seconds to be 0 (a single-set all-out effort)" do
+        session = build(:session, planned_rest_seconds: 0)
+        expect(session).to be_valid
+      end
+
+      it "rejects a negative planned_rest_seconds" do
+        session = build(:session, planned_rest_seconds: -1)
+        expect(session).not_to be_valid
+      end
+
+      it "rejects a non-positive planned_work_seconds" do
+        session = build(:session, planned_work_seconds: 0)
+        expect(session).not_to be_valid
+      end
     end
 
     context "fixed_reps_for_time" do

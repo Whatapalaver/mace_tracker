@@ -35,6 +35,14 @@ RSpec.describe SessionSet, type: :model do
     it "allows reps to be nil" do
       expect(build(:session_set, reps: nil)).to be_valid
     end
+
+    it "allows rest_seconds_actual to be 0 (a single-set all-out effort)" do
+      expect(build(:session_set, rest_seconds_actual: 0)).to be_valid
+    end
+
+    it "rejects a negative rest_seconds_actual" do
+      expect(build(:session_set, rest_seconds_actual: -1)).not_to be_valid
+    end
   end
 
   describe "#effective_weight_kg" do

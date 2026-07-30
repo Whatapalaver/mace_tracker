@@ -31,5 +31,9 @@ RSpec.describe BenchmarkPreset, type: :model do
       expect(preset).not_to be_valid
       expect(preset.errors).to be_of_kind(:target_reps, :blank)
     end
+
+    it "allows planned_rest_seconds to be 0 (a single-set all-out effort)" do
+      expect(build(:benchmark_preset, planned_rest_seconds: 0)).to be_valid
+    end
   end
 end

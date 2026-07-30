@@ -5,9 +5,10 @@ module ShapeConditionalPlannedFields
     belongs_to :session_shape
 
     validates :planned_weight_kg, numericality: { greater_than: 0 }, allow_nil: true
-    validates :planned_work_seconds, :planned_rest_seconds, :planned_sets,
-              :target_reps, :target_reps_per_minute,
+    validates :planned_work_seconds, :planned_sets, :target_reps, :target_reps_per_minute,
               numericality: { greater_than: 0, only_integer: true }, allow_nil: true
+    # Zero rest is legitimate (e.g. a single-set all-out effort), unlike the other fields above.
+    validates :planned_rest_seconds, numericality: { greater_than_or_equal_to: 0, only_integer: true }, allow_nil: true
 
     with_options if: -> { session_shape&.name == SessionShape::INTERVAL_WORK } do
       validates :planned_weight_kg, :planned_work_seconds, :planned_rest_seconds, :planned_sets, presence: true
