@@ -1,0 +1,24 @@
+module ShapeConditionalPlannedFields
+  extend ActiveSupport::Concern
+
+  included do
+    belongs_to :session_shape
+
+    validates :planned_weight_kg, numericality: { greater_than: 0 }, allow_nil: true
+    validates :planned_work_seconds, :planned_rest_seconds, :planned_sets,
+              :target_reps, :target_reps_per_minute,
+              numericality: { greater_than: 0, only_integer: true }, allow_nil: true
+
+    with_options if: -> { session_shape&.name == SessionShape::INTERVAL_WORK } do
+      validates :planned_weight_kg, :planned_work_seconds, :planned_rest_seconds, :planned_sets, presence: true
+    end
+
+    with_options if: -> { session_shape&.name == SessionShape::FIXED_REPS_FOR_TIME } do
+      validates :planned_weight_kg, :target_reps, presence: true
+    end
+
+    with_options if: -> { session_shape&.name == SessionShape::EMOM } do
+      validates :planned_weight_kg, :target_reps_per_minute, presence: true
+    end
+  end
+end

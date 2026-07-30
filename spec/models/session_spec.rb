@@ -69,5 +69,19 @@ RSpec.describe Session, type: :model do
     it "defaults to false" do
       expect(create(:session).is_benchmark).to eq(false)
     end
+
+    it "is forced true whenever a benchmark_preset is attached" do
+      preset = create(:benchmark_preset)
+      session = create(:session, benchmark_preset: preset, is_benchmark: false)
+
+      expect(session.is_benchmark).to eq(true)
+    end
+
+    it "can be set explicitly true for a one-off effort without a preset" do
+      session = create(:session, is_benchmark: true)
+
+      expect(session.is_benchmark).to eq(true)
+      expect(session.benchmark_preset_id).to be_nil
+    end
   end
 end

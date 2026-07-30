@@ -10,7 +10,23 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_30_145438) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_30_170702) do
+  create_table "benchmark_presets", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "exercise_id", null: false
+    t.string "name", null: false
+    t.integer "planned_rest_seconds"
+    t.integer "planned_sets"
+    t.decimal "planned_weight_kg", precision: 5, scale: 2
+    t.integer "planned_work_seconds"
+    t.integer "session_shape_id", null: false
+    t.integer "target_reps"
+    t.integer "target_reps_per_minute"
+    t.datetime "updated_at", null: false
+    t.index ["exercise_id"], name: "index_benchmark_presets_on_exercise_id"
+    t.index ["session_shape_id"], name: "index_benchmark_presets_on_session_shape_id"
+  end
+
   create_table "exercises", force: :cascade do |t|
     t.integer "arm", null: false
     t.datetime "created_at", null: false
@@ -69,7 +85,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_30_145438) do
     t.index ["session_shape_id"], name: "index_sessions_on_session_shape_id"
   end
 
+  add_foreign_key "benchmark_presets", "exercises"
+  add_foreign_key "benchmark_presets", "session_shapes"
   add_foreign_key "session_sets", "sessions"
+  add_foreign_key "sessions", "benchmark_presets"
   add_foreign_key "sessions", "exercises"
   add_foreign_key "sessions", "session_shapes"
 end
