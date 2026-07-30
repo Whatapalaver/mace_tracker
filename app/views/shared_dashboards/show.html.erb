@@ -1,0 +1,25 @@
+<% content_for :title, "Mace Tracker - Shared Progress" %>
+
+<h1 class="mb-1 text-xl font-semibold">Shared Progress</h1>
+<p class="mb-4 text-sm text-gray-500"><%= @share_link.description %></p>
+
+<%= render "stats/lifetime_summary", stats: @stats %>
+
+<section class="mb-6">
+  <h2 class="mb-2 font-semibold">Recent sessions</h2>
+  <% if @sessions.empty? %>
+    <p class="text-sm text-gray-500">No sessions logged yet.</p>
+  <% else %>
+    <ul class="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">
+      <% @sessions.each do |session| %>
+        <li class="px-4 py-3 text-sm">
+          <div class="flex items-center justify-between">
+            <span class="font-medium"><%= session.exercise.name %></span>
+            <span class="text-xs text-gray-500"><%= session.date.to_fs(:long) %></span>
+          </div>
+          <p class="text-xs text-gray-500"><%= session.session_shape.label %></p>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>

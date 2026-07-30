@@ -54,11 +54,22 @@ worker, no offline data queue) — wired up after Phase 2.
       default) + feature spec
 
 ## Phase 6 — Coach sharing
-- [ ] `ShareLink` model (token, scope, expires_at) + spec
-- [ ] Public read-only dashboard controller scoped by share link + request
+- [x] `ShareLink` model (token, scope, expires_at) + spec
+- [x] Public read-only dashboard controller scoped by share link + request
       specs
-- [ ] UI to create/regenerate/revoke share links
+- [x] UI to create/regenerate/revoke share links
+
+## v1 feature set complete
+
+All six phases above are done: three session shapes end-to-end (model to
+chart), lifetime cumulative stats, benchmark presets with a start-from-preset
+flow and benchmarks-only chart filter, an installable mobile-first PWA shell,
+and token-based read-only coach sharing. 150 passing specs (model, request,
+component, service, and system specs with headless Chrome), clean rubocop.
 
 ## Explicitly deferred (see context.md)
 - Wearable/HR ingestion, adherence (planned vs actual) charts, user-defined
   shape creation UI, offline PWA logging, Fly.io deploy
+- Coach-sharing scope filtering: the `scope` JSON column can hold
+  session_shape/date_range filters too, but only the exercise filter has UI
+  in v1

@@ -1,0 +1,36 @@
+<% content_for :title, "Share Links" %>
+
+<div class="mb-4 flex items-center justify-between">
+  <h1 class="text-xl font-semibold">Share Links</h1>
+  <%= link_to "New link", new_share_link_path, class: "text-sm font-medium text-blue-600" %>
+</div>
+
+<% if @share_links.empty? %>
+  <p class="text-sm text-gray-500">No share links yet. Create one to let your coach view your progress.</p>
+<% else %>
+  <ul class="space-y-3">
+    <% @share_links.each do |share_link| %>
+      <li class="rounded-lg border border-gray-200 bg-white p-4 text-sm">
+        <p class="font-medium"><%= share_link.description %></p>
+        <p class="mt-1 break-all text-xs text-blue-600"><%= shared_dashboard_url(token: share_link.token) %></p>
+        <p class="mt-1 text-xs text-gray-500">
+          <% if share_link.expires_at.present? %>
+            <% if share_link.expired? %>
+              Expired <%= share_link.expires_at.to_fs(:long) %>
+            <% else %>
+              Expires <%= share_link.expires_at.to_fs(:long) %>
+            <% end %>
+          <% else %>
+            Permanent
+          <% end %>
+        </p>
+        <div class="mt-2 flex gap-3">
+          <%= button_to "Regenerate", regenerate_share_link_path(share_link), method: :patch, class: "text-xs font-medium text-blue-600" %>
+          <%= button_to "Revoke", share_link_path(share_link), method: :delete,
+                data: { turbo_confirm: "Revoke this share link? The URL will stop working immediately." },
+                class: "text-xs font-medium text-red-600" %>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

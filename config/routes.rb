@@ -19,6 +19,14 @@ Rails.application.routes.draw do
 
   get "stats" => "stats#show", as: :stats
 
+  resources :share_links, only: [ :index, :new, :create, :destroy ] do
+    member do
+      patch :regenerate
+    end
+  end
+
+  get "shared/:token" => "shared_dashboards#show", as: :shared_dashboard
+
   # Defines the root path route ("/")
   root "sessions#new"
 end

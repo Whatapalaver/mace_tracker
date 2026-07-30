@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_30_170702) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_30_171729) do
   create_table "benchmark_presets", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "exercise_id", null: false
@@ -83,6 +83,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_30_170702) do
     t.index ["date"], name: "index_sessions_on_date"
     t.index ["exercise_id"], name: "index_sessions_on_exercise_id"
     t.index ["session_shape_id"], name: "index_sessions_on_session_shape_id"
+  end
+
+  create_table "share_links", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "expires_at"
+    t.json "scope", default: {}, null: false
+    t.string "token", null: false
+    t.datetime "updated_at", null: false
+    t.index ["token"], name: "index_share_links_on_token", unique: true
   end
 
   add_foreign_key "benchmark_presets", "exercises"

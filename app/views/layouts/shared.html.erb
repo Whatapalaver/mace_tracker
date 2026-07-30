@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Mace Tracker - Shared Progress" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <%= csp_meta_tag %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+
+    <%= stylesheet_link_tag :app %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-gray-50 text-gray-900 min-h-screen">
+    <header class="bg-white border-b border-gray-200 px-4 py-3">
+      <span class="text-lg font-semibold">Mace Tracker</span>
+      <span class="ml-2 text-sm text-gray-500">Shared, read-only</span>
+    </header>
+
+    <main class="max-w-md mx-auto px-4 py-6 sm:max-w-xl md:max-w-2xl">
+      <%= yield %>
+    </main>
+  </body>
+</html>
