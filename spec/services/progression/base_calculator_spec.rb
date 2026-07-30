@@ -23,4 +23,10 @@ RSpec.describe Progression::BaseCalculator do
       expect(calculator.total_volume).to eq(0)
     end
   end
+
+  describe "#display_outputs" do
+    it "raises NotImplementedError, requiring subclasses to define it" do
+      expect { calculator.display_outputs }.to raise_error(NotImplementedError)
+    end
+  end
 end

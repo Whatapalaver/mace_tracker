@@ -29,7 +29,7 @@ worker, no offline data queue) — wired up after Phase 2.
       output, output per total/working time) + spec
 - [x] `SessionsController` + `SessionSetsController` (interval_work only) +
       request specs
-- [ ] Session show view (ViewComponent) rendering computed outputs + spec
+- [x] Session show view (ViewComponent) rendering computed outputs + spec
 - [ ] Chartkick progression chart (best-vs-avg pace toggle) filtered by
       comparability key
 

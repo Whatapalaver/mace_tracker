@@ -14,21 +14,7 @@
   </dl>
 </section>
 
-<section class="mb-6 rounded-lg border border-gray-200 bg-white p-4 text-sm">
-  <h2 class="mb-2 font-semibold">Outputs</h2>
-  <dl class="grid grid-cols-2 gap-2">
-    <dt class="text-gray-500">Best pace</dt>
-    <dd><%= number_with_precision(@calculator.best_pace, precision: 3) if @calculator.best_pace %></dd>
-    <dt class="text-gray-500">Avg pace</dt>
-    <dd><%= number_with_precision(@calculator.avg_pace, precision: 3) if @calculator.avg_pace %></dd>
-    <dt class="text-gray-500">Total output</dt>
-    <dd><%= @calculator.total_session_output %></dd>
-    <dt class="text-gray-500">Output / total time</dt>
-    <dd><%= number_with_precision(@calculator.output_per_total_time, precision: 3) if @calculator.output_per_total_time %></dd>
-    <dt class="text-gray-500">Output / working time</dt>
-    <dd><%= number_with_precision(@calculator.output_per_working_time, precision: 3) if @calculator.output_per_working_time %></dd>
-  </dl>
-</section>
+<%= render SessionOutputsComponent.new(calculator: @calculator) %>
 
 <section class="mb-6">
   <div class="mb-2 flex items-center justify-between">

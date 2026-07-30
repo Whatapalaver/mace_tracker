@@ -71,4 +71,25 @@ RSpec.describe Progression::IntervalWorkCalculator do
       expect(calculator.output_per_working_time).to be_nil
     end
   end
+
+  describe "#display_outputs" do
+    it "formats every metric, using an em dash for unavailable ones" do
+      expect(calculator.display_outputs).to eq(
+        "Best pace" => "—",
+        "Avg pace" => "—",
+        "Total output" => 0,
+        "Output / total time" => "—",
+        "Output / working time" => "—"
+      )
+    end
+
+    it "rounds computed metrics" do
+      create(:session_set, session: session, set_number: 1, reps: 20, duration_seconds: nil, rest_seconds_actual: nil)
+
+      outputs = calculator.display_outputs
+
+      expect(outputs["Best pace"]).to eq((20 / 300.0).round(3))
+      expect(outputs["Total output"]).to eq(200)
+    end
+  end
 end
