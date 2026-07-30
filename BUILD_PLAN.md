@@ -23,9 +23,9 @@ worker, no offline data queue) — wired up after Phase 2.
 - [x] `SessionSet` (reps, weight override, durations) + spec
 
 ## Phase 2 — Interval work vertical slice
-- [ ] `Progression::BaseCalculator` + `Progression::Calculator.for(session)`
+- [x] `Progression::BaseCalculator` + `Progression::Calculator.for(session)`
       factory + spec
-- [ ] `Progression::IntervalWorkCalculator` (pace, best/avg pace, total
+- [x] `Progression::IntervalWorkCalculator` (pace, best/avg pace, total
       output, output per total/working time) + spec
 - [ ] `SessionsController` + `SessionSetsController` (interval_work only) +
       request specs

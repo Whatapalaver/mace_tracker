@@ -1,0 +1,74 @@
+require "rails_helper"
+
+RSpec.describe Progression::IntervalWorkCalculator do
+  subject(:calculator) { described_class.new(session) }
+
+  let(:session) do
+    create(:session, planned_weight_kg: 10, planned_work_seconds: 300, planned_rest_seconds: 600, planned_sets: 5)
+  end
+
+  context "with sets relying on the session's planned durations" do
+    before do
+      create(:session_set, session: session, set_number: 1, reps: 20, duration_seconds: nil, rest_seconds_actual: nil)
+      create(:session_set, session: session, set_number: 2, reps: 22, duration_seconds: nil, rest_seconds_actual: nil)
+      create(:session_set, session: session, set_number: 3, reps: 18, duration_seconds: nil, rest_seconds_actual: nil)
+    end
+
+    it "computes pace per set as reps / effective duration" do
+      expect(calculator.pace_per_set).to contain_exactly(20 / 300.0, 22 / 300.0, 18 / 300.0)
+    end
+
+    it "computes best pace as the max of the per-set paces" do
+      expect(calculator.best_pace).to eq(22 / 300.0)
+    end
+
+    it "computes avg pace as the mean of the per-set paces" do
+      expect(calculator.avg_pace).to eq((20 / 300.0 + 22 / 300.0 + 18 / 300.0) / 3)
+    end
+
+    it "computes total session output as sum(reps * weight)" do
+      expect(calculator.total_session_output).to eq((20 + 22 + 18) * 10)
+    end
+
+    it "computes output per total time using planned work+rest time" do
+      expect(calculator.output_per_total_time).to eq(600 / 2700.0)
+    end
+
+    it "computes output per working time using planned work time only" do
+      expect(calculator.output_per_working_time).to eq(600 / 900.0)
+    end
+  end
+
+  context "when a set overrides its actual duration and rest" do
+    before do
+      create(:session_set, session: session, set_number: 1, reps: 20, duration_seconds: 280, rest_seconds_actual: 650)
+    end
+
+    it "uses the actual measured values instead of the planned ones" do
+      expect(calculator.pace_per_set).to contain_exactly(20 / 280.0)
+      expect(calculator.output_per_working_time).to eq(200 / 280.0)
+      expect(calculator.output_per_total_time).to eq(200 / 930.0)
+    end
+  end
+
+  context "when a set has no reps recorded" do
+    before do
+      create(:session_set, session: session, set_number: 1, reps: 20)
+      create(:session_set, session: session, set_number: 2, reps: nil)
+    end
+
+    it "excludes it from pace_per_set" do
+      expect(calculator.pace_per_set.size).to eq(1)
+    end
+  end
+
+  context "with no sets logged yet" do
+    it "returns nil for pace metrics and zero for total output" do
+      expect(calculator.best_pace).to be_nil
+      expect(calculator.avg_pace).to be_nil
+      expect(calculator.total_session_output).to eq(0)
+      expect(calculator.output_per_total_time).to be_nil
+      expect(calculator.output_per_working_time).to be_nil
+    end
+  end
+end

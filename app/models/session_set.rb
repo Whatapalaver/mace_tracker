@@ -10,4 +10,12 @@ class SessionSet < ApplicationRecord
   def effective_weight_kg
     weight_kg || session.planned_weight_kg
   end
+
+  def effective_duration_seconds
+    duration_seconds || session.planned_work_seconds
+  end
+
+  def effective_rest_seconds_actual
+    rest_seconds_actual || session.planned_rest_seconds
+  end
 end
