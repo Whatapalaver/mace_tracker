@@ -27,7 +27,7 @@ worker, no offline data queue) — wired up after Phase 2.
       factory + spec
 - [x] `Progression::IntervalWorkCalculator` (pace, best/avg pace, total
       output, output per total/working time) + spec
-- [ ] `SessionsController` + `SessionSetsController` (interval_work only) +
+- [x] `SessionsController` + `SessionSetsController` (interval_work only) +
       request specs
 - [ ] Session show view (ViewComponent) rendering computed outputs + spec
 - [ ] Chartkick progression chart (best-vs-avg pace toggle) filtered by
