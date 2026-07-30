@@ -16,6 +16,16 @@
 
 <%= render SessionOutputsComponent.new(calculator: @calculator) %>
 
+<section class="mb-6 rounded-lg border border-gray-200 bg-white p-4 text-sm">
+  <h2 class="mb-2 font-semibold">Pace progression</h2>
+  <% if @pace_series.values.all?(&:empty?) %>
+    <p class="text-sm text-gray-500">Not enough data yet for the same weight and work duration.</p>
+  <% else %>
+    <%= line_chart @pace_series, xtitle: "Date", ytitle: "Pace (reps/sec)" %>
+    <p class="mt-2 text-xs text-gray-500">Click a series in the legend to toggle best vs. average pace.</p>
+  <% end %>
+</section>
+
 <section class="mb-6">
   <div class="mb-2 flex items-center justify-between">
     <h2 class="font-semibold">Sets</h2>

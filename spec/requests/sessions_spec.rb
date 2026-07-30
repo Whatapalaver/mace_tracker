@@ -60,5 +60,23 @@ RSpec.describe "Sessions", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include(session.exercise.name)
     end
+
+    it "shows a placeholder when there isn't enough progression data yet" do
+      session = create(:session)
+
+      get session_path(session)
+
+      expect(response.body).to include("Not enough data yet")
+    end
+
+    it "renders a pace chart once a comparable session has data" do
+      session = create(:session, planned_weight_kg: 10, planned_work_seconds: 300)
+      create(:session_set, session: session, set_number: 1, reps: 20)
+
+      get session_path(session)
+
+      expect(response.body).to include("Pace progression")
+      expect(response.body).not_to include("Not enough data yet")
+    end
   end
 end

@@ -19,6 +19,7 @@ class SessionsController < ApplicationController
   def show
     @session = Session.find(params[:id])
     @calculator = Progression::Calculator.for(@session)
+    @pace_series = Progression::IntervalWorkPaceSeries.new(@session).to_h
   end
 
   private
