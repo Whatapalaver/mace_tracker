@@ -25,9 +25,10 @@
   <body class="bg-gray-50 text-gray-900 min-h-screen">
     <header class="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
       <%= link_to "Mace Tracker", root_path, class: "text-lg font-semibold" %>
-      <nav class="flex gap-4 text-sm">
+      <nav class="flex gap-3 text-sm">
         <%= link_to "Log", new_session_path, class: "text-blue-600" %>
         <%= link_to "Stats", stats_path, class: "text-blue-600" %>
+        <%= link_to "Presets", benchmark_presets_path, class: "text-blue-600" %>
         <%= link_to "Exercises", exercises_path, class: "text-blue-600" %>
       </nav>
     </header>

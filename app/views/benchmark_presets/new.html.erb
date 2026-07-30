@@ -1,0 +1,36 @@
+<% content_for :title, "Add Benchmark Preset" %>
+
+<h1 class="mb-4 text-xl font-semibold">Add Benchmark Preset</h1>
+
+<% if @exercises.empty? %>
+  <p class="text-sm text-gray-500">
+    You need an exercise before adding a benchmark preset.
+    <%= link_to "Add one", new_exercise_path, class: "text-blue-600" %>.
+  </p>
+<% else %>
+  <%= form_with model: @benchmark_preset, class: "space-y-4", data: { controller: "shape-form" } do |form| %>
+    <% if @benchmark_preset.errors.any? %>
+      <div class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">
+        <ul>
+          <% @benchmark_preset.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div>
+      <%= form.label :name, "Preset name", class: "mb-1 block text-sm font-medium" %>
+      <%= form.text_field :name, placeholder: "Monthly 3x5", class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
+    </div>
+
+    <div>
+      <%= form.label :exercise_id, "Exercise", class: "mb-1 block text-sm font-medium" %>
+      <%= form.collection_select :exercise_id, @exercises, :id, :name, {}, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
+    </div>
+
+    <%= render "shared/shape_fields", form: form, session_shapes: @session_shapes %>
+
+    <%= form.submit "Add preset", class: "w-full rounded-md bg-blue-600 py-3 text-base font-medium text-white" %>
+  <% end %>
+<% end %>

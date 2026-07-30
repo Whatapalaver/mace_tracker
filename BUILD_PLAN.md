@@ -50,7 +50,7 @@ worker, no offline data queue) — wired up after Phase 2.
 - [x] `BenchmarkPreset` model + spec
 - [x] `Session#is_benchmark` derivation (preset-driven + explicit override) +
       spec
-- [ ] "Start from preset" flow + benchmarks-only chart filter (off by
+- [x] "Start from preset" flow + benchmarks-only chart filter (off by
       default) + feature spec
 
 ## Phase 6 — Coach sharing

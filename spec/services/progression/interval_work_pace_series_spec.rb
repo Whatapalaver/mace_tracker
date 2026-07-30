@@ -3,8 +3,9 @@ require "rails_helper"
 RSpec.describe Progression::IntervalWorkPaceSeries do
   let(:exercise) { create(:exercise) }
 
-  def session_with_set(date:, reps:, weight: 10, work_seconds: 300, exercise: nil)
-    session = create(:session, exercise: exercise, date: date, planned_weight_kg: weight, planned_work_seconds: work_seconds)
+  def session_with_set(date:, reps:, weight: 10, work_seconds: 300, exercise: nil, is_benchmark: false)
+    session = create(:session, exercise: exercise, date: date, planned_weight_kg: weight,
+                                planned_work_seconds: work_seconds, is_benchmark: is_benchmark)
     create(:session_set, session: session, set_number: 1, reps: reps, duration_seconds: work_seconds) if reps
     session
   end
@@ -44,5 +45,25 @@ RSpec.describe Progression::IntervalWorkPaceSeries do
 
     expect(result["Best pace"]).not_to have_key(empty_session.date)
     expect(result["Best pace"]).to have_key(with_reps.date)
+  end
+
+  describe "benchmarks_only" do
+    it "is off by default, including regular training sessions" do
+      training = session_with_set(exercise: exercise, date: "2026-07-01", reps: 20, is_benchmark: false)
+      benchmark = session_with_set(exercise: exercise, date: "2026-07-08", reps: 30, is_benchmark: true)
+
+      result = described_class.new(benchmark).to_h
+
+      expect(result["Best pace"].keys).to contain_exactly(training.date, benchmark.date)
+    end
+
+    it "restricts the series to benchmark sessions when enabled" do
+      session_with_set(exercise: exercise, date: "2026-07-01", reps: 20, is_benchmark: false)
+      benchmark = session_with_set(exercise: exercise, date: "2026-07-08", reps: 30, is_benchmark: true)
+
+      result = described_class.new(benchmark, benchmarks_only: true).to_h
+
+      expect(result["Best pace"].keys).to eq([ benchmark.date ])
+    end
   end
 end

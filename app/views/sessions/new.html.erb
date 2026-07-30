@@ -2,6 +2,12 @@
 
 <h1 class="mb-4 text-xl font-semibold">Log Session</h1>
 
+<% if @session.benchmark_preset_id.present? %>
+  <p class="mb-4 rounded-md bg-blue-50 px-3 py-2 text-sm text-blue-800">
+    Starting from benchmark preset: <%= BenchmarkPreset.find(@session.benchmark_preset_id).name %>
+  </p>
+<% end %>
+
 <% if @exercises.empty? %>
   <p class="text-sm text-gray-500">
     You need an exercise before logging a session.
@@ -19,6 +25,8 @@
       </div>
     <% end %>
 
+    <%= form.hidden_field :benchmark_preset_id %>
+
     <div>
       <%= form.label :exercise_id, "Exercise", class: "mb-1 block text-sm font-medium" %>
       <%= form.collection_select :exercise_id, @exercises, :id, :name, {}, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
@@ -29,49 +37,7 @@
       <%= form.date_field :date, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
     </div>
 
-    <fieldset>
-      <legend class="mb-1 text-sm font-medium">Shape</legend>
-      <div class="space-y-2">
-        <% @session_shapes.each do |shape| %>
-          <label class="flex items-center gap-2 rounded-md border border-gray-300 px-3 py-2">
-            <%= form.radio_button :session_shape_id, shape.id,
-                  checked: @session.session_shape_id == shape.id || (@session.session_shape_id.nil? && shape.name == SessionShape::INTERVAL_WORK),
-                  data: { shape_form_target: "shapeInput", shape_name: shape.name, action: "change->shape-form#toggle" } %>
-            <%= shape.label %>
-          </label>
-        <% end %>
-      </div>
-    </fieldset>
-
-    <div>
-      <%= form.label :planned_weight_kg, "Weight (kg)", class: "mb-1 block text-sm font-medium" %>
-      <%= form.number_field :planned_weight_kg, step: 0.5, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
-    </div>
-
-    <div data-shape-form-target="group" data-allowed-shapes="interval_work" class="grid grid-cols-3 gap-3">
-      <div>
-        <%= form.label :planned_work_seconds, "Work (sec)", class: "mb-1 block text-sm font-medium" %>
-        <%= form.number_field :planned_work_seconds, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
-      </div>
-      <div>
-        <%= form.label :planned_rest_seconds, "Rest (sec)", class: "mb-1 block text-sm font-medium" %>
-        <%= form.number_field :planned_rest_seconds, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
-      </div>
-      <div>
-        <%= form.label :planned_sets, "Sets", class: "mb-1 block text-sm font-medium" %>
-        <%= form.number_field :planned_sets, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
-      </div>
-    </div>
-
-    <div data-shape-form-target="group" data-allowed-shapes="fixed_reps_for_time">
-      <%= form.label :target_reps, "Target reps", class: "mb-1 block text-sm font-medium" %>
-      <%= form.number_field :target_reps, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
-    </div>
-
-    <div data-shape-form-target="group" data-allowed-shapes="emom">
-      <%= form.label :target_reps_per_minute, "Target reps / min", class: "mb-1 block text-sm font-medium" %>
-      <%= form.number_field :target_reps_per_minute, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
-    </div>
+    <%= render "shared/shape_fields", form: form, session_shapes: @session_shapes %>
 
     <div>
       <%= form.label :notes, class: "mb-1 block text-sm font-medium" %>

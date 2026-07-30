@@ -1,0 +1,22 @@
+<% content_for :title, "Benchmark Presets" %>
+
+<div class="mb-4 flex items-center justify-between">
+  <h1 class="text-xl font-semibold">Benchmark Presets</h1>
+  <%= link_to "Add preset", new_benchmark_preset_path, class: "text-sm font-medium text-blue-600" %>
+</div>
+
+<% if @benchmark_presets.empty? %>
+  <p class="text-sm text-gray-500">No benchmark presets yet.</p>
+<% else %>
+  <ul class="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">
+    <% @benchmark_presets.each do |preset| %>
+      <li class="flex items-center justify-between px-4 py-3 text-sm">
+        <div>
+          <p class="font-medium"><%= preset.name %></p>
+          <p class="text-xs text-gray-500"><%= preset.exercise.name %> - <%= preset.session_shape.label %></p>
+        </div>
+        <%= link_to "Start session", new_session_path(benchmark_preset_id: preset.id), class: "font-medium text-blue-600" %>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

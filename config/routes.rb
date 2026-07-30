@@ -11,6 +11,8 @@ Rails.application.routes.draw do
 
   resources :exercises, only: [ :index, :new, :create ]
 
+  resources :benchmark_presets, only: [ :index, :new, :create ]
+
   resources :sessions, only: [ :new, :create, :show ] do
     resources :session_sets, only: [ :new, :create ]
   end

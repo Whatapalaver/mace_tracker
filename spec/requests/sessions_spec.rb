@@ -17,6 +17,16 @@ RSpec.describe "Sessions", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("You need an exercise")
     end
+
+    it "prefills the form from a benchmark_preset_id param" do
+      preset = create(:benchmark_preset, name: "Monthly 3x5", planned_weight_kg: 12, planned_sets: 3)
+
+      get new_session_path(benchmark_preset_id: preset.id)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Starting from benchmark preset: Monthly 3x5")
+      expect(response.body).to include('value="12.0"')
+    end
   end
 
   describe "POST /sessions" do
@@ -77,6 +87,15 @@ RSpec.describe "Sessions", type: :request do
 
       expect(response).to have_http_status(:unprocessable_content)
     end
+
+    it "attaches a benchmark_preset and marks the session as a benchmark" do
+      preset = create(:benchmark_preset, exercise: exercise, session_shape: interval_work_shape)
+
+      post sessions_path, params: { session: valid_params.merge(benchmark_preset_id: preset.id) }
+
+      expect(Session.last.benchmark_preset).to eq(preset)
+      expect(Session.last.is_benchmark).to eq(true)
+    end
   end
 
   describe "GET /sessions/:id" do
@@ -122,6 +141,41 @@ RSpec.describe "Sessions", type: :request do
       get session_path(session)
 
       expect(response.body).not_to include("Pace progression")
+    end
+
+    it "shows a benchmark badge for benchmark sessions" do
+      session = create(:session, is_benchmark: true)
+
+      get session_path(session)
+
+      expect(response.body).to include("Benchmark")
+    end
+
+    it "includes non-benchmark sessions in the pace chart by default" do
+      training = create(:session, date: "2026-01-01", planned_weight_kg: 10,
+                                   planned_work_seconds: 300, is_benchmark: false)
+      create(:session_set, session: training, set_number: 1, reps: 20)
+      benchmark = create(:session, exercise: training.exercise, date: "2026-06-01", planned_weight_kg: 10,
+                                    planned_work_seconds: 300, is_benchmark: true)
+      create(:session_set, session: benchmark, set_number: 1, reps: 30)
+
+      get session_path(benchmark)
+
+      expect(response.body).to include(training.date.to_s)
+    end
+
+    it "excludes non-benchmark sessions from the pace chart when benchmarks_only is set" do
+      training = create(:session, date: "2026-01-01", planned_weight_kg: 10,
+                                   planned_work_seconds: 300, is_benchmark: false)
+      create(:session_set, session: training, set_number: 1, reps: 20)
+      benchmark = create(:session, exercise: training.exercise, date: "2026-06-01", planned_weight_kg: 10,
+                                    planned_work_seconds: 300, is_benchmark: true)
+      create(:session_set, session: benchmark, set_number: 1, reps: 30)
+
+      get session_path(benchmark, benchmarks_only: "true")
+
+      expect(response.body).not_to include(training.date.to_s)
+      expect(response.body).to include(benchmark.date.to_s)
     end
   end
 end
