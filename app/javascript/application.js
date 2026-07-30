@@ -3,3 +3,7 @@ import "@hotwired/turbo-rails"
 import "controllers"
 import "Chart.bundle"
 import "chartkick"
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/service-worker")
+}

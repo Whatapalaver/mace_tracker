@@ -34,7 +34,7 @@ worker, no offline data queue) — wired up after Phase 2.
       comparability key
 
 ## Phase 2b — PWA installable shell
-- [ ] Manifest + icons + service worker routes uncommented; installable to
+- [x] Manifest + icons + service worker routes uncommented; installable to
       home screen (online-required, no offline queue)
 
 ## Phase 3 — Remaining two shapes
