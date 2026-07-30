@@ -13,10 +13,10 @@ worker, no offline data queue) — wired up after Phase 2.
 - [x] RSpec, FactoryBot, Shoulda Matchers, ViewComponent, Chartkick installed
       and wired up (importmap pins, `spec/support/*`)
 - [x] Turbo, Stimulus, Tailwind build pipeline confirmed working (`bin/dev`)
-- [ ] `BUILD_PLAN.md` committed alongside skeleton
+- [x] `BUILD_PLAN.md` committed alongside skeleton
 
 ## Phase 1 — Core schema & models (no UI)
-- [ ] `Exercise` (name, arm enum, notes, nullable user_id) + spec
+- [x] `Exercise` (name, arm enum, notes, nullable user_id) + spec
 - [ ] `SessionShape` (name, description, nullable user_id) + seeds for the
       three shapes + spec
 - [ ] `Session` (planned_* fields, shape-conditional validations) + spec
