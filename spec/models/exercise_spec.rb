@@ -42,4 +42,18 @@ RSpec.describe Exercise, type: :model do
       expect(build(:exercise).user_id).to be_nil
     end
   end
+
+  describe ".arm_options" do
+    it "returns a human label paired with each enum key" do
+      expect(Exercise.arm_options).to contain_exactly(
+        [ "Single arm", "single" ], [ "Double arm", "double" ], [ "N/A", "n_a" ]
+      )
+    end
+  end
+
+  describe "#arm_label" do
+    it "returns the human label for the current arm" do
+      expect(build(:exercise, arm: :n_a).arm_label).to eq("N/A")
+    end
+  end
 end
