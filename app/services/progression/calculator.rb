@@ -3,7 +3,9 @@ module Progression
     class UnknownShapeError < StandardError; end
 
     REGISTRY = {
-      SessionShape::INTERVAL_WORK => IntervalWorkCalculator
+      SessionShape::INTERVAL_WORK => IntervalWorkCalculator,
+      SessionShape::FIXED_REPS_FOR_TIME => FixedRepsForTimeCalculator,
+      SessionShape::EMOM => EmomCalculator
     }.freeze
 
     def self.for(session)

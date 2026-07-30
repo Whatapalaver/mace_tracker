@@ -38,9 +38,9 @@ worker, no offline data queue) — wired up after Phase 2.
       home screen (online-required, no offline queue)
 
 ## Phase 3 — Remaining two shapes
-- [ ] `fixed_reps_for_time`: validations + `Progression::FixedRepsForTimeCalculator`
+- [x] `fixed_reps_for_time`: validations + `Progression::FixedRepsForTimeCalculator`
       + spec
-- [ ] `emom`: validations + `Progression::EmomCalculator` + spec
+- [x] `emom`: validations + `Progression::EmomCalculator` + spec
 - [ ] Shape-aware session form (Stimulus) + system spec across all 3 shapes
 
 ## Phase 4 — Cumulative (lifetime) outputs
