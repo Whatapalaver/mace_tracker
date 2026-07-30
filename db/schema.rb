@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_30_144349) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_30_144736) do
   create_table "exercises", force: :cascade do |t|
     t.integer "arm", null: false
     t.datetime "created_at", null: false
@@ -20,5 +20,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_30_144349) do
     t.integer "user_id"
     t.index ["name", "arm", "user_id"], name: "index_exercises_on_name_and_arm_and_user_id", unique: true
     t.index ["user_id"], name: "index_exercises_on_user_id"
+  end
+
+  create_table "session_shapes", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id"
+    t.index ["name", "user_id"], name: "index_session_shapes_on_name_and_user_id", unique: true
+    t.index ["user_id"], name: "index_session_shapes_on_user_id"
   end
 end

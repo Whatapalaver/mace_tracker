@@ -17,7 +17,7 @@ worker, no offline data queue) — wired up after Phase 2.
 
 ## Phase 1 — Core schema & models (no UI)
 - [x] `Exercise` (name, arm enum, notes, nullable user_id) + spec
-- [ ] `SessionShape` (name, description, nullable user_id) + seeds for the
+- [x] `SessionShape` (name, description, nullable user_id) + seeds for the
       three shapes + spec
 - [ ] `Session` (planned_* fields, shape-conditional validations) + spec
 - [ ] `SessionSet` (reps, weight override, durations) + spec
