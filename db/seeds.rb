@@ -39,35 +39,35 @@ fixed_reps_for_time = SessionShape.find_by!(name: SessionShape::FIXED_REPS_FOR_T
     name: "Time to 108",
     exercise: mace_10_2_double,
     session_shape: fixed_reps_for_time,
-    planned_weight_kg: 8,
+    weight_kg: 8,
     target_reps: 108
   },
   {
     name: "5 x 5",
     exercise: mace_10_2_double,
     session_shape: interval_work,
-    planned_weight_kg: 10,
-    planned_work_seconds: 300,
-    planned_rest_seconds: 300,
-    planned_sets: 5
+    weight_kg: 10,
+    work_seconds: 300,
+    rest_seconds: 300,
+    sets_count: 5
   },
   {
     name: "5min sprint",
     exercise: mace_10_2_double,
     session_shape: interval_work,
-    planned_weight_kg: 10,
-    planned_work_seconds: 300,
-    planned_rest_seconds: 0,
-    planned_sets: 1
+    weight_kg: 10,
+    work_seconds: 300,
+    rest_seconds: 0,
+    sets_count: 1
   }
 ].each do |attrs|
   BenchmarkPreset.find_or_create_by!(name: attrs[:name]) do |preset|
     preset.exercise = attrs[:exercise]
     preset.session_shape = attrs[:session_shape]
-    preset.planned_weight_kg = attrs[:planned_weight_kg]
-    preset.planned_work_seconds = attrs[:planned_work_seconds]
-    preset.planned_rest_seconds = attrs[:planned_rest_seconds]
-    preset.planned_sets = attrs[:planned_sets]
+    preset.weight_kg = attrs[:weight_kg]
+    preset.work_seconds = attrs[:work_seconds]
+    preset.rest_seconds = attrs[:rest_seconds]
+    preset.sets_count = attrs[:sets_count]
     preset.target_reps = attrs[:target_reps]
   end
 end

@@ -10,14 +10,14 @@ class SessionSet < ApplicationRecord
   validates :weight_kg, numericality: { greater_than: 0 }, allow_nil: true
 
   def effective_weight_kg
-    weight_kg || session.planned_weight_kg
+    weight_kg || session.weight_kg
   end
 
   def effective_duration_seconds
-    duration_seconds || session.planned_work_seconds
+    duration_seconds || session.work_seconds
   end
 
   def effective_rest_seconds_actual
-    rest_seconds_actual || session.planned_rest_seconds
+    rest_seconds_actual || session.rest_seconds
   end
 end

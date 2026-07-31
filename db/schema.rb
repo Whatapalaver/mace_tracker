@@ -10,19 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_30_171729) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_31_144345) do
   create_table "benchmark_presets", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "exercise_id", null: false
     t.string "name", null: false
-    t.integer "planned_rest_seconds"
-    t.integer "planned_sets"
-    t.decimal "planned_weight_kg", precision: 5, scale: 2
-    t.integer "planned_work_seconds"
+    t.integer "rest_seconds"
     t.integer "session_shape_id", null: false
+    t.integer "sets_count"
     t.integer "target_reps"
     t.integer "target_reps_per_minute"
     t.datetime "updated_at", null: false
+    t.decimal "weight_kg", precision: 5, scale: 2
+    t.integer "work_seconds"
     t.index ["exercise_id"], name: "index_benchmark_presets_on_exercise_id"
     t.index ["session_shape_id"], name: "index_benchmark_presets_on_session_shape_id"
   end
@@ -70,15 +70,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_30_171729) do
     t.integer "exercise_id", null: false
     t.boolean "is_benchmark", default: false, null: false
     t.text "notes"
-    t.integer "planned_rest_seconds"
-    t.integer "planned_sets"
-    t.decimal "planned_weight_kg", precision: 5, scale: 2
-    t.integer "planned_work_seconds"
+    t.integer "rest_seconds"
     t.decimal "rpe_session", precision: 3, scale: 1
     t.integer "session_shape_id", null: false
+    t.integer "sets_count"
     t.integer "target_reps"
     t.integer "target_reps_per_minute"
     t.datetime "updated_at", null: false
+    t.decimal "weight_kg", precision: 5, scale: 2
+    t.integer "work_seconds"
     t.index ["benchmark_preset_id"], name: "index_sessions_on_benchmark_preset_id"
     t.index ["date"], name: "index_sessions_on_date"
     t.index ["exercise_id"], name: "index_sessions_on_exercise_id"

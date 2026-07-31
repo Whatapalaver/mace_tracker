@@ -1,5 +1,5 @@
 class BenchmarkPreset < ApplicationRecord
-  include ShapeConditionalPlannedFields
+  include ShapeConditionalFields
 
   belongs_to :exercise
   has_many :sessions

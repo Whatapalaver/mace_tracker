@@ -4,7 +4,7 @@ RSpec.describe "SharedDashboards", type: :request do
   describe "GET /shared/:token" do
     it "renders the dashboard for a valid, unexpired token" do
       exercise = create(:exercise, name: "Mace 360")
-      session = create(:session, exercise: exercise, planned_weight_kg: 10)
+      session = create(:session, exercise: exercise, weight_kg: 10)
       create(:session_set, session: session, set_number: 1, reps: 20)
       share_link = create(:share_link)
 

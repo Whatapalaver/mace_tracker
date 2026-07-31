@@ -33,21 +33,21 @@ RSpec.describe "db/seeds.rb" do
 
     time_to_108 = presets.fetch("Time to 108")
     expect(time_to_108.session_shape.name).to eq(SessionShape::FIXED_REPS_FOR_TIME)
-    expect(time_to_108.planned_weight_kg).to eq(8)
+    expect(time_to_108.weight_kg).to eq(8)
     expect(time_to_108.target_reps).to eq(108)
 
     five_by_five = presets.fetch("5 x 5")
     expect(five_by_five.session_shape.name).to eq(SessionShape::INTERVAL_WORK)
-    expect(five_by_five.planned_weight_kg).to eq(10)
-    expect(five_by_five.planned_work_seconds).to eq(300)
-    expect(five_by_five.planned_rest_seconds).to eq(300)
-    expect(five_by_five.planned_sets).to eq(5)
+    expect(five_by_five.weight_kg).to eq(10)
+    expect(five_by_five.work_seconds).to eq(300)
+    expect(five_by_five.rest_seconds).to eq(300)
+    expect(five_by_five.sets_count).to eq(5)
 
     sprint = presets.fetch("5min sprint")
     expect(sprint.session_shape.name).to eq(SessionShape::INTERVAL_WORK)
-    expect(sprint.planned_work_seconds).to eq(300)
-    expect(sprint.planned_rest_seconds).to eq(0)
-    expect(sprint.planned_sets).to eq(1)
+    expect(sprint.work_seconds).to eq(300)
+    expect(sprint.rest_seconds).to eq(0)
+    expect(sprint.sets_count).to eq(1)
   end
 
   it "is idempotent when run more than once" do

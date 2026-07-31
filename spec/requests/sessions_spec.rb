@@ -28,8 +28,8 @@ RSpec.describe "Sessions", type: :request do
     end
 
     it "pre-fills the formula field by rendering the preset's plan back into notation" do
-      preset = create(:benchmark_preset, planned_weight_kg: 10, planned_work_seconds: 300,
-                                          planned_rest_seconds: 300, planned_sets: 5)
+      preset = create(:benchmark_preset, weight_kg: 10, work_seconds: 300,
+                                          rest_seconds: 300, sets_count: 5)
 
       get new_session_path(benchmark_preset_id: preset.id)
 
@@ -68,7 +68,7 @@ RSpec.describe "Sessions", type: :request do
       it "creates the session and its sets once the review is confirmed" do
         params = {
           date: "2026-07-30", exercise_id: exercise.id, session_shape_id: interval_work_shape.id,
-          planned_weight_kg: "10", planned_work_seconds: "300", planned_rest_seconds: "300", planned_sets: "3",
+          weight_kg: "10", work_seconds: "300", rest_seconds: "300", sets_count: "3",
           session_sets_attributes: {
             "0" => { set_number: "1", duration_seconds: "300", reps: "20" },
             "1" => { set_number: "2", duration_seconds: "300", reps: "19" },
@@ -105,8 +105,8 @@ RSpec.describe "Sessions", type: :request do
 
       it "suggests a matching preset on the review step without attaching it automatically" do
         preset = create(:benchmark_preset, name: "5 x 5", exercise: exercise, session_shape: interval_work_shape,
-                                            planned_weight_kg: 10, planned_work_seconds: 300,
-                                            planned_rest_seconds: 300, planned_sets: 5)
+                                            weight_kg: 10, work_seconds: 300,
+                                            rest_seconds: 300, sets_count: 5)
 
         post sessions_path, params: { session: {
           date: "2026-07-30", exercise_id: exercise.id, session_shape_id: interval_work_shape.id,
@@ -120,8 +120,8 @@ RSpec.describe "Sessions", type: :request do
 
       it "does not suggest a preset when nothing matches" do
         create(:benchmark_preset, exercise: exercise, session_shape: interval_work_shape,
-                                   planned_weight_kg: 12, planned_work_seconds: 300,
-                                   planned_rest_seconds: 300, planned_sets: 5)
+                                   weight_kg: 12, work_seconds: 300,
+                                   rest_seconds: 300, sets_count: 5)
 
         post sessions_path, params: { session: {
           date: "2026-07-30", exercise_id: exercise.id, session_shape_id: interval_work_shape.id,
@@ -133,13 +133,13 @@ RSpec.describe "Sessions", type: :request do
 
       it "attaches the suggested preset when the checkbox is checked on confirm" do
         preset = create(:benchmark_preset, exercise: exercise, session_shape: interval_work_shape,
-                                            planned_weight_kg: 10, planned_work_seconds: 300,
-                                            planned_rest_seconds: 300, planned_sets: 3)
+                                            weight_kg: 10, work_seconds: 300,
+                                            rest_seconds: 300, sets_count: 3)
 
         params = {
           date: "2026-07-30", exercise_id: exercise.id, session_shape_id: interval_work_shape.id,
           benchmark_preset_id: preset.id,
-          planned_weight_kg: "10", planned_work_seconds: "300", planned_rest_seconds: "300", planned_sets: "3",
+          weight_kg: "10", work_seconds: "300", rest_seconds: "300", sets_count: "3",
           session_sets_attributes: {
             "0" => { set_number: "1", duration_seconds: "300", reps: "20" },
             "1" => { set_number: "2", duration_seconds: "300", reps: "19" },
@@ -169,7 +169,7 @@ RSpec.describe "Sessions", type: :request do
       it "suggests a matching preset keyed on weight and target_reps" do
         create(:benchmark_preset, :fixed_reps_for_time, name: "Time to 108", exercise: exercise,
                                                           session_shape: fixed_reps_for_time_shape,
-                                                          planned_weight_kg: 10, target_reps: 108)
+                                                          weight_kg: 10, target_reps: 108)
 
         post sessions_path, params: { session: {
           date: "2026-07-30", exercise_id: exercise.id, session_shape_id: fixed_reps_for_time_shape.id,
@@ -182,7 +182,7 @@ RSpec.describe "Sessions", type: :request do
       it "creates the session and its sets once the review is confirmed" do
         params = {
           date: "2026-07-30", exercise_id: exercise.id, session_shape_id: fixed_reps_for_time_shape.id,
-          planned_weight_kg: "10", target_reps: "108",
+          weight_kg: "10", target_reps: "108",
           session_sets_attributes: {
             "0" => { set_number: "1", reps: "108", duration_seconds: "240" },
             "1" => { set_number: "2", reps: "108", duration_seconds: "235" }
@@ -231,7 +231,7 @@ RSpec.describe "Sessions", type: :request do
 
   describe "GET /sessions/:id" do
     it "shows session details and computed outputs" do
-      session = create(:session, planned_weight_kg: 10, planned_work_seconds: 300, planned_rest_seconds: 600)
+      session = create(:session, weight_kg: 10, work_seconds: 300, rest_seconds: 600)
       create(:session_set, session: session, set_number: 1, reps: 20)
 
       get session_path(session)

@@ -19,10 +19,10 @@ RSpec.describe BenchmarkPreset, type: :model do
     it { is_expected.to belong_to(:session_shape) }
 
     it "requires interval_work fields when the shape is interval_work" do
-      preset = build(:benchmark_preset, planned_work_seconds: nil)
+      preset = build(:benchmark_preset, work_seconds: nil)
 
       expect(preset).not_to be_valid
-      expect(preset.errors).to be_of_kind(:planned_work_seconds, :blank)
+      expect(preset.errors).to be_of_kind(:work_seconds, :blank)
     end
 
     it "requires target_reps when the shape is fixed_reps_for_time" do
@@ -32,8 +32,8 @@ RSpec.describe BenchmarkPreset, type: :model do
       expect(preset.errors).to be_of_kind(:target_reps, :blank)
     end
 
-    it "allows planned_rest_seconds to be 0 (a single-set all-out effort)" do
-      expect(build(:benchmark_preset, planned_rest_seconds: 0)).to be_valid
+    it "allows rest_seconds to be 0 (a single-set all-out effort)" do
+      expect(build(:benchmark_preset, rest_seconds: 0)).to be_valid
     end
   end
 end

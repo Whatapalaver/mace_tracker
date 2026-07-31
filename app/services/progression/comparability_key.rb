@@ -7,11 +7,11 @@ module Progression
 
       case session.session_shape.name
       when SessionShape::INTERVAL_WORK
-        base.merge(weight: session.planned_weight_kg, work_duration: session.planned_work_seconds)
+        base.merge(weight: session.weight_kg, work_duration: session.work_seconds)
       when SessionShape::FIXED_REPS_FOR_TIME
-        base.merge(weight: session.planned_weight_kg, target_reps: session.target_reps)
+        base.merge(weight: session.weight_kg, target_reps: session.target_reps)
       when SessionShape::EMOM
-        base.merge(weight: session.planned_weight_kg, target_reps_per_minute: session.target_reps_per_minute)
+        base.merge(weight: session.weight_kg, target_reps_per_minute: session.target_reps_per_minute)
       else
         raise UnknownShapeError, "No comparability key defined for session shape #{session.session_shape.name.inspect}"
       end
@@ -27,7 +27,7 @@ module Progression
     # used to query/group sessions by signature without needing a session instance in hand.
     def self.structural_column_for(shape_name)
       case shape_name
-      when SessionShape::INTERVAL_WORK then :planned_work_seconds
+      when SessionShape::INTERVAL_WORK then :work_seconds
       when SessionShape::FIXED_REPS_FOR_TIME then :target_reps
       when SessionShape::EMOM then :target_reps_per_minute
       else

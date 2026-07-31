@@ -16,9 +16,9 @@ module Progression
 
     def to_h
       sessions = matching_sessions
-      sessions = sessions.select { |session| session.planned_weight_kg.to_f == @weight.to_f } if @weight
+      sessions = sessions.select { |session| session.weight_kg.to_f == @weight.to_f } if @weight
 
-      sessions.group_by { |session| "#{session.planned_weight_kg}kg" }.transform_values do |group|
+      sessions.group_by { |session| "#{session.weight_kg}kg" }.transform_values do |group|
         group.each_with_object({}) do |session, series|
           value = Calculator.for(session).outputs[@output_label]
           series[session.date] = value if value

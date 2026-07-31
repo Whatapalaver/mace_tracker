@@ -8,7 +8,7 @@
     <%= Progression::IntervalFormula.render(@session) %>
   <% else %>
     <%= Progression::RepsFormula.render(count: @session.session_sets.size,
-          reps: @session.target_reps || @session.target_reps_per_minute, weight_kg: @session.planned_weight_kg) %>
+          reps: @session.target_reps || @session.target_reps_per_minute, weight_kg: @session.weight_kg) %>
   <% end %>
 </div>
 
@@ -28,10 +28,10 @@
   <%= form.hidden_field :session_shape_id %>
   <%= form.hidden_field :benchmark_preset_id %>
   <%= form.hidden_field :is_benchmark %>
-  <%= form.hidden_field :planned_weight_kg %>
-  <%= form.hidden_field :planned_work_seconds %>
-  <%= form.hidden_field :planned_rest_seconds %>
-  <%= form.hidden_field :planned_sets %>
+  <%= form.hidden_field :weight_kg %>
+  <%= form.hidden_field :work_seconds %>
+  <%= form.hidden_field :rest_seconds %>
+  <%= form.hidden_field :sets_count %>
   <%= form.hidden_field :target_reps %>
   <%= form.hidden_field :notes %>
 

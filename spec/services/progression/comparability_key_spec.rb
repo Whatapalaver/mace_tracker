@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe Progression::ComparabilityKey do
   describe ".for" do
     it "builds a key from exercise, shape, weight, and work duration for interval_work" do
-      session = create(:session, planned_weight_kg: 10, planned_work_seconds: 300)
+      session = create(:session, weight_kg: 10, work_seconds: 300)
 
       expect(described_class.for(session)).to eq(
         exercise_id: session.exercise_id,
@@ -14,7 +14,7 @@ RSpec.describe Progression::ComparabilityKey do
     end
 
     it "builds a key from exercise, shape, weight, and target_reps for fixed_reps_for_time" do
-      session = create(:session, :fixed_reps_for_time, planned_weight_kg: 8, target_reps: 108)
+      session = create(:session, :fixed_reps_for_time, weight_kg: 8, target_reps: 108)
 
       expect(described_class.for(session)).to eq(
         exercise_id: session.exercise_id,
@@ -25,7 +25,7 @@ RSpec.describe Progression::ComparabilityKey do
     end
 
     it "builds a key from exercise, shape, weight, and target_reps_per_minute for emom" do
-      session = create(:session, :emom, planned_weight_kg: 10, target_reps_per_minute: 20)
+      session = create(:session, :emom, weight_kg: 10, target_reps_per_minute: 20)
 
       expect(described_class.for(session)).to eq(
         exercise_id: session.exercise_id,
@@ -45,7 +45,7 @@ RSpec.describe Progression::ComparabilityKey do
 
   describe ".structural_for" do
     it "returns the same key as .for, without weight" do
-      session = create(:session, planned_weight_kg: 10, planned_work_seconds: 300)
+      session = create(:session, weight_kg: 10, work_seconds: 300)
 
       expect(described_class.structural_for(session)).to eq(
         exercise_id: session.exercise_id,
@@ -55,8 +55,8 @@ RSpec.describe Progression::ComparabilityKey do
     end
 
     it "matches across sessions that differ only by weight" do
-      lighter = create(:session, planned_weight_kg: 8, planned_work_seconds: 300)
-      heavier = create(:session, exercise: lighter.exercise, planned_weight_kg: 10, planned_work_seconds: 300)
+      lighter = create(:session, weight_kg: 8, work_seconds: 300)
+      heavier = create(:session, exercise: lighter.exercise, weight_kg: 10, work_seconds: 300)
 
       expect(described_class.structural_for(lighter)).to eq(described_class.structural_for(heavier))
     end
@@ -64,7 +64,7 @@ RSpec.describe Progression::ComparabilityKey do
 
   describe ".structural_column_for" do
     it "maps each shape to its structural Session column" do
-      expect(described_class.structural_column_for(SessionShape::INTERVAL_WORK)).to eq(:planned_work_seconds)
+      expect(described_class.structural_column_for(SessionShape::INTERVAL_WORK)).to eq(:work_seconds)
       expect(described_class.structural_column_for(SessionShape::FIXED_REPS_FOR_TIME)).to eq(:target_reps)
       expect(described_class.structural_column_for(SessionShape::EMOM)).to eq(:target_reps_per_minute)
     end

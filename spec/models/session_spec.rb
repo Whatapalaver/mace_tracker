@@ -18,19 +18,19 @@ RSpec.describe Session, type: :model do
     it { is_expected.to belong_to(:exercise) }
     it { is_expected.to belong_to(:session_shape) }
 
-    it "rejects a non-positive planned_weight_kg" do
-      session = build(:session, planned_weight_kg: 0)
+    it "rejects a non-positive weight_kg" do
+      session = build(:session, weight_kg: 0)
       expect(session).not_to be_valid
     end
 
     context "interval_work" do
-      it "requires planned_weight_kg, planned_work_seconds, planned_rest_seconds, and planned_sets" do
-        session = build(:session, planned_weight_kg: nil, planned_work_seconds: nil,
-                                   planned_rest_seconds: nil, planned_sets: nil)
+      it "requires weight_kg, work_seconds, rest_seconds, and sets_count" do
+        session = build(:session, weight_kg: nil, work_seconds: nil,
+                                   rest_seconds: nil, sets_count: nil)
 
         expect(session).not_to be_valid
         expect(session.errors.attribute_names).to contain_exactly(
-          :planned_weight_kg, :planned_work_seconds, :planned_rest_seconds, :planned_sets
+          :weight_kg, :work_seconds, :rest_seconds, :sets_count
         )
       end
 
@@ -39,43 +39,43 @@ RSpec.describe Session, type: :model do
         expect(session).to be_valid
       end
 
-      it "allows planned_rest_seconds to be 0 (a single-set all-out effort)" do
-        session = build(:session, planned_rest_seconds: 0)
+      it "allows rest_seconds to be 0 (a single-set all-out effort)" do
+        session = build(:session, rest_seconds: 0)
         expect(session).to be_valid
       end
 
-      it "rejects a negative planned_rest_seconds" do
-        session = build(:session, planned_rest_seconds: -1)
+      it "rejects a negative rest_seconds" do
+        session = build(:session, rest_seconds: -1)
         expect(session).not_to be_valid
       end
 
-      it "rejects a non-positive planned_work_seconds" do
-        session = build(:session, planned_work_seconds: 0)
+      it "rejects a non-positive work_seconds" do
+        session = build(:session, work_seconds: 0)
         expect(session).not_to be_valid
       end
     end
 
     context "fixed_reps_for_time" do
-      it "requires planned_weight_kg and target_reps" do
-        session = build(:session, :fixed_reps_for_time, planned_weight_kg: nil, target_reps: nil)
+      it "requires weight_kg and target_reps" do
+        session = build(:session, :fixed_reps_for_time, weight_kg: nil, target_reps: nil)
 
         expect(session).not_to be_valid
-        expect(session.errors.attribute_names).to contain_exactly(:planned_weight_kg, :target_reps)
+        expect(session.errors.attribute_names).to contain_exactly(:weight_kg, :target_reps)
       end
 
       it "does not require interval-specific fields" do
         session = build(:session, :fixed_reps_for_time,
-                         planned_work_seconds: nil, planned_rest_seconds: nil, planned_sets: nil)
+                         work_seconds: nil, rest_seconds: nil, sets_count: nil)
         expect(session).to be_valid
       end
     end
 
     context "emom" do
-      it "requires planned_weight_kg and target_reps_per_minute" do
-        session = build(:session, :emom, planned_weight_kg: nil, target_reps_per_minute: nil)
+      it "requires weight_kg and target_reps_per_minute" do
+        session = build(:session, :emom, weight_kg: nil, target_reps_per_minute: nil)
 
         expect(session).not_to be_valid
-        expect(session.errors.attribute_names).to contain_exactly(:planned_weight_kg, :target_reps_per_minute)
+        expect(session.errors.attribute_names).to contain_exactly(:weight_kg, :target_reps_per_minute)
       end
     end
   end
@@ -101,8 +101,8 @@ RSpec.describe Session, type: :model do
   end
 
   describe "#structural_value" do
-    it "returns planned_work_seconds for interval_work" do
-      session = build(:session, planned_work_seconds: 300)
+    it "returns work_seconds for interval_work" do
+      session = build(:session, work_seconds: 300)
       expect(session.structural_value).to eq(300)
     end
 

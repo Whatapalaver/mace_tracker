@@ -5,7 +5,7 @@ RSpec.describe Progression::LifetimeStats do
   let(:kettlebell) { create(:exercise, name: "Kettlebell Swing") }
 
   def logged_set(exercise:, date:, reps:, weight:)
-    session = create(:session, exercise: exercise, date: date, planned_weight_kg: weight)
+    session = create(:session, exercise: exercise, date: date, weight_kg: weight)
     create(:session_set, session: session, set_number: 1, reps: reps, weight_kg: nil)
   end
 
@@ -56,7 +56,7 @@ RSpec.describe Progression::LifetimeStats do
     end
 
     it "accumulates multiple sets on the same date into one running total" do
-      session = create(:session, exercise: mace, date: "2026-07-01", planned_weight_kg: 10)
+      session = create(:session, exercise: mace, date: "2026-07-01", weight_kg: 10)
       create(:session_set, session: session, set_number: 1, reps: 20)
       create(:session_set, session: session, set_number: 2, reps: 10)
 

@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe Progression::BaseCalculator do
   subject(:calculator) { described_class.new(session) }
 
-  let(:session) { create(:session, planned_weight_kg: 10) }
+  let(:session) { create(:session, weight_kg: 10) }
 
   describe "#total_volume" do
     it "sums reps times effective weight across all sets" do

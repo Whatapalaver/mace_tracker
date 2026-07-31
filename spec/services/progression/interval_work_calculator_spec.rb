@@ -12,10 +12,10 @@ RSpec.describe Progression::IntervalWorkCalculator do
   end
 
   let(:session) do
-    create(:session, planned_weight_kg: 10, planned_work_seconds: 300, planned_rest_seconds: 600, planned_sets: 5)
+    create(:session, weight_kg: 10, work_seconds: 300, rest_seconds: 600, sets_count: 5)
   end
 
-  context "with sets relying on the session's planned durations" do
+  context "with sets relying on the session's durations" do
     before do
       create(:session_set, session: session, set_number: 1, reps: 20, duration_seconds: nil, rest_seconds_actual: nil)
       create(:session_set, session: session, set_number: 2, reps: 22, duration_seconds: nil, rest_seconds_actual: nil)
@@ -38,11 +38,11 @@ RSpec.describe Progression::IntervalWorkCalculator do
       expect(calculator.total_session_output).to eq((20 + 22 + 18) * 10)
     end
 
-    it "computes output per total time as kg/min using planned work+rest time" do
+    it "computes output per total time as kg/min using the session's work+rest time" do
       expect(calculator.output_per_total_time).to eq(600 * 60.0 / 2700.0)
     end
 
-    it "computes output per working time as kg/min using planned work time only" do
+    it "computes output per working time as kg/min using the session's work time only" do
       expect(calculator.output_per_working_time).to eq(600 * 60.0 / 900.0)
     end
   end
@@ -52,7 +52,7 @@ RSpec.describe Progression::IntervalWorkCalculator do
       create(:session_set, session: session, set_number: 1, reps: 20, duration_seconds: 280, rest_seconds_actual: 650)
     end
 
-    it "uses the actual measured values instead of the planned ones" do
+    it "uses the actual measured values instead of the session's defaults" do
       expect(calculator.pace_per_set).to contain_exactly(20 * 60.0 / 280)
       expect(calculator.output_per_working_time).to eq(200 * 60.0 / 280.0)
       expect(calculator.output_per_total_time).to eq(200 * 60.0 / 930.0)

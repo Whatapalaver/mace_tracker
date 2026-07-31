@@ -54,20 +54,20 @@ class SessionsController < ApplicationController
     case @session.session_shape.name
     when SessionShape::INTERVAL_WORK
       @session.assign_attributes(
-        planned_weight_kg: result.planned_weight_kg,
-        planned_work_seconds: result.planned_work_seconds,
-        planned_rest_seconds: result.planned_rest_seconds,
-        planned_sets: result.planned_sets
+        weight_kg: result.weight_kg,
+        work_seconds: result.work_seconds,
+        rest_seconds: result.rest_seconds,
+        sets_count: result.sets_count
       )
       result.work_segments.each_with_index do |segment, index|
         @session.session_sets.build(set_number: index + 1, duration_seconds: segment[:duration_seconds])
       end
     when SessionShape::FIXED_REPS_FOR_TIME
-      @session.planned_weight_kg = result.weight_kg
+      @session.weight_kg = result.weight_kg
       @session.target_reps = result.reps
       result.count.times { |index| @session.session_sets.build(set_number: index + 1, reps: result.reps) }
     when SessionShape::EMOM
-      @session.planned_weight_kg = result.weight_kg
+      @session.weight_kg = result.weight_kg
       @session.target_reps_per_minute = result.reps
       result.count.times { |index| @session.session_sets.build(set_number: index + 1, reps: result.reps) }
     end
@@ -78,12 +78,12 @@ class SessionsController < ApplicationController
   # (a coincidental match isn't necessarily an intentional benchmark attempt).
   def matching_benchmark_preset
     scope = BenchmarkPreset.where(exercise_id: @session.exercise_id, session_shape_id: @session.session_shape_id,
-                                   planned_weight_kg: @session.planned_weight_kg)
+                                   weight_kg: @session.weight_kg)
     case @session.session_shape.name
     when SessionShape::INTERVAL_WORK
-      scope = scope.where(planned_work_seconds: @session.planned_work_seconds,
-                           planned_rest_seconds: @session.planned_rest_seconds,
-                           planned_sets: @session.planned_sets)
+      scope = scope.where(work_seconds: @session.work_seconds,
+                           rest_seconds: @session.rest_seconds,
+                           sets_count: @session.sets_count)
     when SessionShape::FIXED_REPS_FOR_TIME
       scope = scope.where(target_reps: @session.target_reps)
     end
@@ -121,16 +121,16 @@ class SessionsController < ApplicationController
     when SessionShape::INTERVAL_WORK
       Progression::IntervalFormula.render(preset)
     when SessionShape::FIXED_REPS_FOR_TIME
-      Progression::RepsFormula.render(count: 1, reps: preset.target_reps, weight_kg: preset.planned_weight_kg)
+      Progression::RepsFormula.render(count: 1, reps: preset.target_reps, weight_kg: preset.weight_kg)
     when SessionShape::EMOM
-      Progression::RepsFormula.render(count: 1, reps: preset.target_reps_per_minute, weight_kg: preset.planned_weight_kg)
+      Progression::RepsFormula.render(count: 1, reps: preset.target_reps_per_minute, weight_kg: preset.weight_kg)
     end
   end
 
   def session_params
     params.expect(session: [ :date, :exercise_id, :session_shape_id, :benchmark_preset_id, :is_benchmark,
-                             :formula, :planned_weight_kg, :planned_work_seconds, :planned_rest_seconds,
-                             :planned_sets, :target_reps, :target_reps_per_minute, :notes,
+                             :formula, :weight_kg, :work_seconds, :rest_seconds,
+                             :sets_count, :target_reps, :target_reps_per_minute, :notes,
                              session_sets_attributes: [ [ :set_number, :duration_seconds, :reps ] ] ])
   end
 end

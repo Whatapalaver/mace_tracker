@@ -13,7 +13,7 @@
     <%= Progression::IntervalFormula.render(@session) %>
   <% else %>
     <%= Progression::RepsFormula.render(count: @session.session_sets.size,
-          reps: @session.target_reps || @session.target_reps_per_minute, weight_kg: @session.planned_weight_kg) %>
+          reps: @session.target_reps || @session.target_reps_per_minute, weight_kg: @session.weight_kg) %>
   <% end %>
 </div>
 

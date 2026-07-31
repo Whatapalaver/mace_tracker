@@ -6,7 +6,7 @@ RSpec.describe Progression::SessionFormula do
       result = described_class.parse("5(5mw+5mr)@10kg", SessionShape::INTERVAL_WORK)
 
       expect(result).to be_a(Progression::IntervalFormula::Result)
-      expect(result.planned_sets).to eq(5)
+      expect(result.sets_count).to eq(5)
     end
 
     it "dispatches fixed_reps_for_time to RepsFormula" do

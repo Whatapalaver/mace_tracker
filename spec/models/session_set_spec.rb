@@ -47,14 +47,14 @@ RSpec.describe SessionSet, type: :model do
 
   describe "#effective_weight_kg" do
     it "returns its own weight_kg override when present" do
-      session = create(:session, planned_weight_kg: 10.0)
+      session = create(:session, weight_kg: 10.0)
       session_set = build(:session_set, session: session, weight_kg: 12.5)
 
       expect(session_set.effective_weight_kg).to eq(12.5)
     end
 
-    it "falls back to the session's planned_weight_kg when not overridden" do
-      session = create(:session, planned_weight_kg: 10.0)
+    it "falls back to the session's weight_kg when not overridden" do
+      session = create(:session, weight_kg: 10.0)
       session_set = build(:session_set, session: session, weight_kg: nil)
 
       expect(session_set.effective_weight_kg).to eq(10.0)

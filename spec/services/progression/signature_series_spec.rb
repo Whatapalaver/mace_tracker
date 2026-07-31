@@ -14,7 +14,7 @@ RSpec.describe Progression::SignatureSeries do
 
   def session_with_set(date:, reps:, weight:, work_seconds: 300, is_benchmark: false)
     session = create(:session, exercise: exercise, session_shape: interval_work_shape, date: date,
-                                planned_weight_kg: weight, planned_work_seconds: work_seconds,
+                                weight_kg: weight, work_seconds: work_seconds,
                                 is_benchmark: is_benchmark)
     create(:session_set, session: session, set_number: 1, reps: reps, duration_seconds: work_seconds)
     session

@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe SessionOutputsComponent, type: :component do
   it "renders each label/value pair from the calculator's display_outputs" do
-    session = create(:session, planned_weight_kg: 10, planned_work_seconds: 300, planned_rest_seconds: 600)
+    session = create(:session, weight_kg: 10, work_seconds: 300, rest_seconds: 600)
     create(:session_set, session: session, set_number: 1, reps: 20)
     calculator = Progression::Calculator.for(session)
 

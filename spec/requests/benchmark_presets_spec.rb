@@ -30,7 +30,7 @@ RSpec.describe "BenchmarkPresets", type: :request do
     it "creates a preset and redirects to the index" do
       params = {
         name: "Monthly 3x5", exercise_id: exercise.id, session_shape_id: shape.id,
-        planned_weight_kg: "10.0", planned_work_seconds: "300", planned_rest_seconds: "600", planned_sets: "3"
+        weight_kg: "10.0", work_seconds: "300", rest_seconds: "600", sets_count: "3"
       }
 
       expect {

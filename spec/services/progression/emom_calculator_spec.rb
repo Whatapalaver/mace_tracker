@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe Progression::EmomCalculator do
   subject(:calculator) { described_class.new(session) }
 
-  let(:session) { create(:session, :emom, planned_weight_kg: 10, target_reps_per_minute: 20) }
+  let(:session) { create(:session, :emom, weight_kg: 10, target_reps_per_minute: 20) }
 
   describe ".output_labels" do
     it "lists the single output key" do
