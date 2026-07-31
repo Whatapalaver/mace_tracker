@@ -21,9 +21,9 @@ RSpec.describe Progression::FixedRepsForTimeCalculator do
       expect(calculator.avg_time).to eq(240)
     end
 
-    it "computes best/avg pace as reps / duration" do
-      expect(calculator.best_pace).to eq(100 / 240.0)
-      expect(calculator.avg_pace).to eq(100 / 240.0)
+    it "computes best/avg pace as reps per minute (reps / duration * 60)" do
+      expect(calculator.best_pace).to eq(100 * 60.0 / 240)
+      expect(calculator.avg_pace).to eq(100 * 60.0 / 240)
     end
   end
 
@@ -43,11 +43,11 @@ RSpec.describe Progression::FixedRepsForTimeCalculator do
     end
 
     it "computes best_pace as the max reps/duration across attempts" do
-      expect(calculator.best_pace).to eq(100 / 220.0)
+      expect(calculator.best_pace).to eq(100 * 60.0 / 220)
     end
 
     it "computes avg_pace as the mean of per-attempt paces" do
-      expect(calculator.avg_pace).to eq((100 / 240.0 + 100 / 220.0 + 100 / 260.0) / 3)
+      expect(calculator.avg_pace).to eq((100 * 60.0 / 240 + 100 * 60.0 / 220 + 100 * 60.0 / 260) / 3)
     end
   end
 
@@ -77,7 +77,7 @@ RSpec.describe Progression::FixedRepsForTimeCalculator do
       create(:session_set, session: session, set_number: 1, reps: 100, duration_seconds: 240)
 
       expect(calculator.outputs).to eq(
-        "Best time" => 240, "Avg time" => 240, "Best pace" => 100 / 240.0, "Avg pace" => 100 / 240.0
+        "Best time" => 240, "Avg time" => 240.0, "Best pace" => 100 * 60.0 / 240, "Avg pace" => 100 * 60.0 / 240
       )
     end
   end
@@ -89,13 +89,13 @@ RSpec.describe Progression::FixedRepsForTimeCalculator do
       )
     end
 
-    it "rounds pace to 3 decimals and time to whole seconds" do
+    it "rounds pace to 1 decimal with reps/min and time to whole seconds" do
       create(:session_set, session: session, set_number: 1, reps: 100, duration_seconds: 240)
 
       outputs = calculator.display_outputs
 
       expect(outputs["Best time"]).to eq(240)
-      expect(outputs["Best pace"]).to eq((100 / 240.0).round(3))
+      expect(outputs["Best pace"]).to eq("#{(100 * 60.0 / 240).round(1)} reps/min")
     end
   end
 end

@@ -47,17 +47,25 @@ module Progression
       }
     end
 
+    PACE_LABELS = [ "Best pace", "Avg pace" ].freeze
+
     private
 
     def precision_for(label)
+      return 1 if PACE_LABELS.include?(label)
+
       label == "Total output" ? 0 : super
+    end
+
+    def unit_for(label)
+      "reps/min" if PACE_LABELS.include?(label)
     end
 
     def set_pace(set)
       duration = set.effective_duration_seconds
       return nil if set.reps.nil? || duration.nil? || duration.zero?
 
-      set.reps / duration.to_f
+      set.reps * 60.0 / duration
     end
 
     def total_time_seconds

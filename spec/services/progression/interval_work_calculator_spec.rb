@@ -22,16 +22,16 @@ RSpec.describe Progression::IntervalWorkCalculator do
       create(:session_set, session: session, set_number: 3, reps: 18, duration_seconds: nil, rest_seconds_actual: nil)
     end
 
-    it "computes pace per set as reps / effective duration" do
-      expect(calculator.pace_per_set).to contain_exactly(20 / 300.0, 22 / 300.0, 18 / 300.0)
+    it "computes pace per set as reps per minute (reps / effective duration * 60)" do
+      expect(calculator.pace_per_set).to contain_exactly(20 * 60.0 / 300, 22 * 60.0 / 300, 18 * 60.0 / 300)
     end
 
     it "computes best pace as the max of the per-set paces" do
-      expect(calculator.best_pace).to eq(22 / 300.0)
+      expect(calculator.best_pace).to eq(22 * 60.0 / 300)
     end
 
     it "computes avg pace as the mean of the per-set paces" do
-      expect(calculator.avg_pace).to eq((20 / 300.0 + 22 / 300.0 + 18 / 300.0) / 3)
+      expect(calculator.avg_pace).to eq((20 * 60.0 / 300 + 22 * 60.0 / 300 + 18 * 60.0 / 300) / 3)
     end
 
     it "computes total session output as sum(reps * weight)" do
@@ -53,7 +53,7 @@ RSpec.describe Progression::IntervalWorkCalculator do
     end
 
     it "uses the actual measured values instead of the planned ones" do
-      expect(calculator.pace_per_set).to contain_exactly(20 / 280.0)
+      expect(calculator.pace_per_set).to contain_exactly(20 * 60.0 / 280)
       expect(calculator.output_per_working_time).to eq(200 / 280.0)
       expect(calculator.output_per_total_time).to eq(200 / 930.0)
     end
@@ -84,7 +84,7 @@ RSpec.describe Progression::IntervalWorkCalculator do
     it "returns raw, unformatted values" do
       create(:session_set, session: session, set_number: 1, reps: 20, duration_seconds: nil, rest_seconds_actual: nil)
 
-      expect(calculator.outputs["Best pace"]).to eq(20 / 300.0)
+      expect(calculator.outputs["Best pace"]).to eq(20 * 60.0 / 300)
       expect(calculator.outputs["Total output"]).to eq(200)
     end
   end
@@ -100,12 +100,12 @@ RSpec.describe Progression::IntervalWorkCalculator do
       )
     end
 
-    it "rounds computed metrics" do
+    it "rounds pace to 1 decimal and appends reps/min" do
       create(:session_set, session: session, set_number: 1, reps: 20, duration_seconds: nil, rest_seconds_actual: nil)
 
       outputs = calculator.display_outputs
 
-      expect(outputs["Best pace"]).to eq((20 / 300.0).round(3))
+      expect(outputs["Best pace"]).to eq("#{(20 * 60.0 / 300).round(1)} reps/min")
       expect(outputs["Total output"]).to eq(200)
     end
   end

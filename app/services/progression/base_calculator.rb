@@ -17,7 +17,11 @@ module Progression
     end
 
     def display_outputs
-      outputs.to_h { |label, value| [ label, format_metric(value, precision: precision_for(label)) ] }
+      outputs.to_h do |label, value|
+        formatted = format_metric(value, precision: precision_for(label))
+        formatted = "#{formatted} #{unit_for(label)}" if unit_for(label) && formatted != "—"
+        [ label, formatted ]
+      end
     end
 
     private
@@ -29,6 +33,11 @@ module Progression
     # Subclasses override to give specific outputs (e.g. whole-number totals) less precision.
     def precision_for(_label)
       3
+    end
+
+    # Subclasses override to append a unit suffix (e.g. "reps/min") to specific outputs.
+    def unit_for(_label)
+      nil
     end
 
     def format_metric(value, precision: 3)

@@ -27,8 +27,8 @@ RSpec.describe Progression::SignatureSeries do
     result = series_for
 
     expect(result.keys).to contain_exactly("8.0kg", "10.0kg")
-    expect(result["8.0kg"]).to eq(light.date => 20 / 300.0)
-    expect(result["10.0kg"]).to eq(heavy.date => 25 / 300.0)
+    expect(result["8.0kg"]).to eq(light.date => 20 * 60.0 / 300)
+    expect(result["10.0kg"]).to eq(heavy.date => 25 * 60.0 / 300)
   end
 
   it "restricts to a single series when weight is locked" do
@@ -38,7 +38,7 @@ RSpec.describe Progression::SignatureSeries do
     result = series_for(weight: "10")
 
     expect(result.keys).to contain_exactly("10.0kg")
-    expect(result["10.0kg"]).to eq(heavy.date => 25 / 300.0)
+    expect(result["10.0kg"]).to eq(heavy.date => 25 * 60.0 / 300)
   end
 
   it "excludes sessions with a different structural value" do
@@ -47,7 +47,7 @@ RSpec.describe Progression::SignatureSeries do
 
     result = series_for
 
-    expect(result["10.0kg"]).to eq(matching.date => 25 / 300.0)
+    expect(result["10.0kg"]).to eq(matching.date => 25 * 60.0 / 300)
   end
 
   it "uses the requested output label" do
