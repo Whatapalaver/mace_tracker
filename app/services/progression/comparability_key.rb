@@ -8,9 +8,19 @@ module Progression
       case session.session_shape.name
       when SessionShape::INTERVAL_WORK
         base.merge(weight: session.planned_weight_kg, work_duration: session.planned_work_seconds)
+      when SessionShape::FIXED_REPS_FOR_TIME
+        base.merge(weight: session.planned_weight_kg, target_reps: session.target_reps)
+      when SessionShape::EMOM
+        base.merge(weight: session.planned_weight_kg, target_reps_per_minute: session.target_reps_per_minute)
       else
         raise UnknownShapeError, "No comparability key defined for session shape #{session.session_shape.name.inspect}"
       end
+    end
+
+    # Same key, minus weight — the "signature" a formula describes structurally, independent
+    # of which weight it was performed at (weight is a separate, optional filter on top).
+    def self.structural_for(session)
+      self.for(session).except(:weight)
     end
   end
 end
