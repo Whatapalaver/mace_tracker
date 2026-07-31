@@ -27,14 +27,14 @@ module Progression
       total = total_time_seconds
       return nil if total.nil? || total.zero?
 
-      total_volume.to_f / total.to_f
+      total_volume.to_f * 60.0 / total.to_f
     end
 
     def output_per_working_time
       total = working_time_seconds
       return nil if total.nil? || total.zero?
 
-      total_volume.to_f / total.to_f
+      total_volume.to_f * 60.0 / total.to_f
     end
 
     def outputs
@@ -48,17 +48,22 @@ module Progression
     end
 
     PACE_LABELS = [ "Best pace", "Avg pace" ].freeze
+    OUTPUT_RATE_LABELS = [ "Output / total time", "Output / working time" ].freeze
 
     private
 
     def precision_for(label)
-      return 1 if PACE_LABELS.include?(label)
+      return 1 if PACE_LABELS.include?(label) || OUTPUT_RATE_LABELS.include?(label)
 
       label == "Total output" ? 0 : super
     end
 
     def unit_for(label)
-      "reps/min" if PACE_LABELS.include?(label)
+      if PACE_LABELS.include?(label)
+        "reps/min"
+      elsif OUTPUT_RATE_LABELS.include?(label)
+        "kg/min"
+      end
     end
 
     def set_pace(set)

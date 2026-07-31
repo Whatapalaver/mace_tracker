@@ -54,7 +54,14 @@
 <% end %>
 
 <% if @series %>
-  <% output_label_with_unit = @output_label.match?(/pace/i) ? "#{@output_label} (reps/min)" : @output_label %>
+  <% output_label_with_unit =
+       if @output_label.match?(/pace/i)
+         "#{@output_label} (reps/min)"
+       elsif @output_label.match?(%r{output / \w+ time}i)
+         "#{@output_label} (kg/min)"
+       else
+         @output_label
+       end %>
   <section class="mb-6 rounded-lg border border-border bg-surface p-4 text-sm">
     <h2 class="mb-2 text-xs font-semibold tracking-widest text-muted uppercase"><%= output_label_with_unit %></h2>
     <% if @series.values.all?(&:empty?) %>
