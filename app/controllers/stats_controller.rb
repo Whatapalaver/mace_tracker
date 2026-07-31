@@ -38,23 +38,24 @@ class StatsController < ApplicationController
     values.map { |value| { value: value, label: signature_label(value) } }
   end
 
+  # Weight-agnostic by design — the signature groups sessions across weight changes, so its
+  # label must not bake in one arbitrary session's weight (that's what the separate Weight
+  # filter is for).
   def signature_label(value)
-    representative = Session.where(exercise_id: @exercise.id, session_shape_id: @shape.id,
-                                    structural_column => value).first
     case @shape.name
     when SessionShape::INTERVAL_WORK
-      Progression::IntervalFormula.render(representative)
+      representative = Session.where(exercise_id: @exercise.id, session_shape_id: @shape.id,
+                                      structural_column => value).first
+      Progression::IntervalFormula.render_without_weight(representative)
     when SessionShape::FIXED_REPS_FOR_TIME
-      Progression::RepsFormula.render(count: 1, reps: representative.target_reps,
-                                       weight_kg: representative.planned_weight_kg)
+      "#{value} reps"
     when SessionShape::EMOM
-      Progression::RepsFormula.render(count: 1, reps: representative.target_reps_per_minute,
-                                       weight_kg: representative.planned_weight_kg)
+      "#{value} reps/min"
     end
   end
 
   def distinct_weights
     Session.where(exercise_id: @exercise.id, session_shape_id: @shape.id, structural_column => @structural_value)
-           .distinct.pluck(:planned_weight_kg).compact.sort
+           .distinct.pluck(:weight_kg).compact.sort
   end
 end

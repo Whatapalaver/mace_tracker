@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe "Stats", type: :request do
   describe "GET /stats" do
     it "shows lifetime totals across all exercises" do
-      session = create(:session, planned_weight_kg: 10)
+      session = create(:session, weight_kg: 10)
       create(:session_set, session: session, set_number: 1, reps: 20)
 
       get stats_path
@@ -16,9 +16,9 @@ RSpec.describe "Stats", type: :request do
     it "filters totals to a single exercise when exercise_id is given" do
       mace = create(:exercise, name: "Mace 360")
       kettlebell = create(:exercise, name: "Kettlebell Swing")
-      mace_session = create(:session, exercise: mace, planned_weight_kg: 10)
+      mace_session = create(:session, exercise: mace, weight_kg: 10)
       create(:session_set, session: mace_session, set_number: 1, reps: 20)
-      kettlebell_session = create(:session, exercise: kettlebell, planned_weight_kg: 16)
+      kettlebell_session = create(:session, exercise: kettlebell, weight_kg: 16)
       create(:session_set, session: kettlebell_session, set_number: 1, reps: 15)
 
       get stats_path(exercise_id: mace.id)
@@ -47,23 +47,25 @@ RSpec.describe "Stats", type: :request do
       expect(response.body).to include("Choose a shape")
     end
 
-    it "lists distinct signatures for the chosen exercise and shape" do
+    it "lists distinct signatures for the chosen exercise and shape, without baking in a weight" do
       exercise = create(:exercise)
       shape = create(:session_shape, :interval_work)
-      create(:session, exercise: exercise, session_shape: shape, planned_weight_kg: 10, planned_work_seconds: 300)
-      create(:session, exercise: exercise, session_shape: shape, planned_weight_kg: 12, planned_work_seconds: 180)
+      create(:session, exercise: exercise, session_shape: shape, weight_kg: 10, work_seconds: 300)
+      create(:session, exercise: exercise, session_shape: shape, weight_kg: 12, work_seconds: 180)
 
       get stats_path(exercise_id: exercise.id, shape: SessionShape::INTERVAL_WORK)
 
-      expect(response.body).to include("5(5mw+10mr)@10kg")
-      expect(response.body).to include("5(3mw+10mr)@12kg")
+      expect(response.body).to include("5(5mw+10mr)")
+      expect(response.body).to include("5(3mw+10mr)")
+      expect(response.body).not_to include("5(5mw+10mr)@10kg")
+      expect(response.body).not_to include("5(3mw+10mr)@12kg")
     end
 
     it "charts the requested output across sessions sharing a signature" do
       exercise = create(:exercise)
       shape = create(:session_shape, :interval_work)
       session = create(:session, exercise: exercise, session_shape: shape,
-                                  planned_weight_kg: 10, planned_work_seconds: 300, date: "2026-07-01")
+                                  weight_kg: 10, work_seconds: 300, date: "2026-07-01")
       create(:session_set, session: session, set_number: 1, reps: 20, duration_seconds: 300)
 
       get stats_path(exercise_id: exercise.id, shape: SessionShape::INTERVAL_WORK, structural_value: 300)
@@ -76,7 +78,7 @@ RSpec.describe "Stats", type: :request do
       exercise = create(:exercise)
       shape = create(:session_shape, :interval_work)
       session = create(:session, exercise: exercise, session_shape: shape,
-                                  planned_weight_kg: 10, planned_work_seconds: 300)
+                                  weight_kg: 10, work_seconds: 300)
       create(:session_set, session: session, set_number: 1, reps: 20, duration_seconds: 300)
 
       get stats_path(exercise_id: exercise.id, shape: SessionShape::INTERVAL_WORK,
@@ -89,10 +91,10 @@ RSpec.describe "Stats", type: :request do
       exercise = create(:exercise)
       shape = create(:session_shape, :interval_work)
       light = create(:session, exercise: exercise, session_shape: shape,
-                                planned_weight_kg: 8, planned_work_seconds: 300, date: "2026-07-01")
+                                weight_kg: 8, work_seconds: 300, date: "2026-07-01")
       create(:session_set, session: light, set_number: 1, reps: 20, duration_seconds: 300)
       heavy = create(:session, exercise: exercise, session_shape: shape,
-                                planned_weight_kg: 10, planned_work_seconds: 300, date: "2026-07-08")
+                                weight_kg: 10, work_seconds: 300, date: "2026-07-08")
       create(:session_set, session: heavy, set_number: 1, reps: 25, duration_seconds: 300)
 
       get stats_path(exercise_id: exercise.id, shape: SessionShape::INTERVAL_WORK, structural_value: 300)
