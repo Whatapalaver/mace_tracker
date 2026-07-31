@@ -27,6 +27,20 @@
 
     <%= form.hidden_field :benchmark_preset_id %>
 
+    <% if @benchmark_presets.any? %>
+      <div>
+        <%= label_tag :preset_picker, "Start from a saved preset", class: "mb-1 block text-sm font-medium" %>
+        <%= select_tag :preset_picker,
+              options_for_select(
+                @benchmark_presets.map { |preset| [ "#{preset.name} (#{preset.exercise.name})", preset.id ] },
+                @session.benchmark_preset_id
+              ),
+              include_blank: "None",
+              onchange: "if (this.value) { window.location = #{new_session_path.to_json} + '?benchmark_preset_id=' + this.value }",
+              class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
+      </div>
+    <% end %>
+
     <div>
       <%= form.label :exercise_id, "Exercise", class: "mb-1 block text-sm font-medium" %>
       <%= form.collection_select :exercise_id, @exercises, :id, :name, {}, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>

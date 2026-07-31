@@ -33,6 +33,15 @@
   <%= form.hidden_field :target_reps %>
   <%= form.hidden_field :notes %>
 
+  <% if @matching_preset %>
+    <div class="rounded-md bg-blue-50 px-3 py-2 text-sm text-blue-800">
+      <label class="flex items-center gap-2">
+        <%= check_box_tag "session[benchmark_preset_id]", @matching_preset.id, false %>
+        Matches preset "<%= @matching_preset.name %>" — mark as benchmark?
+      </label>
+    </div>
+  <% end %>
+
   <fieldset class="space-y-3">
     <legend class="mb-1 text-sm font-medium">Sets</legend>
     <%= form.fields_for :session_sets do |set_form| %>

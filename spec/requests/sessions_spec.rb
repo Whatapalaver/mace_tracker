@@ -26,6 +26,24 @@ RSpec.describe "Sessions", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Starting from benchmark preset: Monthly 3x5")
     end
+
+    it "pre-fills the formula field by rendering the preset's plan back into notation" do
+      preset = create(:benchmark_preset, planned_weight_kg: 10, planned_work_seconds: 300,
+                                          planned_rest_seconds: 300, planned_sets: 5)
+
+      get new_session_path(benchmark_preset_id: preset.id)
+
+      expect(response.body).to include("5(5mw+5mr)@10kg")
+    end
+
+    it "lists existing presets in a picker" do
+      create(:benchmark_preset, name: "Monthly 3x5")
+
+      get new_session_path
+
+      expect(response.body).to include("Start from a saved preset")
+      expect(response.body).to include("Monthly 3x5")
+    end
   end
 
   describe "POST /sessions" do
@@ -84,6 +102,57 @@ RSpec.describe "Sessions", type: :request do
 
         expect(response).to have_http_status(:unprocessable_content)
       end
+
+      it "suggests a matching preset on the review step without attaching it automatically" do
+        preset = create(:benchmark_preset, name: "5 x 5", exercise: exercise, session_shape: interval_work_shape,
+                                            planned_weight_kg: 10, planned_work_seconds: 300,
+                                            planned_rest_seconds: 300, planned_sets: 5)
+
+        post sessions_path, params: { session: {
+          date: "2026-07-30", exercise_id: exercise.id, session_shape_id: interval_work_shape.id,
+          formula: "5(5mw+5mr)@10kg"
+        } }
+
+        expect(response.body).to include("Matches preset")
+        expect(response.body).to include("5 x 5")
+        expect(response.body).to include(%(name="session[benchmark_preset_id]" id="session_benchmark_preset_id" value="#{preset.id}"))
+      end
+
+      it "does not suggest a preset when nothing matches" do
+        create(:benchmark_preset, exercise: exercise, session_shape: interval_work_shape,
+                                   planned_weight_kg: 12, planned_work_seconds: 300,
+                                   planned_rest_seconds: 300, planned_sets: 5)
+
+        post sessions_path, params: { session: {
+          date: "2026-07-30", exercise_id: exercise.id, session_shape_id: interval_work_shape.id,
+          formula: "5(5mw+5mr)@10kg"
+        } }
+
+        expect(response.body).not_to include("Matches preset")
+      end
+
+      it "attaches the suggested preset when the checkbox is checked on confirm" do
+        preset = create(:benchmark_preset, exercise: exercise, session_shape: interval_work_shape,
+                                            planned_weight_kg: 10, planned_work_seconds: 300,
+                                            planned_rest_seconds: 300, planned_sets: 3)
+
+        params = {
+          date: "2026-07-30", exercise_id: exercise.id, session_shape_id: interval_work_shape.id,
+          benchmark_preset_id: preset.id,
+          planned_weight_kg: "10", planned_work_seconds: "300", planned_rest_seconds: "300", planned_sets: "3",
+          session_sets_attributes: {
+            "0" => { set_number: "1", duration_seconds: "300", reps: "20" },
+            "1" => { set_number: "2", duration_seconds: "300", reps: "19" },
+            "2" => { set_number: "3", duration_seconds: "300", reps: "18" }
+          }
+        }
+
+        post sessions_path, params: { session: params }
+
+        session = Session.last
+        expect(session.benchmark_preset).to eq(preset)
+        expect(session.is_benchmark).to eq(true)
+      end
     end
 
     context "fixed_reps_for_time" do
@@ -95,6 +164,19 @@ RSpec.describe "Sessions", type: :request do
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include('value="108"')
+      end
+
+      it "suggests a matching preset keyed on weight and target_reps" do
+        create(:benchmark_preset, :fixed_reps_for_time, name: "Time to 108", exercise: exercise,
+                                                          session_shape: fixed_reps_for_time_shape,
+                                                          planned_weight_kg: 10, target_reps: 108)
+
+        post sessions_path, params: { session: {
+          date: "2026-07-30", exercise_id: exercise.id, session_shape_id: fixed_reps_for_time_shape.id,
+          formula: "5(108@10kg)"
+        } }
+
+        expect(response.body).to include("Matches preset", "Time to 108")
       end
 
       it "creates the session and its sets once the review is confirmed" do

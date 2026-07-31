@@ -6,6 +6,7 @@ class SessionsController < ApplicationController
     prefill_from_benchmark_preset
     @exercises = Exercise.order(:name)
     @session_shapes = session_shapes
+    @benchmark_presets = BenchmarkPreset.order(:name)
   end
 
   def create
@@ -36,6 +37,7 @@ class SessionsController < ApplicationController
     if @session.session_shape.name == SessionShape::EMOM
       save_and_redirect || render_new_with_errors
     else
+      @matching_preset = matching_benchmark_preset
       render :review
     end
   rescue Progression::SessionFormula::ParseError => e
@@ -66,6 +68,23 @@ class SessionsController < ApplicationController
     end
   end
 
+  # Suggests attaching a preset when the parsed formula happens to numerically match one for
+  # this exercise+shape — surfaced as an opt-in checkbox on the review step, never auto-attached
+  # (a coincidental match isn't necessarily an intentional benchmark attempt).
+  def matching_benchmark_preset
+    scope = BenchmarkPreset.where(exercise_id: @session.exercise_id, session_shape_id: @session.session_shape_id,
+                                   planned_weight_kg: @session.planned_weight_kg)
+    case @session.session_shape.name
+    when SessionShape::INTERVAL_WORK
+      scope = scope.where(planned_work_seconds: @session.planned_work_seconds,
+                           planned_rest_seconds: @session.planned_rest_seconds,
+                           planned_sets: @session.planned_sets)
+    when SessionShape::FIXED_REPS_FOR_TIME
+      scope = scope.where(target_reps: @session.target_reps)
+    end
+    scope.first
+  end
+
   def save_and_redirect
     return false unless @session.save
 
@@ -76,6 +95,7 @@ class SessionsController < ApplicationController
   def render_new_with_errors
     @exercises = Exercise.order(:name)
     @session_shapes = session_shapes
+    @benchmark_presets = BenchmarkPreset.order(:name)
     render :new, status: :unprocessable_content
   end
 
@@ -86,8 +106,20 @@ class SessionsController < ApplicationController
     @session.assign_attributes(
       benchmark_preset_id: preset.id,
       exercise_id: preset.exercise_id,
-      session_shape_id: preset.session_shape_id
+      session_shape_id: preset.session_shape_id,
+      formula: formula_for_preset(preset)
     )
+  end
+
+  def formula_for_preset(preset)
+    case preset.session_shape.name
+    when SessionShape::INTERVAL_WORK
+      Progression::IntervalFormula.render(preset)
+    when SessionShape::FIXED_REPS_FOR_TIME
+      Progression::RepsFormula.render(count: 1, reps: preset.target_reps, weight_kg: preset.planned_weight_kg)
+    when SessionShape::EMOM
+      Progression::RepsFormula.render(count: 1, reps: preset.target_reps_per_minute, weight_kg: preset.planned_weight_kg)
+    end
   end
 
   def session_params
