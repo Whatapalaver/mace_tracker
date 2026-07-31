@@ -1,18 +1,18 @@
 <% content_for :title, "Exercises" %>
 
-<div class="flex items-center justify-between mb-4">
-  <h1 class="text-xl font-semibold">Exercises</h1>
-  <%= link_to "Add exercise", new_exercise_path, class: "text-sm font-medium text-blue-600" %>
+<div class="mb-4 flex items-center justify-between">
+  <h1 class="text-2xl font-semibold tracking-tight">Exercises</h1>
+  <%= link_to "Add exercise", new_exercise_path, class: "text-sm font-medium text-rust hover:text-rust-dark" %>
 </div>
 
 <% if @exercises.empty? %>
-  <p class="text-sm text-gray-500">No exercises yet. Add one to start logging sessions.</p>
+  <p class="text-sm text-muted">No exercises yet. Add one to start logging sessions.</p>
 <% else %>
-  <ul class="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">
+  <ul class="divide-y divide-border rounded-lg border border-border bg-surface">
     <% @exercises.each do |exercise| %>
       <li class="flex items-center justify-between px-4 py-3">
         <span><%= exercise.name %></span>
-        <span class="text-xs text-gray-500"><%= exercise.arm_label %></span>
+        <span class="text-xs text-muted"><%= exercise.arm_label %></span>
       </li>
     <% end %>
   </ul>

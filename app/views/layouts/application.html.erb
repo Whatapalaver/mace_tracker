@@ -6,6 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="application-name" content="Mace Tracker">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#211d1a">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
@@ -17,26 +18,35 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="bg-gray-50 text-gray-900 min-h-screen">
-    <header class="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
-      <%= link_to "Mace Tracker", root_path, class: "text-lg font-semibold" %>
-      <nav class="flex gap-3 text-sm">
-        <%= link_to "Log", new_session_path, class: "text-blue-600" %>
-        <%= link_to "Stats", stats_path, class: "text-blue-600" %>
-        <%= link_to "Presets", benchmark_presets_path, class: "text-blue-600" %>
-        <%= link_to "Exercises", exercises_path, class: "text-blue-600" %>
-        <%= link_to "Share", share_links_path, class: "text-blue-600" %>
-      </nav>
+  <body class="min-h-screen bg-paper font-sans text-ink antialiased">
+    <header class="sticky top-0 z-10 border-b border-border bg-surface/95 px-4 py-3 backdrop-blur">
+      <div class="mx-auto flex max-w-md items-center justify-between sm:max-w-xl md:max-w-2xl">
+        <%= link_to root_path, class: "flex items-center gap-2" do %>
+          <span class="flex h-7 w-7 items-center justify-center rounded bg-ink font-mono text-sm font-semibold text-paper">M</span>
+          <span class="text-base font-semibold tracking-tight">Mace Tracker</span>
+        <% end %>
+        <nav class="flex gap-4 text-sm font-medium">
+          <%= link_to "Log", new_session_path, class: "text-muted transition-colors hover:text-rust" %>
+          <%= link_to "Stats", stats_path, class: "text-muted transition-colors hover:text-rust" %>
+          <%= link_to "Presets", benchmark_presets_path, class: "text-muted transition-colors hover:text-rust" %>
+          <%= link_to "Exercises", exercises_path, class: "text-muted transition-colors hover:text-rust" %>
+          <%= link_to "Share", share_links_path, class: "text-muted transition-colors hover:text-rust" %>
+        </nav>
+      </div>
     </header>
 
-    <main class="max-w-md mx-auto px-4 py-6 sm:max-w-xl md:max-w-2xl">
+    <main class="mx-auto max-w-md px-4 py-6 sm:max-w-xl md:max-w-2xl">
       <% if notice %>
-        <p class="mb-4 rounded-md bg-green-50 text-green-800 px-3 py-2 text-sm"><%= notice %></p>
+        <p class="mb-4 rounded-md border border-moss/20 bg-moss-light px-3 py-2 text-sm text-moss"><%= notice %></p>
       <% end %>
       <%= yield %>
     </main>

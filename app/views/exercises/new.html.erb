@@ -1,11 +1,11 @@
 <% content_for :title, "Add Exercise" %>
 
-<h1 class="mb-4 text-xl font-semibold">Add Exercise</h1>
+<h1 class="mb-4 text-2xl font-semibold tracking-tight">Add exercise</h1>
 
 <%= form_with model: @exercise, class: "space-y-4" do |form| %>
   <% if @exercise.errors.any? %>
-    <div class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">
-      <ul>
+    <div class="rounded-md border border-crimson/20 bg-crimson-light px-3 py-2 text-sm text-crimson">
+      <ul class="list-inside list-disc">
         <% @exercise.errors.full_messages.each do |message| %>
           <li><%= message %></li>
         <% end %>
@@ -15,18 +15,18 @@
 
   <div>
     <%= form.label :name, class: "mb-1 block text-sm font-medium" %>
-    <%= form.text_field :name, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
+    <%= form.text_field :name, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
   </div>
 
   <div>
     <%= form.label :arm, class: "mb-1 block text-sm font-medium" %>
-    <%= form.select :arm, Exercise.arm_options, {}, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
+    <%= form.select :arm, Exercise.arm_options, {}, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
   </div>
 
   <div>
     <%= form.label :notes, class: "mb-1 block text-sm font-medium" %>
-    <%= form.text_area :notes, rows: 3, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
+    <%= form.text_area :notes, rows: 3, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
   </div>
 
-  <%= form.submit "Add exercise", class: "w-full rounded-md bg-blue-600 py-3 text-base font-medium text-white" %>
+  <%= form.submit "Add exercise", class: "w-full rounded-md bg-rust py-3 text-base font-semibold text-paper transition-colors hover:bg-rust-dark" %>
 <% end %>

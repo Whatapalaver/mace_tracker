@@ -1,11 +1,11 @@
 <% content_for :title, "New Share Link" %>
 
-<h1 class="mb-4 text-xl font-semibold">New Share Link</h1>
+<h1 class="mb-4 text-2xl font-semibold tracking-tight">New share link</h1>
 
 <%= form_with model: @share_link, url: share_links_path, class: "space-y-4" do |form| %>
   <% if @share_link.errors.any? %>
-    <div class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">
-      <ul>
+    <div class="rounded-md border border-crimson/20 bg-crimson-light px-3 py-2 text-sm text-crimson">
+      <ul class="list-inside list-disc">
         <% @share_link.errors.full_messages.each do |message| %>
           <li><%= message %></li>
         <% end %>
@@ -16,13 +16,13 @@
   <div>
     <%= form.label :exercise_id, "Exercise (optional)", class: "mb-1 block text-sm font-medium" %>
     <%= form.collection_select :exercise_id, @exercises, :id, :name,
-          { include_blank: "All exercises" }, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
+          { include_blank: "All exercises" }, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
   </div>
 
   <div>
     <%= form.label :expires_at, "Expires (optional)", class: "mb-1 block text-sm font-medium" %>
-    <%= form.date_field :expires_at, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
+    <%= form.date_field :expires_at, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
   </div>
 
-  <%= form.submit "Create link", class: "w-full rounded-md bg-blue-600 py-3 text-base font-medium text-white" %>
+  <%= form.submit "Create link", class: "w-full rounded-md bg-rust py-3 text-base font-semibold text-paper transition-colors hover:bg-rust-dark" %>
 <% end %>

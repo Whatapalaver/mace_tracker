@@ -24,7 +24,7 @@ RSpec.describe "Sessions", type: :request do
       get new_session_path(benchmark_preset_id: preset.id)
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("Starting from benchmark preset: Monthly 3x5")
+      expect(response.body).to include("Starting from benchmark preset:", "Monthly 3x5")
     end
 
     it "pre-fills the formula field by rendering the preset's plan back into notation" do

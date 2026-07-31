@@ -1,32 +1,21 @@
 <% content_for :title, "#{@session.exercise.name} - #{@session.date}" %>
 
-<h1 class="mb-1 text-xl font-semibold"><%= @session.exercise.name %></h1>
-<p class="mb-4 text-sm text-gray-500">
+<h1 class="mb-1 text-2xl font-semibold tracking-tight"><%= @session.exercise.name %></h1>
+<p class="mb-4 text-sm text-muted">
   <%= @session.date.to_fs(:long) %>
   <% if @session.is_benchmark? %>
-    <span class="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">Benchmark</span>
+    <span class="ml-2 rounded-full bg-brass-light px-2 py-0.5 text-xs font-semibold tracking-wide text-brass uppercase">Benchmark</span>
   <% end %>
 </p>
 
-<section class="mb-6 rounded-lg border border-gray-200 bg-white p-4 text-sm">
-  <dl class="grid grid-cols-2 gap-2">
-    <dt class="text-gray-500">Weight</dt>
-    <dd><%= @session.planned_weight_kg %> kg</dd>
-    <% case @session.session_shape.name %>
-    <% when SessionShape::INTERVAL_WORK %>
-      <dt class="text-gray-500">Work / Rest</dt>
-      <dd><%= @session.planned_work_seconds %>s / <%= @session.planned_rest_seconds %>s</dd>
-      <dt class="text-gray-500">Sets</dt>
-      <dd><%= @session.planned_sets %></dd>
-    <% when SessionShape::FIXED_REPS_FOR_TIME %>
-      <dt class="text-gray-500">Target reps</dt>
-      <dd><%= @session.target_reps %></dd>
-    <% when SessionShape::EMOM %>
-      <dt class="text-gray-500">Target reps / min</dt>
-      <dd><%= @session.target_reps_per_minute %></dd>
-    <% end %>
-  </dl>
-</section>
+<div class="mb-6 rounded-md bg-ink px-3 py-3 font-mono text-lg tracking-wide text-paper">
+  <% if @session.session_shape.name == SessionShape::INTERVAL_WORK %>
+    <%= Progression::IntervalFormula.render(@session) %>
+  <% else %>
+    <%= Progression::RepsFormula.render(count: @session.session_sets.size,
+          reps: @session.target_reps || @session.target_reps_per_minute, weight_kg: @session.planned_weight_kg) %>
+  <% end %>
+</div>
 
 <%= render SessionOutputsComponent.new(calculator: @calculator) %>
 
@@ -34,23 +23,21 @@
   <%= link_to "View progression for this signature →",
         stats_path(exercise_id: @session.exercise_id, shape: @session.session_shape.name,
                     structural_value: @session.structural_value),
-        class: "font-medium text-blue-600" %>
+        class: "font-medium text-rust hover:text-rust-dark" %>
 </p>
 
 <section class="mb-6">
-  <h2 class="mb-2 font-semibold">Sets</h2>
+  <h2 class="mb-2 text-xs font-semibold tracking-widest text-muted uppercase">Sets</h2>
 
   <% if @session.session_sets.empty? %>
-    <p class="text-sm text-gray-500">No sets logged.</p>
+    <p class="text-sm text-muted">No sets logged.</p>
   <% else %>
-    <ul class="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">
+    <ul class="divide-y divide-border rounded-lg border border-border bg-surface">
       <% @session.session_sets.order(:set_number).each do |session_set| %>
         <li class="flex items-center justify-between px-4 py-3 text-sm">
-          <span>Set <%= session_set.set_number %></span>
-          <span>
-            <%= session_set.reps %> reps
-            <% if session_set.duration_seconds %> in <%= session_set.duration_seconds %>s<% end %>
-            @ <%= session_set.effective_weight_kg %> kg
+          <span class="text-muted">Set <%= session_set.set_number %></span>
+          <span class="font-mono">
+            <%= session_set.reps %> reps<% if session_set.duration_seconds %> / <%= session_set.duration_seconds %>s<% end %> @ <%= session_set.effective_weight_kg %>kg
           </span>
         </li>
       <% end %>

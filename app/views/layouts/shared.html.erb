@@ -8,17 +8,24 @@
 
     <link rel="icon" href="/icon.png" type="image/png">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <%= stylesheet_link_tag :app %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="bg-gray-50 text-gray-900 min-h-screen">
-    <header class="bg-white border-b border-gray-200 px-4 py-3">
-      <span class="text-lg font-semibold">Mace Tracker</span>
-      <span class="ml-2 text-sm text-gray-500">Shared, read-only</span>
+  <body class="min-h-screen bg-paper font-sans text-ink antialiased">
+    <header class="border-b border-border bg-surface px-4 py-3">
+      <div class="mx-auto flex max-w-md items-center gap-2 sm:max-w-xl md:max-w-2xl">
+        <span class="flex h-7 w-7 items-center justify-center rounded bg-ink font-mono text-sm font-semibold text-paper">M</span>
+        <span class="text-base font-semibold tracking-tight">Mace Tracker</span>
+        <span class="text-sm text-muted">— shared, read-only</span>
+      </div>
     </header>
 
-    <main class="max-w-md mx-auto px-4 py-6 sm:max-w-xl md:max-w-2xl">
+    <main class="mx-auto max-w-md px-4 py-6 sm:max-w-xl md:max-w-2xl">
       <%= yield %>
     </main>
   </body>

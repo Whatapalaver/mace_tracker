@@ -1,28 +1,28 @@
 <section class="mb-6 grid grid-cols-2 gap-3">
-  <div class="rounded-lg border border-gray-200 bg-white p-4 text-center">
-    <p class="text-2xl font-semibold"><%= stats.total_reps %></p>
-    <p class="text-xs text-gray-500">Total reps</p>
+  <div class="rounded-lg border border-border bg-surface p-4 text-center">
+    <p class="font-mono text-2xl font-semibold text-ink"><%= stats.total_reps %></p>
+    <p class="text-xs text-muted">Total reps</p>
   </div>
-  <div class="rounded-lg border border-gray-200 bg-white p-4 text-center">
-    <p class="text-2xl font-semibold"><%= stats.total_volume.round %></p>
-    <p class="text-xs text-gray-500">Total volume (kg)</p>
+  <div class="rounded-lg border border-border bg-surface p-4 text-center">
+    <p class="font-mono text-2xl font-semibold text-ink"><%= stats.total_volume.round %></p>
+    <p class="text-xs text-muted">Total volume (kg)</p>
   </div>
 </section>
 
-<section class="mb-6 rounded-lg border border-gray-200 bg-white p-4 text-sm">
-  <h2 class="mb-2 font-semibold">Cumulative reps</h2>
+<section class="mb-6 rounded-lg border border-border bg-surface p-4 text-sm">
+  <h2 class="mb-2 text-xs font-semibold tracking-widest text-muted uppercase">Cumulative reps</h2>
   <% if stats.cumulative_reps_by_date.empty? %>
-    <p class="text-sm text-gray-500">No sets logged yet.</p>
+    <p class="text-sm text-muted">No sets logged yet.</p>
   <% else %>
-    <%= area_chart stats.cumulative_reps_by_date, xtitle: "Date", ytitle: "Total reps" %>
+    <%= area_chart stats.cumulative_reps_by_date, xtitle: "Date", ytitle: "Total reps", colors: [ "#b5432b" ] %>
   <% end %>
 </section>
 
-<section class="mb-6 rounded-lg border border-gray-200 bg-white p-4 text-sm">
-  <h2 class="mb-2 font-semibold">Cumulative volume</h2>
+<section class="mb-6 rounded-lg border border-border bg-surface p-4 text-sm">
+  <h2 class="mb-2 text-xs font-semibold tracking-widest text-muted uppercase">Cumulative volume</h2>
   <% if stats.cumulative_volume_by_date.empty? %>
-    <p class="text-sm text-gray-500">No sets logged yet.</p>
+    <p class="text-sm text-muted">No sets logged yet.</p>
   <% else %>
-    <%= area_chart stats.cumulative_volume_by_date, xtitle: "Date", ytitle: "Total volume (kg)" %>
+    <%= area_chart stats.cumulative_volume_by_date, xtitle: "Date", ytitle: "Total volume (kg)", colors: [ "#a9793c" ] %>
   <% end %>
 </section>

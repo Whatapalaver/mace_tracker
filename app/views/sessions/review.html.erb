@@ -1,19 +1,21 @@
 <% content_for :title, "Confirm Session" %>
 
-<h1 class="mb-1 text-xl font-semibold"><%= @session.exercise.name %></h1>
-<p class="mb-4 text-sm text-gray-500">
-  <%= @session.date.to_fs(:long) %> ·
+<h1 class="mb-1 text-2xl font-semibold tracking-tight"><%= @session.exercise.name %></h1>
+<p class="mb-4 text-sm text-muted"><%= @session.date.to_fs(:long) %></p>
+
+<div class="mb-6 rounded-md bg-ink px-3 py-3 font-mono text-lg tracking-wide text-paper">
   <% if @session.session_shape.name == SessionShape::INTERVAL_WORK %>
     <%= Progression::IntervalFormula.render(@session) %>
   <% else %>
-    <%= @session.target_reps %> reps @ <%= @session.planned_weight_kg %>kg
+    <%= Progression::RepsFormula.render(count: @session.session_sets.size,
+          reps: @session.target_reps || @session.target_reps_per_minute, weight_kg: @session.planned_weight_kg) %>
   <% end %>
-</p>
+</div>
 
-<%= form_with model: @session, url: sessions_path, class: "space-y-4", data: { turbo: false } do |form| %>
+<%= form_with model: @session, url: sessions_path, class: "space-y-5", data: { turbo: false } do |form| %>
   <% if @session.errors.any? %>
-    <div class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">
-      <ul>
+    <div class="rounded-md border border-crimson/20 bg-crimson-light px-3 py-2 text-sm text-crimson">
+      <ul class="list-inside list-disc">
         <% @session.errors.full_messages.each do |message| %>
           <li><%= message %></li>
         <% end %>
@@ -34,41 +36,39 @@
   <%= form.hidden_field :notes %>
 
   <% if @matching_preset %>
-    <div class="rounded-md bg-blue-50 px-3 py-2 text-sm text-blue-800">
-      <label class="flex items-center gap-2">
-        <%= check_box_tag "session[benchmark_preset_id]", @matching_preset.id, false %>
-        Matches preset "<%= @matching_preset.name %>" — mark as benchmark?
-      </label>
-    </div>
+    <label class="flex items-center gap-2 rounded-md border border-brass/30 bg-brass-light px-3 py-2 text-sm text-brass">
+      <%= check_box_tag "session[benchmark_preset_id]", @matching_preset.id, false, class: "accent-brass" %>
+      Matches preset "<%= @matching_preset.name %>" — mark as benchmark?
+    </label>
   <% end %>
 
-  <fieldset class="space-y-3">
-    <legend class="mb-1 text-sm font-medium">Sets</legend>
+  <fieldset class="space-y-2">
+    <legend class="mb-1 text-xs font-semibold tracking-widest text-muted uppercase">Sets</legend>
     <%= form.fields_for :session_sets do |set_form| %>
-      <div class="rounded-md border border-gray-200 p-3">
+      <div class="rounded-md border border-border bg-surface p-3">
         <%= set_form.hidden_field :set_number %>
         <% if @session.session_shape.name == SessionShape::INTERVAL_WORK %>
           <%= set_form.hidden_field :duration_seconds %>
           <div class="flex items-center justify-between gap-3">
-            <span class="text-sm text-gray-500">
-              Set <%= set_form.object.set_number %> (<%= set_form.object.duration_seconds %>s)
+            <span class="text-sm text-muted">
+              Set <%= set_form.object.set_number %> <span class="font-mono">(<%= set_form.object.duration_seconds %>s)</span>
             </span>
             <%= set_form.label :reps, "Reps", class: "sr-only" %>
-            <%= set_form.number_field :reps, class: "w-24 rounded-md border-gray-300 px-2 py-1 text-base" %>
+            <%= set_form.number_field :reps, class: "w-24 rounded-md border border-border bg-surface px-2 py-1 text-base" %>
           </div>
         <% else %>
           <div class="flex items-center justify-between gap-3">
-            <span class="text-sm text-gray-500">Set <%= set_form.object.set_number %></span>
+            <span class="text-sm text-muted">Set <%= set_form.object.set_number %></span>
             <%= set_form.label :reps, "Reps", class: "sr-only" %>
-            <%= set_form.number_field :reps, class: "w-20 rounded-md border-gray-300 px-2 py-1 text-base" %>
+            <%= set_form.number_field :reps, class: "w-20 rounded-md border border-border bg-surface px-2 py-1 text-base" %>
             <%= set_form.label :duration_seconds, "Seconds", class: "sr-only" %>
             <%= set_form.number_field :duration_seconds, placeholder: "seconds",
-                  class: "w-24 rounded-md border-gray-300 px-2 py-1 text-base" %>
+                  class: "w-24 rounded-md border border-border bg-surface px-2 py-1 text-base" %>
           </div>
         <% end %>
       </div>
     <% end %>
   </fieldset>
 
-  <%= form.submit "Save session", class: "w-full rounded-md bg-blue-600 py-3 text-base font-medium text-white" %>
+  <%= form.submit "Save session", class: "w-full rounded-md bg-rust py-3 text-base font-semibold text-paper transition-colors hover:bg-rust-dark" %>
 <% end %>

@@ -1,23 +1,24 @@
 <% content_for :title, "Log Session" %>
 
-<h1 class="mb-4 text-xl font-semibold">Log Session</h1>
+<h1 class="mb-1 text-2xl font-semibold tracking-tight">Log session</h1>
+<p class="mb-6 text-sm text-muted">Enter the formula for what you did — sets get built from it.</p>
 
 <% if @session.benchmark_preset_id.present? %>
-  <p class="mb-4 rounded-md bg-blue-50 px-3 py-2 text-sm text-blue-800">
-    Starting from benchmark preset: <%= BenchmarkPreset.find(@session.benchmark_preset_id).name %>
+  <p class="mb-4 rounded-md border border-brass/30 bg-brass-light px-3 py-2 text-sm text-brass">
+    Starting from benchmark preset: <strong><%= BenchmarkPreset.find(@session.benchmark_preset_id).name %></strong>
   </p>
 <% end %>
 
 <% if @exercises.empty? %>
-  <p class="text-sm text-gray-500">
+  <p class="text-sm text-muted">
     You need an exercise before logging a session.
-    <%= link_to "Add one", new_exercise_path, class: "text-blue-600" %>.
+    <%= link_to "Add one", new_exercise_path, class: "font-medium text-rust" %>.
   </p>
 <% else %>
-  <%= form_with model: @session, url: sessions_path, class: "space-y-4", data: { turbo: false } do |form| %>
+  <%= form_with model: @session, url: sessions_path, class: "space-y-5", data: { turbo: false } do |form| %>
     <% if @session.errors.any? %>
-      <div class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">
-        <ul>
+      <div class="rounded-md border border-crimson/20 bg-crimson-light px-3 py-2 text-sm text-crimson">
+        <ul class="list-inside list-disc">
           <% @session.errors.full_messages.each do |message| %>
             <li><%= message %></li>
           <% end %>
@@ -37,26 +38,28 @@
               ),
               include_blank: "None",
               onchange: "if (this.value) { window.location = #{new_session_path.to_json} + '?benchmark_preset_id=' + this.value }",
-              class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
+              class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
       </div>
     <% end %>
 
     <div>
       <%= form.label :exercise_id, "Exercise", class: "mb-1 block text-sm font-medium" %>
-      <%= form.collection_select :exercise_id, @exercises, :id, :name, {}, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
+      <%= form.collection_select :exercise_id, @exercises, :id, :name, {},
+            class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
     </div>
 
     <div>
       <%= form.label :date, class: "mb-1 block text-sm font-medium" %>
-      <%= form.date_field :date, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
+      <%= form.date_field :date, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
     </div>
 
     <fieldset>
       <legend class="mb-1 text-sm font-medium">Shape</legend>
       <div class="space-y-2">
         <% @session_shapes.each do |shape| %>
-          <label class="flex items-center gap-2 rounded-md border border-gray-300 px-3 py-2">
+          <label class="flex items-center gap-2 rounded-md border border-border px-3 py-2 has-[:checked]:border-rust has-[:checked]:bg-rust-light">
             <%= form.radio_button :session_shape_id, shape.id,
+                  class: "accent-rust",
                   checked: form.object.session_shape_id == shape.id ||
                     (form.object.session_shape_id.nil? && shape.name == SessionShape::INTERVAL_WORK) %>
             <%= shape.label %>
@@ -66,27 +69,25 @@
     </fieldset>
 
     <div>
-      <%= form.label :formula, class: "mb-1 block text-sm font-medium" %>
+      <%= form.label :formula, "Formula", class: "mb-1 block text-xs font-semibold tracking-widest text-muted uppercase" %>
       <%= form.text_field :formula, placeholder: "5(5mw+5mr)@10kg",
-            class: "w-full rounded-md border-gray-300 px-3 py-2 font-mono text-base" %>
-      <p class="mt-1 text-xs text-gray-500">
-        Interval work: <code>N(Xmw+Ymr)@Wkg</code> — e.g. <code>5(5mw+5mr)@10kg</code>.
-        Fixed reps for time / EMOM: <code>N(X@Wkg)</code> — e.g. <code>5(108@10kg)</code>.
+            class: "w-full rounded-md border border-ink bg-ink px-3 py-3 font-mono text-lg tracking-wide text-paper placeholder-paper/30 focus:outline-none focus:ring-2 focus:ring-rust" %>
+      <p class="mt-2 text-xs text-muted">
+        Interval work: <code class="font-mono text-ink">N(Xmw+Ymr)@Wkg</code> — e.g. <code class="font-mono text-ink">5(5mw+5mr)@10kg</code>.
+        Fixed reps for time / EMOM: <code class="font-mono text-ink">N(X@Wkg)</code> — e.g. <code class="font-mono text-ink">5(108@10kg)</code>.
       </p>
     </div>
 
-    <div>
-      <label class="flex items-center gap-2 text-sm font-medium">
-        <%= form.check_box :is_benchmark %>
-        This was an all-out benchmark effort
-      </label>
-    </div>
+    <label class="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium has-[:checked]:border-brass has-[:checked]:bg-brass-light">
+      <%= form.check_box :is_benchmark, class: "accent-brass" %>
+      This was an all-out benchmark effort
+    </label>
 
     <div>
       <%= form.label :notes, class: "mb-1 block text-sm font-medium" %>
-      <%= form.text_area :notes, rows: 2, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
+      <%= form.text_area :notes, rows: 2, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
     </div>
 
-    <%= form.submit "Continue", class: "w-full rounded-md bg-blue-600 py-3 text-base font-medium text-white" %>
+    <%= form.submit "Continue", class: "w-full rounded-md bg-rust py-3 text-base font-semibold text-paper transition-colors hover:bg-rust-dark" %>
   <% end %>
 <% end %>

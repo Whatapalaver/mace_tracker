@@ -2,8 +2,9 @@
   <legend class="mb-1 text-sm font-medium">Shape</legend>
   <div class="space-y-2">
     <% session_shapes.each do |shape| %>
-      <label class="flex items-center gap-2 rounded-md border border-gray-300 px-3 py-2">
+      <label class="flex items-center gap-2 rounded-md border border-border px-3 py-2 has-[:checked]:border-rust has-[:checked]:bg-rust-light">
         <%= form.radio_button :session_shape_id, shape.id,
+              class: "accent-rust",
               checked: form.object.session_shape_id == shape.id ||
                 (form.object.session_shape_id.nil? && shape.name == SessionShape::INTERVAL_WORK),
               data: { shape_form_target: "shapeInput", shape_name: shape.name, action: "change->shape-form#toggle" } %>
@@ -15,30 +16,30 @@
 
 <div>
   <%= form.label :planned_weight_kg, "Weight (kg)", class: "mb-1 block text-sm font-medium" %>
-  <%= form.number_field :planned_weight_kg, step: 0.5, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
+  <%= form.number_field :planned_weight_kg, step: 0.5, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
 </div>
 
 <div data-shape-form-target="group" data-allowed-shapes="interval_work" class="grid grid-cols-3 gap-3">
   <div>
     <%= form.label :planned_work_seconds, "Work (sec)", class: "mb-1 block text-sm font-medium" %>
-    <%= form.number_field :planned_work_seconds, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
+    <%= form.number_field :planned_work_seconds, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
   </div>
   <div>
     <%= form.label :planned_rest_seconds, "Rest (sec)", class: "mb-1 block text-sm font-medium" %>
-    <%= form.number_field :planned_rest_seconds, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
+    <%= form.number_field :planned_rest_seconds, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
   </div>
   <div>
     <%= form.label :planned_sets, "Sets", class: "mb-1 block text-sm font-medium" %>
-    <%= form.number_field :planned_sets, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
+    <%= form.number_field :planned_sets, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
   </div>
 </div>
 
 <div data-shape-form-target="group" data-allowed-shapes="fixed_reps_for_time">
   <%= form.label :target_reps, "Target reps", class: "mb-1 block text-sm font-medium" %>
-  <%= form.number_field :target_reps, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
+  <%= form.number_field :target_reps, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
 </div>
 
 <div data-shape-form-target="group" data-allowed-shapes="emom">
   <%= form.label :target_reps_per_minute, "Target reps / min", class: "mb-1 block text-sm font-medium" %>
-  <%= form.number_field :target_reps_per_minute, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
+  <%= form.number_field :target_reps_per_minute, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
 </div>

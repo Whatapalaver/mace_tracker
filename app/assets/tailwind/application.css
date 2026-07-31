@@ -1,1 +1,31 @@
 @import "tailwindcss";
+
+/*
+ * Mace Tracker design tokens — an iron-and-chalk palette grounded in the actual equipment
+ * (raw cast iron, gym chalk, oxide-red powder coat) rather than default Tailwind blue/gray.
+ * Rust is the one bold accent (buttons, links, the notation "readout") — everything else stays
+ * quiet on purpose.
+ */
+@theme {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  --color-paper: #f6f3ed;
+  --color-surface: #ffffff;
+  --color-ink: #211d1a;
+  --color-muted: #6b6259;
+  --color-border: #e4ddd1;
+
+  --color-rust: #b5432b;
+  --color-rust-dark: #8f3220;
+  --color-rust-light: #f3e3de;
+
+  --color-brass: #a9793c;
+  --color-brass-light: #f1e6d3;
+
+  --color-moss: #4b6b3a;
+  --color-moss-light: #eef2e8;
+
+  --color-crimson: #a3261e;
+  --color-crimson-light: #fbeaea;
+}
