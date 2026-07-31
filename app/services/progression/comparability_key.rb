@@ -22,5 +22,17 @@ module Progression
     def self.structural_for(session)
       self.for(session).except(:weight)
     end
+
+    # The Session column holding the one structural (non-weight) key component for a shape —
+    # used to query/group sessions by signature without needing a session instance in hand.
+    def self.structural_column_for(shape_name)
+      case shape_name
+      when SessionShape::INTERVAL_WORK then :planned_work_seconds
+      when SessionShape::FIXED_REPS_FOR_TIME then :target_reps
+      when SessionShape::EMOM then :target_reps_per_minute
+      else
+        raise UnknownShapeError, "No comparability key defined for session shape #{shape_name.inspect}"
+      end
+    end
   end
 end

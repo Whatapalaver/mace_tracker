@@ -1,5 +1,9 @@
 module Progression
   class FixedRepsForTimeCalculator < BaseCalculator
+    def self.output_labels
+      [ "Best time", "Avg time", "Best pace", "Avg pace" ]
+    end
+
     def times
       session_sets.filter_map(&:duration_seconds)
     end

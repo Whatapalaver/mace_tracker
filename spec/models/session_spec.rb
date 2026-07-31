@@ -99,4 +99,21 @@ RSpec.describe Session, type: :model do
       expect(session.benchmark_preset_id).to be_nil
     end
   end
+
+  describe "#structural_value" do
+    it "returns planned_work_seconds for interval_work" do
+      session = build(:session, planned_work_seconds: 300)
+      expect(session.structural_value).to eq(300)
+    end
+
+    it "returns target_reps for fixed_reps_for_time" do
+      session = build(:session, :fixed_reps_for_time, target_reps: 108)
+      expect(session.structural_value).to eq(108)
+    end
+
+    it "returns target_reps_per_minute for emom" do
+      session = build(:session, :emom, target_reps_per_minute: 20)
+      expect(session.structural_value).to eq(20)
+    end
+  end
 end

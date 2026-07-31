@@ -5,6 +5,12 @@ RSpec.describe Progression::EmomCalculator do
 
   let(:session) { create(:session, :emom, planned_weight_kg: 10, target_reps_per_minute: 20) }
 
+  describe ".output_labels" do
+    it "lists the single output key" do
+      expect(described_class.output_labels).to eq([ "Sets completed" ])
+    end
+  end
+
   it "counts the sets logged before failure" do
     create(:session_set, session: session, set_number: 1)
     create(:session_set, session: session, set_number: 2)

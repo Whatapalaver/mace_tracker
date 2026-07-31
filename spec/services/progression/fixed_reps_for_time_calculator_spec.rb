@@ -5,6 +5,12 @@ RSpec.describe Progression::FixedRepsForTimeCalculator do
 
   let(:session) { create(:session, :fixed_reps_for_time, planned_weight_kg: 10, target_reps: 100) }
 
+  describe ".output_labels" do
+    it "lists every output key" do
+      expect(described_class.output_labels).to eq([ "Best time", "Avg time", "Best pace", "Avg pace" ])
+    end
+  end
+
   context "with a single attempt logged" do
     before do
       create(:session_set, session: session, set_number: 1, reps: 100, duration_seconds: 240)

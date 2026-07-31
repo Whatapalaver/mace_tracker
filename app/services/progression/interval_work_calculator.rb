@@ -1,5 +1,9 @@
 module Progression
   class IntervalWorkCalculator < BaseCalculator
+    def self.output_labels
+      [ "Best pace", "Avg pace", "Total output", "Output / total time", "Output / working time" ]
+    end
+
     def pace_per_set
       session_sets.filter_map { |set| set_pace(set) }
     end

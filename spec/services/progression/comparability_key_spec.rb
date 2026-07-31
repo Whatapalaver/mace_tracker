@@ -61,4 +61,18 @@ RSpec.describe Progression::ComparabilityKey do
       expect(described_class.structural_for(lighter)).to eq(described_class.structural_for(heavier))
     end
   end
+
+  describe ".structural_column_for" do
+    it "maps each shape to its structural Session column" do
+      expect(described_class.structural_column_for(SessionShape::INTERVAL_WORK)).to eq(:planned_work_seconds)
+      expect(described_class.structural_column_for(SessionShape::FIXED_REPS_FOR_TIME)).to eq(:target_reps)
+      expect(described_class.structural_column_for(SessionShape::EMOM)).to eq(:target_reps_per_minute)
+    end
+
+    it "raises for an unregistered shape" do
+      expect { described_class.structural_column_for("unregistered_shape") }.to raise_error(
+        Progression::ComparabilityKey::UnknownShapeError
+      )
+    end
+  end
 end

@@ -27,4 +27,16 @@ RSpec.describe Progression::Calculator do
       expect { described_class.for(session) }.to raise_error(Progression::Calculator::UnknownShapeError)
     end
   end
+
+  describe ".output_labels_for" do
+    it "delegates to the registered calculator's output_labels" do
+      expect(described_class.output_labels_for(SessionShape::EMOM)).to eq([ "Sets completed" ])
+    end
+
+    it "raises for an unregistered shape" do
+      expect { described_class.output_labels_for("unregistered_shape") }.to raise_error(
+        Progression::Calculator::UnknownShapeError
+      )
+    end
+  end
 end

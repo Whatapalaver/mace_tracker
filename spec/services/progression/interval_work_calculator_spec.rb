@@ -3,6 +3,14 @@ require "rails_helper"
 RSpec.describe Progression::IntervalWorkCalculator do
   subject(:calculator) { described_class.new(session) }
 
+  describe ".output_labels" do
+    it "lists every output key, matching #outputs" do
+      expect(described_class.output_labels).to eq(
+        [ "Best pace", "Avg pace", "Total output", "Output / total time", "Output / working time" ]
+      )
+    end
+  end
+
   let(:session) do
     create(:session, planned_weight_kg: 10, planned_work_seconds: 300, planned_rest_seconds: 600, planned_sets: 5)
   end

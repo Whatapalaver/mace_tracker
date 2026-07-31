@@ -31,7 +31,10 @@
 <%= render SessionOutputsComponent.new(calculator: @calculator) %>
 
 <p class="mb-6 text-sm">
-  <%= link_to "View progression on Stats →", stats_path, class: "font-medium text-blue-600" %>
+  <%= link_to "View progression for this signature →",
+        stats_path(exercise_id: @session.exercise_id, shape: @session.session_shape.name,
+                    structural_value: @session.structural_value),
+        class: "font-medium text-blue-600" %>
 </p>
 
 <section class="mb-6">

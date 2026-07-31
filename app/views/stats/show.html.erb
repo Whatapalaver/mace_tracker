@@ -1,12 +1,66 @@
-<% content_for :title, "Lifetime Stats" %>
+<% content_for :title, "Stats" %>
 
-<h1 class="mb-4 text-xl font-semibold">Lifetime Stats</h1>
+<h1 class="mb-4 text-xl font-semibold">Stats</h1>
 
-<%= form_with url: stats_path, method: :get, class: "mb-4" do |form| %>
-  <%= form.label :exercise_id, "Exercise", class: "mb-1 block text-sm font-medium" %>
-  <%= form.collection_select :exercise_id, @exercises, :id, :name,
-        { include_blank: "All exercises", selected: @exercise&.id },
-        class: "w-full rounded-md border-gray-300 px-3 py-2 text-base", onchange: "this.form.requestSubmit()" %>
+<%= form_with url: stats_path, method: :get, class: "mb-6 space-y-4", data: { turbo: false } do |form| %>
+  <div>
+    <%= form.label :exercise_id, "Exercise", class: "mb-1 block text-sm font-medium" %>
+    <%= form.collection_select :exercise_id, @exercises, :id, :name,
+          { include_blank: "All exercises", selected: @exercise&.id },
+          class: "w-full rounded-md border-gray-300 px-3 py-2 text-base", onchange: "this.form.requestSubmit()" %>
+  </div>
+
+  <% if @exercise %>
+    <div>
+      <%= label_tag :shape, "Shape", class: "mb-1 block text-sm font-medium" %>
+      <%= select_tag :shape,
+            options_for_select(@session_shapes.map { |shape| [ shape.label, shape.name ] }, @shape&.name),
+            include_blank: "Choose a shape to browse progression",
+            class: "w-full rounded-md border-gray-300 px-3 py-2 text-base", onchange: "this.form.requestSubmit()" %>
+    </div>
+  <% end %>
+
+  <% if @shape %>
+    <div>
+      <%= label_tag :structural_value, "Signature", class: "mb-1 block text-sm font-medium" %>
+      <%= select_tag :structural_value,
+            options_for_select(@signatures.map { |signature| [ signature[:label], signature[:value] ] }, @structural_value),
+            include_blank: "Choose a signature",
+            class: "w-full rounded-md border-gray-300 px-3 py-2 font-mono text-base", onchange: "this.form.requestSubmit()" %>
+    </div>
+  <% end %>
+
+  <% if @structural_value %>
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <%= label_tag :weight, "Weight", class: "mb-1 block text-sm font-medium" %>
+        <%= select_tag :weight,
+              options_for_select([ [ "All weights", "" ] ] + @weights.map { |weight| [ "#{weight}kg", weight ] }, @weight),
+              class: "w-full rounded-md border-gray-300 px-3 py-2 text-base", onchange: "this.form.requestSubmit()" %>
+      </div>
+      <div>
+        <%= label_tag :output, "Output", class: "mb-1 block text-sm font-medium" %>
+        <%= select_tag :output, options_for_select(@output_labels, @output_label),
+              class: "w-full rounded-md border-gray-300 px-3 py-2 text-base", onchange: "this.form.requestSubmit()" %>
+      </div>
+    </div>
+
+    <label class="flex items-center gap-2 text-sm">
+      <%= check_box_tag :benchmarks_only, "true", @benchmarks_only, onchange: "this.form.requestSubmit()" %>
+      Benchmarks only
+    </label>
+  <% end %>
+<% end %>
+
+<% if @series %>
+  <section class="mb-6 rounded-lg border border-gray-200 bg-white p-4 text-sm">
+    <h2 class="mb-2 font-semibold"><%= @output_label %></h2>
+    <% if @series.values.all?(&:empty?) %>
+      <p class="text-sm text-gray-500">No data yet for this signature.</p>
+    <% else %>
+      <%= line_chart @series, xtitle: "Date", ytitle: @output_label %>
+    <% end %>
+  </section>
 <% end %>
 
 <%= render "stats/lifetime_summary", stats: @stats %>
