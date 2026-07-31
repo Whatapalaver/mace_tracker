@@ -33,17 +33,21 @@ module Progression
       total_volume.to_f / total.to_f
     end
 
-    def display_outputs
+    def outputs
       {
-        "Best pace" => format_metric(best_pace),
-        "Avg pace" => format_metric(avg_pace),
-        "Total output" => format_metric(total_session_output, precision: 0),
-        "Output / total time" => format_metric(output_per_total_time),
-        "Output / working time" => format_metric(output_per_working_time)
+        "Best pace" => best_pace,
+        "Avg pace" => avg_pace,
+        "Total output" => total_session_output,
+        "Output / total time" => output_per_total_time,
+        "Output / working time" => output_per_working_time
       }
     end
 
     private
+
+    def precision_for(label)
+      label == "Total output" ? 0 : super
+    end
 
     def set_pace(set)
       duration = set.effective_duration_seconds

@@ -24,8 +24,14 @@ RSpec.describe Progression::BaseCalculator do
     end
   end
 
-  describe "#display_outputs" do
+  describe "#outputs" do
     it "raises NotImplementedError, requiring subclasses to define it" do
+      expect { calculator.outputs }.to raise_error(NotImplementedError)
+    end
+  end
+
+  describe "#display_outputs" do
+    it "raises NotImplementedError since it delegates to #outputs" do
       expect { calculator.display_outputs }.to raise_error(NotImplementedError)
     end
   end

@@ -4,7 +4,7 @@ module Progression
       session_sets.count
     end
 
-    def display_outputs
+    def outputs
       { "Sets completed" => total_sets_completed }
     end
   end

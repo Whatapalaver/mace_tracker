@@ -72,6 +72,15 @@ RSpec.describe Progression::IntervalWorkCalculator do
     end
   end
 
+  describe "#outputs" do
+    it "returns raw, unformatted values" do
+      create(:session_set, session: session, set_number: 1, reps: 20, duration_seconds: nil, rest_seconds_actual: nil)
+
+      expect(calculator.outputs["Best pace"]).to eq(20 / 300.0)
+      expect(calculator.outputs["Total output"]).to eq(200)
+    end
+  end
+
   describe "#display_outputs" do
     it "formats every metric, using an em dash for unavailable ones" do
       expect(calculator.display_outputs).to eq(

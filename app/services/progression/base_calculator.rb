@@ -10,15 +10,25 @@ module Progression
       session_sets.sum { |set| (set.reps || 0) * (set.effective_weight_kg || 0) }
     end
 
-    # Ordered {label => formatted value} pairs for display, implemented per shape.
+    # Ordered {label => raw numeric value or nil} pairs, implemented per shape.
+    # The single source of truth for both #display_outputs (formatted) and charting (raw).
+    def outputs
+      raise NotImplementedError, "#{self.class} must implement #outputs"
+    end
+
     def display_outputs
-      raise NotImplementedError, "#{self.class} must implement #display_outputs"
+      outputs.to_h { |label, value| [ label, format_metric(value, precision: precision_for(label)) ] }
     end
 
     private
 
     def session_sets
       session.session_sets
+    end
+
+    # Subclasses override to give specific outputs (e.g. whole-number totals) less precision.
+    def precision_for(_label)
+      3
     end
 
     def format_metric(value, precision: 3)
