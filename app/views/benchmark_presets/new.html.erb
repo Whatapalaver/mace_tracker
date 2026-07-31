@@ -26,7 +26,7 @@
 
     <div>
       <%= form.label :exercise_id, "Exercise", class: "mb-1 block text-sm font-medium" %>
-      <%= form.collection_select :exercise_id, @exercises, :id, :name, {}, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
+      <%= form.collection_select :exercise_id, @exercises, :id, :display_name, {}, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
     </div>
 
     <%= render "shared/shape_fields", form: form, session_shapes: @session_shapes %>

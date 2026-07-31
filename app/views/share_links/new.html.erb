@@ -15,7 +15,7 @@
 
   <div>
     <%= form.label :exercise_id, "Exercise (optional)", class: "mb-1 block text-sm font-medium" %>
-    <%= form.collection_select :exercise_id, @exercises, :id, :name,
+    <%= form.collection_select :exercise_id, @exercises, :id, :display_name,
           { include_blank: "All exercises" }, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
   </div>
 

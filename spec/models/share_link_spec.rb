@@ -76,10 +76,10 @@ RSpec.describe ShareLink, type: :model do
     end
 
     it "describes a scoped link by exercise name" do
-      exercise = create(:exercise, name: "Mace 360")
+      exercise = create(:exercise, name: "Mace 360", arm: :double)
       share_link = build(:share_link, :scoped_to_exercise, exercise: exercise)
 
-      expect(share_link.description).to eq("Mace 360 only")
+      expect(share_link.description).to eq("Mace 360 (Double arm) only")
     end
   end
 end

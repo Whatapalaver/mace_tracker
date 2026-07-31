@@ -12,4 +12,8 @@ class Exercise < ApplicationRecord
   def arm_label
     ARM_LABELS.fetch(arm)
   end
+
+  def display_name
+    "#{name} (#{arm_label})"
+  end
 end

@@ -16,6 +16,6 @@ class ShareLink < ApplicationRecord
   end
 
   def description
-    exercise ? "#{exercise.name} only" : "All exercises"
+    exercise ? "#{exercise.display_name} only" : "All exercises"
   end
 end

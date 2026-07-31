@@ -1,6 +1,6 @@
-<% content_for :title, "#{@session.exercise.name} - #{@session.date}" %>
+<% content_for :title, "#{@session.exercise.display_name} - #{@session.date}" %>
 
-<h1 class="mb-1 text-2xl font-semibold tracking-tight"><%= @session.exercise.name %></h1>
+<h1 class="mb-1 text-2xl font-semibold tracking-tight"><%= @session.exercise.display_name %></h1>
 <p class="mb-4 text-sm text-muted">
   <%= @session.date.to_fs(:long) %>
   <% if @session.is_benchmark? %>

@@ -33,7 +33,7 @@
         <%= label_tag :preset_picker, "Start from a saved preset", class: "mb-1 block text-sm font-medium" %>
         <%= select_tag :preset_picker,
               options_for_select(
-                @benchmark_presets.map { |preset| [ "#{preset.name} (#{preset.exercise.name})", preset.id ] },
+                @benchmark_presets.map { |preset| [ "#{preset.name} (#{preset.exercise.display_name})", preset.id ] },
                 @session.benchmark_preset_id
               ),
               include_blank: "None",
@@ -44,7 +44,7 @@
 
     <div>
       <%= form.label :exercise_id, "Exercise", class: "mb-1 block text-sm font-medium" %>
-      <%= form.collection_select :exercise_id, @exercises, :id, :name, {},
+      <%= form.collection_select :exercise_id, @exercises, :id, :display_name, {},
             class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
     </div>
 

@@ -56,4 +56,11 @@ RSpec.describe Exercise, type: :model do
       expect(build(:exercise, arm: :n_a).arm_label).to eq("N/A")
     end
   end
+
+  describe "#display_name" do
+    it "includes the arm so same-named single/double variants are distinguishable" do
+      exercise = build(:exercise, name: "Mace 360", arm: :single)
+      expect(exercise.display_name).to eq("Mace 360 (Single arm)")
+    end
+  end
 end
