@@ -44,3 +44,7 @@
     </ul>
   <% end %>
 </section>
+
+<%= button_to "Delete session", session_path(@session), method: :delete,
+      data: { turbo_confirm: "Delete this whole session and all its sets?" },
+      class: "font-medium text-crimson hover:text-crimson/80" %>

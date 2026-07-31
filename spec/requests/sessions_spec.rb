@@ -256,4 +256,16 @@ RSpec.describe "Sessions", type: :request do
       expect(response.body).to include("View progression")
     end
   end
+
+  describe "DELETE /sessions/:id" do
+    it "deletes the session and all its sets" do
+      session = create(:session)
+      create(:session_set, session: session, set_number: 1)
+
+      expect { delete session_path(session) }.to change(Session, :count).by(-1)
+        .and change(SessionSet, :count).by(-1)
+
+      expect(response).to redirect_to(session_sets_path)
+    end
+  end
 end

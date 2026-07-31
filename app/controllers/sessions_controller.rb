@@ -24,6 +24,11 @@ class SessionsController < ApplicationController
     @calculator = Progression::Calculator.for(@session)
   end
 
+  def destroy
+    Session.find(params[:id]).destroy
+    redirect_to session_sets_path, notice: "Session deleted."
+  end
+
   private
 
   def confirming_sets?
