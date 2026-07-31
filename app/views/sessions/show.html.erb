@@ -16,7 +16,7 @@
     <% when SessionShape::INTERVAL_WORK %>
       <dt class="text-gray-500">Work / Rest</dt>
       <dd><%= @session.planned_work_seconds %>s / <%= @session.planned_rest_seconds %>s</dd>
-      <dt class="text-gray-500">Planned sets</dt>
+      <dt class="text-gray-500">Sets</dt>
       <dd><%= @session.planned_sets %></dd>
     <% when SessionShape::FIXED_REPS_FOR_TIME %>
       <dt class="text-gray-500">Target reps</dt>
@@ -30,40 +30,25 @@
 
 <%= render SessionOutputsComponent.new(calculator: @calculator) %>
 
-<% if @pace_series %>
-  <section class="mb-6 rounded-lg border border-gray-200 bg-white p-4 text-sm">
-    <div class="mb-2 flex items-center justify-between">
-      <h2 class="font-semibold">Pace progression</h2>
-      <%= form_with url: session_path(@session), method: :get, class: "flex items-center gap-2 text-xs text-gray-500" do |form| %>
-        <label class="flex items-center gap-1">
-          <%= check_box_tag :benchmarks_only, "true", @benchmarks_only, onchange: "this.form.requestSubmit()" %>
-          Benchmarks only
-        </label>
-      <% end %>
-    </div>
-    <% if @pace_series.values.all?(&:empty?) %>
-      <p class="text-sm text-gray-500">Not enough data yet for the same weight and work duration.</p>
-    <% else %>
-      <%= line_chart @pace_series, xtitle: "Date", ytitle: "Pace (reps/sec)" %>
-      <p class="mt-2 text-xs text-gray-500">Click a series in the legend to toggle best vs. average pace.</p>
-    <% end %>
-  </section>
-<% end %>
+<p class="mb-6 text-sm">
+  <%= link_to "View progression on Stats →", stats_path, class: "font-medium text-blue-600" %>
+</p>
 
 <section class="mb-6">
-  <div class="mb-2 flex items-center justify-between">
-    <h2 class="font-semibold">Sets</h2>
-    <%= link_to "Log set", new_session_session_set_path(@session), class: "text-sm font-medium text-blue-600" %>
-  </div>
+  <h2 class="mb-2 font-semibold">Sets</h2>
 
   <% if @session.session_sets.empty? %>
-    <p class="text-sm text-gray-500">No sets logged yet.</p>
+    <p class="text-sm text-gray-500">No sets logged.</p>
   <% else %>
     <ul class="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">
       <% @session.session_sets.order(:set_number).each do |session_set| %>
         <li class="flex items-center justify-between px-4 py-3 text-sm">
           <span>Set <%= session_set.set_number %></span>
-          <span><%= session_set.reps %> reps @ <%= session_set.effective_weight_kg %> kg</span>
+          <span>
+            <%= session_set.reps %> reps
+            <% if session_set.duration_seconds %> in <%= session_set.duration_seconds %>s<% end %>
+            @ <%= session_set.effective_weight_kg %> kg
+          </span>
         </li>
       <% end %>
     </ul>

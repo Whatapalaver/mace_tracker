@@ -1,6 +1,9 @@
 require "rails_helper"
 
-RSpec.describe "Shape-aware session form", type: :system, js: true do
+# The shape-conditional field toggling this spec exercises now lives on the benchmark preset
+# form (shared/_shape_fields.html.erb) — the session log form moved to a single formula field
+# for all three shapes (no toggling needed), covered instead by spec/system/session_logging_spec.rb.
+RSpec.describe "Shape-aware benchmark preset form", type: :system, js: true do
   before do
     create(:exercise, name: "Mace 360")
     create(:session_shape, :interval_work)
@@ -9,7 +12,7 @@ RSpec.describe "Shape-aware session form", type: :system, js: true do
   end
 
   it "shows only the fields relevant to the selected shape" do
-    visit new_session_path
+    visit new_benchmark_preset_path
 
     expect(page).to have_field("Work (sec)", visible: :visible)
     expect(page).to have_field("Target reps", visible: :hidden)
@@ -32,16 +35,16 @@ RSpec.describe "Shape-aware session form", type: :system, js: true do
     expect(page).to have_field("Work (sec)", visible: :visible)
   end
 
-  it "submits a fixed_reps_for_time session end to end" do
-    visit new_session_path
+  it "submits a fixed_reps_for_time preset end to end" do
+    visit new_benchmark_preset_path
+    fill_in "Preset name", with: "My Preset"
     select "Mace 360", from: "Exercise"
     choose "Fixed reps for time"
     fill_in "Weight (kg)", with: "10"
     fill_in "Target reps", with: "100"
 
-    click_button "Start session"
+    click_button "Add preset"
 
-    expect(page).to have_content("Target reps")
-    expect(page).to have_content("100")
+    expect(page).to have_content("My Preset")
   end
 end

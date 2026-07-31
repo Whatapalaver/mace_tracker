@@ -1,0 +1,65 @@
+<% content_for :title, "Confirm Session" %>
+
+<h1 class="mb-1 text-xl font-semibold"><%= @session.exercise.name %></h1>
+<p class="mb-4 text-sm text-gray-500">
+  <%= @session.date.to_fs(:long) %> ·
+  <% if @session.session_shape.name == SessionShape::INTERVAL_WORK %>
+    <%= Progression::IntervalFormula.render(@session) %>
+  <% else %>
+    <%= @session.target_reps %> reps @ <%= @session.planned_weight_kg %>kg
+  <% end %>
+</p>
+
+<%= form_with model: @session, url: sessions_path, class: "space-y-4", data: { turbo: false } do |form| %>
+  <% if @session.errors.any? %>
+    <div class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">
+      <ul>
+        <% @session.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form.hidden_field :date %>
+  <%= form.hidden_field :exercise_id %>
+  <%= form.hidden_field :session_shape_id %>
+  <%= form.hidden_field :benchmark_preset_id %>
+  <%= form.hidden_field :is_benchmark %>
+  <%= form.hidden_field :planned_weight_kg %>
+  <%= form.hidden_field :planned_work_seconds %>
+  <%= form.hidden_field :planned_rest_seconds %>
+  <%= form.hidden_field :planned_sets %>
+  <%= form.hidden_field :target_reps %>
+  <%= form.hidden_field :notes %>
+
+  <fieldset class="space-y-3">
+    <legend class="mb-1 text-sm font-medium">Sets</legend>
+    <%= form.fields_for :session_sets do |set_form| %>
+      <div class="rounded-md border border-gray-200 p-3">
+        <%= set_form.hidden_field :set_number %>
+        <% if @session.session_shape.name == SessionShape::INTERVAL_WORK %>
+          <%= set_form.hidden_field :duration_seconds %>
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-sm text-gray-500">
+              Set <%= set_form.object.set_number %> (<%= set_form.object.duration_seconds %>s)
+            </span>
+            <%= set_form.label :reps, "Reps", class: "sr-only" %>
+            <%= set_form.number_field :reps, class: "w-24 rounded-md border-gray-300 px-2 py-1 text-base" %>
+          </div>
+        <% else %>
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-sm text-gray-500">Set <%= set_form.object.set_number %></span>
+            <%= set_form.label :reps, "Reps", class: "sr-only" %>
+            <%= set_form.number_field :reps, class: "w-20 rounded-md border-gray-300 px-2 py-1 text-base" %>
+            <%= set_form.label :duration_seconds, "Seconds", class: "sr-only" %>
+            <%= set_form.number_field :duration_seconds, placeholder: "seconds",
+                  class: "w-24 rounded-md border-gray-300 px-2 py-1 text-base" %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </fieldset>
+
+  <%= form.submit "Save session", class: "w-full rounded-md bg-blue-600 py-3 text-base font-medium text-white" %>
+<% end %>

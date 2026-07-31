@@ -13,9 +13,7 @@ Rails.application.routes.draw do
 
   resources :benchmark_presets, only: [ :index, :new, :create ]
 
-  resources :sessions, only: [ :new, :create, :show ] do
-    resources :session_sets, only: [ :new, :create ]
-  end
+  resources :sessions, only: [ :new, :create, :show ]
 
   get "stats" => "stats#show", as: :stats
 

@@ -14,7 +14,7 @@
     <%= link_to "Add one", new_exercise_path, class: "text-blue-600" %>.
   </p>
 <% else %>
-  <%= form_with model: @session, class: "space-y-4", data: { controller: "shape-form" } do |form| %>
+  <%= form_with model: @session, url: sessions_path, class: "space-y-4", data: { turbo: false } do |form| %>
     <% if @session.errors.any? %>
       <div class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">
         <ul>
@@ -37,13 +37,42 @@
       <%= form.date_field :date, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
     </div>
 
-    <%= render "shared/shape_fields", form: form, session_shapes: @session_shapes %>
+    <fieldset>
+      <legend class="mb-1 text-sm font-medium">Shape</legend>
+      <div class="space-y-2">
+        <% @session_shapes.each do |shape| %>
+          <label class="flex items-center gap-2 rounded-md border border-gray-300 px-3 py-2">
+            <%= form.radio_button :session_shape_id, shape.id,
+                  checked: form.object.session_shape_id == shape.id ||
+                    (form.object.session_shape_id.nil? && shape.name == SessionShape::INTERVAL_WORK) %>
+            <%= shape.label %>
+          </label>
+        <% end %>
+      </div>
+    </fieldset>
+
+    <div>
+      <%= form.label :formula, class: "mb-1 block text-sm font-medium" %>
+      <%= form.text_field :formula, placeholder: "5(5mw+5mr)@10kg",
+            class: "w-full rounded-md border-gray-300 px-3 py-2 font-mono text-base" %>
+      <p class="mt-1 text-xs text-gray-500">
+        Interval work: <code>N(Xmw+Ymr)@Wkg</code> — e.g. <code>5(5mw+5mr)@10kg</code>.
+        Fixed reps for time / EMOM: <code>N(X@Wkg)</code> — e.g. <code>5(108@10kg)</code>.
+      </p>
+    </div>
+
+    <div>
+      <label class="flex items-center gap-2 text-sm font-medium">
+        <%= form.check_box :is_benchmark %>
+        This was an all-out benchmark effort
+      </label>
+    </div>
 
     <div>
       <%= form.label :notes, class: "mb-1 block text-sm font-medium" %>
       <%= form.text_area :notes, rows: 2, class: "w-full rounded-md border-gray-300 px-3 py-2 text-base" %>
     </div>
 
-    <%= form.submit "Start session", class: "w-full rounded-md bg-blue-600 py-3 text-base font-medium text-white" %>
+    <%= form.submit "Continue", class: "w-full rounded-md bg-blue-600 py-3 text-base font-medium text-white" %>
   <% end %>
 <% end %>

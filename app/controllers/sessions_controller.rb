@@ -11,32 +11,72 @@ class SessionsController < ApplicationController
   def create
     @session = Session.new(session_params)
 
-    if @session.save
-      redirect_to @session, notice: "Session logged."
+    if confirming_sets?
+      save_and_redirect || render(:review, status: :unprocessable_content)
     else
-      @exercises = Exercise.order(:name)
-      @session_shapes = session_shapes
-      render :new, status: :unprocessable_content
+      parse_formula_then_respond
     end
   end
 
   def show
     @session = Session.find(params[:id])
     @calculator = Progression::Calculator.for(@session)
-    @benchmarks_only = ActiveModel::Type::Boolean.new.cast(params[:benchmarks_only])
-    @pace_series = pace_series
   end
 
   private
 
-  def pace_series
-    return nil unless interval_work?
-
-    Progression::IntervalWorkPaceSeries.new(@session, benchmarks_only: @benchmarks_only).to_h
+  def confirming_sets?
+    session_params[:session_sets_attributes].present?
   end
 
-  def interval_work?
-    @session.session_shape.name == SessionShape::INTERVAL_WORK
+  def parse_formula_then_respond
+    result = Progression::SessionFormula.parse(@session.formula, @session.session_shape.name)
+    apply_parsed_result(result)
+
+    if @session.session_shape.name == SessionShape::EMOM
+      save_and_redirect || render_new_with_errors
+    else
+      render :review
+    end
+  rescue Progression::SessionFormula::ParseError => e
+    @session.errors.add(:formula, e.message)
+    render_new_with_errors
+  end
+
+  def apply_parsed_result(result)
+    case @session.session_shape.name
+    when SessionShape::INTERVAL_WORK
+      @session.assign_attributes(
+        planned_weight_kg: result.planned_weight_kg,
+        planned_work_seconds: result.planned_work_seconds,
+        planned_rest_seconds: result.planned_rest_seconds,
+        planned_sets: result.planned_sets
+      )
+      result.work_segments.each_with_index do |segment, index|
+        @session.session_sets.build(set_number: index + 1, duration_seconds: segment[:duration_seconds])
+      end
+    when SessionShape::FIXED_REPS_FOR_TIME
+      @session.planned_weight_kg = result.weight_kg
+      @session.target_reps = result.reps
+      result.count.times { |index| @session.session_sets.build(set_number: index + 1, reps: result.reps) }
+    when SessionShape::EMOM
+      @session.planned_weight_kg = result.weight_kg
+      @session.target_reps_per_minute = result.reps
+      result.count.times { |index| @session.session_sets.build(set_number: index + 1, reps: result.reps) }
+    end
+  end
+
+  def save_and_redirect
+    return false unless @session.save
+
+    redirect_to @session, notice: "Session logged."
+    true
+  end
+
+  def render_new_with_errors
+    @exercises = Exercise.order(:name)
+    @session_shapes = session_shapes
+    render :new, status: :unprocessable_content
   end
 
   def prefill_from_benchmark_preset
@@ -46,19 +86,14 @@ class SessionsController < ApplicationController
     @session.assign_attributes(
       benchmark_preset_id: preset.id,
       exercise_id: preset.exercise_id,
-      session_shape_id: preset.session_shape_id,
-      planned_weight_kg: preset.planned_weight_kg,
-      planned_work_seconds: preset.planned_work_seconds,
-      planned_rest_seconds: preset.planned_rest_seconds,
-      planned_sets: preset.planned_sets,
-      target_reps: preset.target_reps,
-      target_reps_per_minute: preset.target_reps_per_minute
+      session_shape_id: preset.session_shape_id
     )
   end
 
   def session_params
     params.expect(session: [ :date, :exercise_id, :session_shape_id, :benchmark_preset_id, :is_benchmark,
-                             :planned_weight_kg, :planned_work_seconds, :planned_rest_seconds, :planned_sets,
-                             :target_reps, :target_reps_per_minute, :notes ])
+                             :formula, :planned_weight_kg, :planned_work_seconds, :planned_rest_seconds,
+                             :planned_sets, :target_reps, :target_reps_per_minute, :notes,
+                             session_sets_attributes: [ [ :set_number, :duration_seconds, :reps ] ] ])
   end
 end
