@@ -10,10 +10,6 @@ console_command = '/rails/bin/rails console'
 [build]
 [env]
   DATABASE_URL = 'sqlite3:///data/production.sqlite3'
-  PORT = '8080'
-
-[processes]
-  app = './bin/rails server'
 
 [[mounts]]
   source = 'data'
@@ -23,7 +19,7 @@ console_command = '/rails/bin/rails console'
   auto_extend_size_limit = '10GB'
 
 [http_service]
-  internal_port = 8080
+  internal_port = 80
   force_https = true
   auto_stop_machines = 'stop'
   auto_start_machines = true
