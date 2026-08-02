@@ -295,6 +295,14 @@ RSpec.describe "Sessions", type: :request do
       expect(response.body).not_to include("3(5mw+5mr)@10kg")
     end
 
+    it "shows a session's notes" do
+      create(:session, notes: "Felt strong today")
+
+      get sessions_path
+
+      expect(response.body).to include("Felt strong today")
+    end
+
     it "paginates results" do
       30.times { |i| create(:session, date: Date.new(2026, 1, 1) + i) }
 
@@ -328,6 +336,14 @@ RSpec.describe "Sessions", type: :request do
       expect(response.body).to include('value="3(5mw+5mr)"')
       expect(response.body).to include('value="20, 19, 18"')
     end
+
+    it "pre-fills the notes field" do
+      session = create(:session, notes: "Felt strong today")
+
+      get edit_session_path(session)
+
+      expect(response.body).to include('value="Felt strong today"')
+    end
   end
 
   describe "PATCH /sessions/:id" do
@@ -350,6 +366,19 @@ RSpec.describe "Sessions", type: :request do
       expect(session.weight_kg).to eq(12)
       expect(session.is_benchmark).to eq(true)
       expect(session.session_sets.order(:set_number).pluck(:reps)).to eq([ 25, 24, 23, 22, 21 ])
+    end
+
+    it "updates the session's notes" do
+      session = create(:session, work_seconds: 300, rest_seconds: 0, sets_count: 1, notes: "Old note")
+      create(:session_set, session: session, set_number: 1, reps: 20)
+
+      patch session_path(session), params: {
+        session: { date: session.date.to_s, signature: session.weight_agnostic_signature,
+                   weight_kg: session.weight_kg, reps_list: "20", notes: "New note" }
+      }
+
+      expect(response).to have_http_status(:ok)
+      expect(session.reload.notes).to eq("New note")
     end
 
     it "updates the session's date" do

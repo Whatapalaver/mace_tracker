@@ -89,7 +89,7 @@ class SessionsController < ApplicationController
   end
 
   def session_edit_params
-    params.expect(session: [ :date, :weight_kg, :is_benchmark ])
+    params.expect(session: [ :date, :weight_kg, :is_benchmark, :notes ])
   end
 
   def confirming_sets?

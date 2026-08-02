@@ -4,7 +4,7 @@
     <% if session.errors.any? %>
       <p class="mb-2 text-xs text-crimson"><%= session.errors.full_messages.to_sentence %></p>
     <% end %>
-    <div class="grid grid-cols-7 items-center gap-2">
+    <div class="grid grid-cols-8 items-center gap-2">
       <div>
         <%= form.date_field :date, class: "w-full rounded border border-border px-1 py-0.5 text-sm" %>
       </div>
@@ -22,6 +22,9 @@
       </div>
       <div>
         <%= form.check_box :is_benchmark, class: "accent-brass" %>
+      </div>
+      <div>
+        <%= form.text_field :notes, class: "w-full rounded border border-border px-1 py-0.5 text-sm" %>
       </div>
       <div class="flex gap-3">
         <%= form.submit "Save", class: "font-medium text-rust hover:text-rust-dark" %>

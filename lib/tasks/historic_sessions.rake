@@ -10,14 +10,10 @@ namespace :historic do
     # Each row is one interval_work session: weight_kg/work_seconds/rest_seconds/sets_count
     # describe the notation it was logged as (e.g. "5mw@10kg" -> work 300, rest 0, 1 set;
     # "3(5mw+2mr)@10kg" -> work 300, rest 120, 3 sets), :reps has one entry per set in order.
-    # Real logs can repeat the same date/arm/weight/duration and even the same rep count (see
-    # 2026-07-27 and 2026-06-09), so per-row content matching can't tell "already imported" apart
-    # from "a genuine same-day repeat" — instead every session this task creates is tagged via
-    # import_tag below, and each run fully replaces whatever it tagged last time. That makes it
-    # safe to keep appending rows here and re-running as more historic data comes in, without
-    # ever touching sessions logged normally through the app.
-    import_tag = "[historic-import]"
-
+    # Safe to keep appending rows and re-running: for each distinct row, only the shortfall
+    # between how many times it appears here and how many matching sessions already exist gets
+    # created (see the group_by below) — genuine same-day/same-signature repeats (see 2026-07-27
+    # and 2026-06-09) are counted correctly since duplicate rows just raise the expected count.
     rows = [
       { arm: "double", date: Date.new(2026, 1, 7), weight_kg: 10, work_seconds: 300, rest_seconds: 0,
         sets_count: 1, reps: [ 197 ], is_benchmark: true },
@@ -65,18 +61,25 @@ namespace :historic do
         sets_count: 1, reps: [ 217 ], is_benchmark: true }
     ]
 
-    replaced = Session.where(notes: import_tag).destroy_all.size
+    created = 0
+    rows.group_by(&:itself).each do |row, occurrences|
+      exercise = exercises.fetch(row[:arm])
+      existing = Session.where(date: row[:date], exercise: exercise, session_shape: shape,
+                                weight_kg: row[:weight_kg], work_seconds: row[:work_seconds],
+                                rest_seconds: row[:rest_seconds], sets_count: row[:sets_count],
+                                is_benchmark: row[:is_benchmark])
+                         .count { |session| session.session_sets.order(:set_number).pluck(:reps) == row[:reps] }
 
-    rows.each do |row|
-      session = Session.create!(date: row[:date], exercise: exercises.fetch(row[:arm]), session_shape: shape,
-                                 weight_kg: row[:weight_kg], work_seconds: row[:work_seconds],
-                                 rest_seconds: row[:rest_seconds], sets_count: row[:sets_count],
-                                 is_benchmark: row[:is_benchmark], notes: import_tag)
-      row[:reps].each_with_index do |reps, index|
-        session.session_sets.create!(set_number: index + 1, reps: reps)
+      (occurrences.size - existing).times do
+        session = Session.create!(date: row[:date], exercise: exercise, session_shape: shape,
+                                   weight_kg: row[:weight_kg], work_seconds: row[:work_seconds],
+                                   rest_seconds: row[:rest_seconds], sets_count: row[:sets_count],
+                                   is_benchmark: row[:is_benchmark])
+        row[:reps].each_with_index { |reps, index| session.session_sets.create!(set_number: index + 1, reps: reps) }
+        created += 1
       end
     end
 
-    puts "Imported #{rows.size} historic sessions (replaced #{replaced} from a previous run)."
+    puts "Imported #{created} new historic sessions (#{rows.size - created} already present)."
   end
 end
