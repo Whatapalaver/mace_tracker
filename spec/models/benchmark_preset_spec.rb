@@ -25,11 +25,11 @@ RSpec.describe BenchmarkPreset, type: :model do
       expect(preset.errors).to be_of_kind(:work_seconds, :blank)
     end
 
-    it "requires target_reps when the shape is fixed_reps_for_time" do
-      preset = build(:benchmark_preset, :fixed_reps_for_time, target_reps: nil)
+    it "requires reps when the shape is fixed_reps_for_time" do
+      preset = build(:benchmark_preset, :fixed_reps_for_time, reps: nil)
 
       expect(preset).not_to be_valid
-      expect(preset.errors).to be_of_kind(:target_reps, :blank)
+      expect(preset.errors).to be_of_kind(:reps, :blank)
     end
 
     it "allows rest_seconds to be 0 (a single-set all-out effort)" do

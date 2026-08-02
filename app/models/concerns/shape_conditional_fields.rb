@@ -5,7 +5,7 @@ module ShapeConditionalFields
     belongs_to :session_shape
 
     validates :weight_kg, numericality: { greater_than: 0 }, allow_nil: true
-    validates :work_seconds, :sets_count, :target_reps, :target_reps_per_minute,
+    validates :work_seconds, :sets_count, :reps, :reps_per_minute,
               numericality: { greater_than: 0, only_integer: true }, allow_nil: true
     # Zero rest is legitimate (e.g. a single-set all-out effort), unlike the other fields above.
     validates :rest_seconds, numericality: { greater_than_or_equal_to: 0, only_integer: true }, allow_nil: true
@@ -15,11 +15,11 @@ module ShapeConditionalFields
     end
 
     with_options if: -> { session_shape&.name == SessionShape::FIXED_REPS_FOR_TIME } do
-      validates :weight_kg, :target_reps, presence: true
+      validates :weight_kg, :reps, presence: true
     end
 
     with_options if: -> { session_shape&.name == SessionShape::EMOM } do
-      validates :weight_kg, :target_reps_per_minute, presence: true
+      validates :weight_kg, :reps_per_minute, presence: true
     end
   end
 end

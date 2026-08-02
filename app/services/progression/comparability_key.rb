@@ -9,9 +9,9 @@ module Progression
       when SessionShape::INTERVAL_WORK
         base.merge(weight: session.weight_kg, work_duration: session.work_seconds)
       when SessionShape::FIXED_REPS_FOR_TIME
-        base.merge(weight: session.weight_kg, target_reps: session.target_reps)
+        base.merge(weight: session.weight_kg, reps: session.reps)
       when SessionShape::EMOM
-        base.merge(weight: session.weight_kg, target_reps_per_minute: session.target_reps_per_minute)
+        base.merge(weight: session.weight_kg, reps_per_minute: session.reps_per_minute)
       else
         raise UnknownShapeError, "No comparability key defined for session shape #{session.session_shape.name.inspect}"
       end
@@ -28,8 +28,8 @@ module Progression
     def self.structural_column_for(shape_name)
       case shape_name
       when SessionShape::INTERVAL_WORK then :work_seconds
-      when SessionShape::FIXED_REPS_FOR_TIME then :target_reps
-      when SessionShape::EMOM then :target_reps_per_minute
+      when SessionShape::FIXED_REPS_FOR_TIME then :reps
+      when SessionShape::EMOM then :reps_per_minute
       else
         raise UnknownShapeError, "No comparability key defined for session shape #{shape_name.inspect}"
       end

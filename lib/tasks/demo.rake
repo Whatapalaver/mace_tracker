@@ -22,7 +22,7 @@ namespace :demo do
     fixed_reps_session = Session.find_or_create_by!(exercise: exercise, session_shape: fixed_reps_for_time,
                                                      date: Date.current - 7) do |session|
       session.weight_kg = 8
-      session.target_reps = 108
+      session.reps = 108
     end
     fixed_reps_session.session_sets.find_or_create_by!(set_number: 1) do |set|
       set.reps = 108
@@ -31,7 +31,7 @@ namespace :demo do
 
     emom_session = Session.find_or_create_by!(exercise: exercise, session_shape: emom, date: Date.current) do |session|
       session.weight_kg = 10
-      session.target_reps_per_minute = 20
+      session.reps_per_minute = 20
     end
     3.times { |index| emom_session.session_sets.find_or_create_by!(set_number: index + 1) }
 

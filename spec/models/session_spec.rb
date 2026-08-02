@@ -34,8 +34,8 @@ RSpec.describe Session, type: :model do
         )
       end
 
-      it "does not require target_reps or target_reps_per_minute" do
-        session = build(:session, target_reps: nil, target_reps_per_minute: nil)
+      it "does not require reps or reps_per_minute" do
+        session = build(:session, reps: nil, reps_per_minute: nil)
         expect(session).to be_valid
       end
 
@@ -56,11 +56,11 @@ RSpec.describe Session, type: :model do
     end
 
     context "fixed_reps_for_time" do
-      it "requires weight_kg and target_reps" do
-        session = build(:session, :fixed_reps_for_time, weight_kg: nil, target_reps: nil)
+      it "requires weight_kg and reps" do
+        session = build(:session, :fixed_reps_for_time, weight_kg: nil, reps: nil)
 
         expect(session).not_to be_valid
-        expect(session.errors.attribute_names).to contain_exactly(:weight_kg, :target_reps)
+        expect(session.errors.attribute_names).to contain_exactly(:weight_kg, :reps)
       end
 
       it "does not require interval-specific fields" do
@@ -71,11 +71,11 @@ RSpec.describe Session, type: :model do
     end
 
     context "emom" do
-      it "requires weight_kg and target_reps_per_minute" do
-        session = build(:session, :emom, weight_kg: nil, target_reps_per_minute: nil)
+      it "requires weight_kg and reps_per_minute" do
+        session = build(:session, :emom, weight_kg: nil, reps_per_minute: nil)
 
         expect(session).not_to be_valid
-        expect(session.errors.attribute_names).to contain_exactly(:weight_kg, :target_reps_per_minute)
+        expect(session.errors.attribute_names).to contain_exactly(:weight_kg, :reps_per_minute)
       end
     end
   end
@@ -106,13 +106,13 @@ RSpec.describe Session, type: :model do
       expect(session.structural_value).to eq(300)
     end
 
-    it "returns target_reps for fixed_reps_for_time" do
-      session = build(:session, :fixed_reps_for_time, target_reps: 108)
+    it "returns reps for fixed_reps_for_time" do
+      session = build(:session, :fixed_reps_for_time, reps: 108)
       expect(session.structural_value).to eq(108)
     end
 
-    it "returns target_reps_per_minute for emom" do
-      session = build(:session, :emom, target_reps_per_minute: 20)
+    it "returns reps_per_minute for emom" do
+      session = build(:session, :emom, reps_per_minute: 20)
       expect(session.structural_value).to eq(20)
     end
   end

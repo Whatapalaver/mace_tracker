@@ -34,7 +34,7 @@ RSpec.describe "db/seeds.rb" do
     time_to_108 = presets.fetch("Time to 108")
     expect(time_to_108.session_shape.name).to eq(SessionShape::FIXED_REPS_FOR_TIME)
     expect(time_to_108.weight_kg).to eq(8)
-    expect(time_to_108.target_reps).to eq(108)
+    expect(time_to_108.reps).to eq(108)
 
     five_by_five = presets.fetch("5 x 5")
     expect(five_by_five.session_shape.name).to eq(SessionShape::INTERVAL_WORK)

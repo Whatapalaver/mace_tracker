@@ -10,16 +10,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_31_144345) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_02_112253) do
   create_table "benchmark_presets", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "exercise_id", null: false
     t.string "name", null: false
+    t.integer "reps"
+    t.integer "reps_per_minute"
     t.integer "rest_seconds"
     t.integer "session_shape_id", null: false
     t.integer "sets_count"
-    t.integer "target_reps"
-    t.integer "target_reps_per_minute"
     t.datetime "updated_at", null: false
     t.decimal "weight_kg", precision: 5, scale: 2
     t.integer "work_seconds"
@@ -70,12 +70,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_31_144345) do
     t.integer "exercise_id", null: false
     t.boolean "is_benchmark", default: false, null: false
     t.text "notes"
+    t.integer "reps"
+    t.integer "reps_per_minute"
     t.integer "rest_seconds"
     t.decimal "rpe_session", precision: 3, scale: 1
     t.integer "session_shape_id", null: false
     t.integer "sets_count"
-    t.integer "target_reps"
-    t.integer "target_reps_per_minute"
     t.datetime "updated_at", null: false
     t.decimal "weight_kg", precision: 5, scale: 2
     t.integer "work_seconds"

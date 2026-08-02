@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe Progression::FixedRepsForTimeCalculator do
   subject(:calculator) { described_class.new(session) }
 
-  let(:session) { create(:session, :fixed_reps_for_time, weight_kg: 10, target_reps: 100) }
+  let(:session) { create(:session, :fixed_reps_for_time, weight_kg: 10, reps: 100) }
 
   describe ".output_labels" do
     it "lists every output key" do

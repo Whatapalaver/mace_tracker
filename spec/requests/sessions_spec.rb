@@ -166,10 +166,10 @@ RSpec.describe "Sessions", type: :request do
         expect(response.body).to include('value="108"')
       end
 
-      it "suggests a matching preset keyed on weight and target_reps" do
+      it "suggests a matching preset keyed on weight and reps" do
         create(:benchmark_preset, :fixed_reps_for_time, name: "Time to 108", exercise: exercise,
                                                           session_shape: fixed_reps_for_time_shape,
-                                                          weight_kg: 10, target_reps: 108)
+                                                          weight_kg: 10, reps: 108)
 
         post sessions_path, params: { session: {
           date: "2026-07-30", exercise_id: exercise.id, session_shape_id: fixed_reps_for_time_shape.id,
@@ -182,7 +182,7 @@ RSpec.describe "Sessions", type: :request do
       it "creates the session and its sets once the review is confirmed" do
         params = {
           date: "2026-07-30", exercise_id: exercise.id, session_shape_id: fixed_reps_for_time_shape.id,
-          weight_kg: "10", target_reps: "108",
+          weight_kg: "10", reps: "108",
           session_sets_attributes: {
             "0" => { set_number: "1", reps: "108", duration_seconds: "240" },
             "1" => { set_number: "2", reps: "108", duration_seconds: "235" }
@@ -208,7 +208,7 @@ RSpec.describe "Sessions", type: :request do
         expect { post sessions_path, params: { session: params } }.to change(Session, :count).by(1)
 
         session = Session.last
-        expect(session.target_reps_per_minute).to eq(20)
+        expect(session.reps_per_minute).to eq(20)
         expect(session.session_sets.count).to eq(10)
         expect(session.session_sets.pluck(:reps).uniq).to eq([ 20 ])
         expect(response).to redirect_to(session_path(session))

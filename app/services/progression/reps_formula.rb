@@ -3,7 +3,7 @@ module Progression
   # sets/rounds, X = reps per set/round, W = weight. Deliberately not built on
   # Progression::IntervalNotation — that grammar requires w/r type letters and doesn't fit a
   # bare-number-per-block pattern. Shape-agnostic by design: the caller maps `reps` onto
-  # target_reps (fixed_reps_for_time) or target_reps_per_minute (emom).
+  # reps (fixed_reps_for_time) or reps_per_minute (emom).
   class RepsFormula
     class ParseError < StandardError; end
 

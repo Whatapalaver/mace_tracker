@@ -8,7 +8,7 @@
     <%= Progression::IntervalFormula.render(@session) %>
   <% else %>
     <%= Progression::RepsFormula.render(count: @session.session_sets.size,
-          reps: @session.target_reps || @session.target_reps_per_minute, weight_kg: @session.weight_kg) %>
+          reps: @session.reps || @session.reps_per_minute, weight_kg: @session.weight_kg) %>
   <% end %>
 </div>
 
@@ -32,7 +32,7 @@
   <%= form.hidden_field :work_seconds %>
   <%= form.hidden_field :rest_seconds %>
   <%= form.hidden_field :sets_count %>
-  <%= form.hidden_field :target_reps %>
+  <%= form.hidden_field :reps %>
   <%= form.hidden_field :notes %>
 
   <% if @matching_preset %>

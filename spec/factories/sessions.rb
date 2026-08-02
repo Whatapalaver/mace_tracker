@@ -15,7 +15,7 @@ FactoryBot.define do
       work_seconds { nil }
       rest_seconds { nil }
       sets_count { nil }
-      target_reps { 100 }
+      reps { 100 }
     end
 
     trait :emom do
@@ -23,7 +23,7 @@ FactoryBot.define do
       work_seconds { nil }
       rest_seconds { nil }
       sets_count { nil }
-      target_reps_per_minute { 20 }
+      reps_per_minute { 20 }
     end
   end
 end

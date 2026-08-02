@@ -28,6 +28,6 @@ class BenchmarkPresetsController < ApplicationController
   def benchmark_preset_params
     params.expect(benchmark_preset: [ :name, :exercise_id, :session_shape_id, :weight_kg,
                                       :work_seconds, :rest_seconds, :sets_count,
-                                      :target_reps, :target_reps_per_minute ])
+                                      :reps, :reps_per_minute ])
   end
 end

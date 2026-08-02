@@ -15,20 +15,20 @@ RSpec.describe "Shape-aware benchmark preset form", type: :system, js: true do
     visit new_benchmark_preset_path
 
     expect(page).to have_field("Work (sec)", visible: :visible)
-    expect(page).to have_field("Target reps", visible: :hidden)
-    expect(page).to have_field("Target reps / min", visible: :hidden)
+    expect(page).to have_field("Reps", visible: :hidden)
+    expect(page).to have_field("Reps / min", visible: :hidden)
 
     choose "Fixed reps for time"
 
-    expect(page).to have_field("Target reps", visible: :visible)
+    expect(page).to have_field("Reps", visible: :visible)
     expect(page).to have_field("Work (sec)", visible: :hidden)
-    expect(page).to have_field("Target reps / min", visible: :hidden)
+    expect(page).to have_field("Reps / min", visible: :hidden)
 
     choose "EMOM"
 
-    expect(page).to have_field("Target reps / min", visible: :visible)
+    expect(page).to have_field("Reps / min", visible: :visible)
     expect(page).to have_field("Work (sec)", visible: :hidden)
-    expect(page).to have_field("Target reps", visible: :hidden)
+    expect(page).to have_field("Reps", visible: :hidden)
 
     choose "Interval work"
 
@@ -41,7 +41,7 @@ RSpec.describe "Shape-aware benchmark preset form", type: :system, js: true do
     select "Mace 360", from: "Exercise"
     choose "Fixed reps for time"
     fill_in "Weight (kg)", with: "10"
-    fill_in "Target reps", with: "100"
+    fill_in "Reps", with: "100"
 
     click_button "Add preset"
 

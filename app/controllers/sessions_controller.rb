@@ -64,11 +64,11 @@ class SessionsController < ApplicationController
       end
     when SessionShape::FIXED_REPS_FOR_TIME
       @session.weight_kg = result.weight_kg
-      @session.target_reps = result.reps
+      @session.reps = result.reps
       result.count.times { |index| @session.session_sets.build(set_number: index + 1, reps: result.reps) }
     when SessionShape::EMOM
       @session.weight_kg = result.weight_kg
-      @session.target_reps_per_minute = result.reps
+      @session.reps_per_minute = result.reps
       result.count.times { |index| @session.session_sets.build(set_number: index + 1, reps: result.reps) }
     end
   end
@@ -85,7 +85,7 @@ class SessionsController < ApplicationController
                            rest_seconds: @session.rest_seconds,
                            sets_count: @session.sets_count)
     when SessionShape::FIXED_REPS_FOR_TIME
-      scope = scope.where(target_reps: @session.target_reps)
+      scope = scope.where(reps: @session.reps)
     end
     scope.first
   end
@@ -121,16 +121,16 @@ class SessionsController < ApplicationController
     when SessionShape::INTERVAL_WORK
       Progression::IntervalFormula.render(preset)
     when SessionShape::FIXED_REPS_FOR_TIME
-      Progression::RepsFormula.render(count: 1, reps: preset.target_reps, weight_kg: preset.weight_kg)
+      Progression::RepsFormula.render(count: 1, reps: preset.reps, weight_kg: preset.weight_kg)
     when SessionShape::EMOM
-      Progression::RepsFormula.render(count: 1, reps: preset.target_reps_per_minute, weight_kg: preset.weight_kg)
+      Progression::RepsFormula.render(count: 1, reps: preset.reps_per_minute, weight_kg: preset.weight_kg)
     end
   end
 
   def session_params
     params.expect(session: [ :date, :exercise_id, :session_shape_id, :benchmark_preset_id, :is_benchmark,
                              :formula, :weight_kg, :work_seconds, :rest_seconds,
-                             :sets_count, :target_reps, :target_reps_per_minute, :notes,
+                             :sets_count, :reps, :reps_per_minute, :notes,
                              session_sets_attributes: [ [ :set_number, :duration_seconds, :reps ] ] ])
   end
 end

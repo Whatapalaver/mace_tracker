@@ -13,25 +13,25 @@ RSpec.describe Progression::ComparabilityKey do
       )
     end
 
-    it "builds a key from exercise, shape, weight, and target_reps for fixed_reps_for_time" do
-      session = create(:session, :fixed_reps_for_time, weight_kg: 8, target_reps: 108)
+    it "builds a key from exercise, shape, weight, and reps for fixed_reps_for_time" do
+      session = create(:session, :fixed_reps_for_time, weight_kg: 8, reps: 108)
 
       expect(described_class.for(session)).to eq(
         exercise_id: session.exercise_id,
         session_shape_id: session.session_shape_id,
         weight: 8.0,
-        target_reps: 108
+        reps: 108
       )
     end
 
-    it "builds a key from exercise, shape, weight, and target_reps_per_minute for emom" do
-      session = create(:session, :emom, weight_kg: 10, target_reps_per_minute: 20)
+    it "builds a key from exercise, shape, weight, and reps_per_minute for emom" do
+      session = create(:session, :emom, weight_kg: 10, reps_per_minute: 20)
 
       expect(described_class.for(session)).to eq(
         exercise_id: session.exercise_id,
         session_shape_id: session.session_shape_id,
         weight: 10.0,
-        target_reps_per_minute: 20
+        reps_per_minute: 20
       )
     end
 
@@ -65,8 +65,8 @@ RSpec.describe Progression::ComparabilityKey do
   describe ".structural_column_for" do
     it "maps each shape to its structural Session column" do
       expect(described_class.structural_column_for(SessionShape::INTERVAL_WORK)).to eq(:work_seconds)
-      expect(described_class.structural_column_for(SessionShape::FIXED_REPS_FOR_TIME)).to eq(:target_reps)
-      expect(described_class.structural_column_for(SessionShape::EMOM)).to eq(:target_reps_per_minute)
+      expect(described_class.structural_column_for(SessionShape::FIXED_REPS_FOR_TIME)).to eq(:reps)
+      expect(described_class.structural_column_for(SessionShape::EMOM)).to eq(:reps_per_minute)
     end
 
     it "raises for an unregistered shape" do
