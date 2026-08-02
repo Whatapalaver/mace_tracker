@@ -265,7 +265,141 @@ RSpec.describe "Sessions", type: :request do
       expect { delete session_path(session) }.to change(Session, :count).by(-1)
         .and change(SessionSet, :count).by(-1)
 
-      expect(response).to redirect_to(session_sets_path)
+      expect(response).to redirect_to(sessions_path)
+    end
+  end
+
+  describe "GET /sessions" do
+    it "lists sessions, most recent date first" do
+      older = create(:session, date: Date.new(2026, 7, 1))
+      newer = create(:session, date: Date.new(2026, 7, 20))
+      create(:session_set, session: older, set_number: 1, reps: 20)
+      create(:session_set, session: newer, set_number: 1, reps: 25)
+
+      get sessions_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body.index(newer.date.to_fs(:short))).to be < response.body.index(older.date.to_fs(:short))
+    end
+
+    it "shows the weight-agnostic signature, weight, and reps list per session" do
+      session = create(:session, weight_kg: 10, work_seconds: 300, rest_seconds: 300, sets_count: 3)
+      create(:session_set, session: session, set_number: 1, reps: 20)
+      create(:session_set, session: session, set_number: 2, reps: 19)
+      create(:session_set, session: session, set_number: 3, reps: 18)
+
+      get sessions_path
+
+      expect(response.body).to include("3(5mw+5mr)")
+      expect(response.body).to include("20, 19, 18")
+      expect(response.body).not_to include("3(5mw+5mr)@10kg")
+    end
+
+    it "paginates results" do
+      30.times { |i| create(:session, date: Date.new(2026, 1, 1) + i) }
+
+      get sessions_path
+
+      expect(response.body).to include("Page 1 of 2")
+
+      get sessions_path(page: 2)
+
+      expect(response.body).to include("Page 2 of 2")
+    end
+
+    it "shows an empty state with no sessions logged" do
+      get sessions_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("No sessions logged yet")
+    end
+  end
+
+  describe "GET /sessions/:id/edit" do
+    it "renders an editable row pre-filled with the current signature and reps" do
+      session = create(:session, work_seconds: 300, rest_seconds: 300, sets_count: 3)
+      create(:session_set, session: session, set_number: 1, reps: 20)
+      create(:session_set, session: session, set_number: 2, reps: 19)
+      create(:session_set, session: session, set_number: 3, reps: 18)
+
+      get edit_session_path(session)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include('value="3(5mw+5mr)"')
+      expect(response.body).to include('value="20, 19, 18"')
+    end
+  end
+
+  describe "PATCH /sessions/:id" do
+    it "re-parses the signature and rebuilds sets from the reps list" do
+      session = create(:session, work_seconds: 300, rest_seconds: 300, sets_count: 3, weight_kg: 10)
+      create(:session_set, session: session, set_number: 1, reps: 20)
+      create(:session_set, session: session, set_number: 2, reps: 19)
+      create(:session_set, session: session, set_number: 3, reps: 18)
+
+      patch session_path(session), params: {
+        session: { date: session.date.to_s, signature: "5(5mw+5mr)", weight_kg: "12",
+                   reps_list: "25, 24, 23, 22, 21", is_benchmark: "1" }
+      }
+
+      expect(response).to have_http_status(:ok)
+      session.reload
+      expect(session.work_seconds).to eq(300)
+      expect(session.rest_seconds).to eq(300)
+      expect(session.sets_count).to eq(5)
+      expect(session.weight_kg).to eq(12)
+      expect(session.is_benchmark).to eq(true)
+      expect(session.session_sets.order(:set_number).pluck(:reps)).to eq([ 25, 24, 23, 22, 21 ])
+    end
+
+    it "updates the session's date" do
+      session = create(:session, date: Date.new(2026, 1, 1), work_seconds: 300, rest_seconds: 0, sets_count: 1)
+      create(:session_set, session: session, set_number: 1, reps: 20)
+
+      patch session_path(session), params: {
+        session: { date: "2026-06-15", signature: session.weight_agnostic_signature,
+                   weight_kg: session.weight_kg, reps_list: "20" }
+      }
+
+      expect(session.reload.date).to eq(Date.new(2026, 6, 15))
+    end
+
+    it "rejects a reps list whose length disagrees with the signature's set count" do
+      session = create(:session, work_seconds: 300, rest_seconds: 300, sets_count: 3)
+      create(:session_set, session: session, set_number: 1, reps: 20)
+      create(:session_set, session: session, set_number: 2, reps: 19)
+      create(:session_set, session: session, set_number: 3, reps: 18)
+
+      patch session_path(session), params: {
+        session: { signature: "3(5mw+5mr)", weight_kg: session.weight_kg, reps_list: "20, 19" }
+      }
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("Signature implies 3 sets but 2 rep values were given")
+      expect(session.reload.session_sets.count).to eq(3)
+    end
+
+    it "rejects invalid signature notation" do
+      session = create(:session)
+      create(:session_set, session: session, set_number: 1, reps: 20)
+
+      patch session_path(session), params: {
+        session: { signature: "not a formula", weight_kg: session.weight_kg, reps_list: "20" }
+      }
+
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
+  describe "GET /sessions/:id/row" do
+    it "renders just the display row" do
+      session = create(:session)
+      create(:session_set, session: session, set_number: 1, reps: 20)
+
+      get row_session_path(session)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Edit")
     end
   end
 end

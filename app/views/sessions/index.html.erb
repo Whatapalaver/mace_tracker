@@ -1,25 +1,24 @@
 <% content_for :title, "Session History" %>
 
 <h1 class="mb-1 text-2xl font-semibold tracking-tight">Session history</h1>
-<p class="mb-4 text-sm text-muted"><%= @total_count %> sets logged.</p>
+<p class="mb-4 text-sm text-muted"><%= @total_count %> sessions logged.</p>
 
-<% if @session_sets.empty? %>
+<% if @sessions.empty? %>
   <p class="text-sm text-muted">No sessions logged yet.</p>
 <% else %>
   <div class="overflow-x-auto rounded-lg border border-border bg-surface">
-    <div class="min-w-[46rem]">
-      <div class="grid grid-cols-8 gap-2 border-b border-border bg-paper px-3 py-2 text-xs font-semibold tracking-widest text-muted uppercase">
+    <div class="min-w-[52rem]">
+      <div class="grid grid-cols-7 gap-2 border-b border-border bg-paper px-3 py-2 text-xs font-semibold tracking-widest text-muted uppercase">
         <div>Date</div>
         <div>Exercise</div>
-        <div>Shape</div>
-        <div>Reps</div>
+        <div>Signature</div>
         <div>Weight</div>
-        <div>Work (s)</div>
-        <div>Rest (s)</div>
+        <div>Reps</div>
+        <div>Benchmark</div>
         <div>Actions</div>
       </div>
-      <% @session_sets.each do |session_set| %>
-        <%= render "row", session_set: session_set %>
+      <% @sessions.each do |session| %>
+        <%= render "row", session: session %>
       <% end %>
     </div>
   </div>
@@ -27,13 +26,13 @@
   <% if @total_pages > 1 %>
     <nav class="mt-4 flex items-center justify-between text-sm">
       <% if @page > 1 %>
-        <%= link_to "← Previous", session_sets_path(page: @page - 1), class: "font-medium text-rust hover:text-rust-dark" %>
+        <%= link_to "← Previous", sessions_path(page: @page - 1), class: "font-medium text-rust hover:text-rust-dark" %>
       <% else %>
         <span class="text-muted/50">← Previous</span>
       <% end %>
       <span class="text-muted">Page <%= @page %> of <%= @total_pages %></span>
       <% if @page < @total_pages %>
-        <%= link_to "Next →", session_sets_path(page: @page + 1), class: "font-medium text-rust hover:text-rust-dark" %>
+        <%= link_to "Next →", sessions_path(page: @page + 1), class: "font-medium text-rust hover:text-rust-dark" %>
       <% else %>
         <span class="text-muted/50">Next →</span>
       <% end %>

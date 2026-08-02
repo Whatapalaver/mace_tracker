@@ -1,6 +1,18 @@
 class SessionsController < ApplicationController
   include SessionShapeOptions
 
+  PER_PAGE = 25
+
+  before_action :set_session, only: [ :show, :edit, :update, :destroy, :row ]
+
+  def index
+    @page = [ params[:page].to_i, 1 ].max
+    scope = Session.includes(:exercise, :session_shape, :session_sets).order(date: :desc, id: :desc)
+    @total_count = scope.count
+    @total_pages = [ (@total_count / PER_PAGE.to_f).ceil, 1 ].max
+    @sessions = scope.offset((@page - 1) * PER_PAGE).limit(PER_PAGE)
+  end
+
   def new
     @session = Session.new(date: Date.current)
     prefill_from_benchmark_preset
@@ -20,16 +32,65 @@ class SessionsController < ApplicationController
   end
 
   def show
-    @session = Session.find(params[:id])
     @calculator = Progression::Calculator.for(@session)
   end
 
+  def edit
+  end
+
+  def update
+    reps_list = parse_reps_list(params.dig(:session, :reps_list))
+    signature_attrs = Progression::SessionSignature.parse(params.dig(:session, :signature), @session.session_shape.name)
+
+    if @session.session_shape.name == SessionShape::INTERVAL_WORK && signature_attrs[:sets_count] != reps_list.size
+      @session.errors.add(:base,
+        "Signature implies #{signature_attrs[:sets_count]} sets but #{reps_list.size} rep values were given")
+      return render :edit, status: :unprocessable_content
+    end
+
+    ActiveRecord::Base.transaction do
+      @session.assign_attributes(session_edit_params.merge(signature_attrs))
+      @session.save!
+      @session.session_sets.destroy_all
+      reps_list.each_with_index { |reps, index| @session.session_sets.create!(set_number: index + 1, reps: reps) }
+    end
+
+    render partial: "row", locals: { session: @session }
+  rescue Progression::SessionSignature::ParseError => e
+    @session.errors.add(:base, e.message)
+    render :edit, status: :unprocessable_content
+  rescue ActiveRecord::RecordInvalid => e
+    @session.errors.add(:base, e.record.errors.full_messages.to_sentence)
+    render :edit, status: :unprocessable_content
+  end
+
+  def row
+    render partial: "row", locals: { session: @session }
+  end
+
   def destroy
-    Session.find(params[:id]).destroy
-    redirect_to session_sets_path, notice: "Session deleted."
+    @session.destroy
+    redirect_to sessions_path, notice: "Session deleted."
   end
 
   private
+
+  def set_session
+    @session = Session.find(params[:id])
+  end
+
+  def parse_reps_list(text)
+    values = text.to_s.split(",").map(&:strip).reject(&:empty?)
+    raise Progression::SessionSignature::ParseError, "At least one rep value is required" if values.empty?
+
+    values.map { |value| Integer(value) }
+  rescue ArgumentError
+    raise Progression::SessionSignature::ParseError, "Reps must be a comma-separated list of whole numbers"
+  end
+
+  def session_edit_params
+    params.expect(session: [ :date, :weight_kg, :is_benchmark ])
+  end
 
   def confirming_sets?
     session_params[:session_sets_attributes].present?

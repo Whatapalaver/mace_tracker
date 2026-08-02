@@ -23,6 +23,25 @@ class Session < ApplicationRecord
     Progression::ComparabilityKey.encode_structural_value(self)
   end
 
+  # The human-readable, weight-agnostic notation for this session's shape (e.g. "3(5mw+5mr)"
+  # for interval_work, "108 reps" for fixed_reps_for_time) — used in the history table, where
+  # weight is shown as its own column.
+  def weight_agnostic_signature
+    case session_shape.name
+    when SessionShape::INTERVAL_WORK
+      Progression::IntervalFormula.render_without_weight(self)
+    when SessionShape::FIXED_REPS_FOR_TIME
+      "#{reps} reps"
+    when SessionShape::EMOM
+      "#{reps_per_minute} reps/min"
+    end
+  end
+
+  # The actual reps performed in each set, in order — e.g. "184, 181, 175".
+  def reps_summary
+    session_sets.order(:set_number).pluck(:reps).join(", ")
+  end
+
   private
 
   def derive_is_benchmark

@@ -116,4 +116,36 @@ RSpec.describe Session, type: :model do
       expect(session.structural_value).to eq("20")
     end
   end
+
+  describe "#weight_agnostic_signature" do
+    it "renders interval_work notation without weight" do
+      session = build(:session, work_seconds: 300, rest_seconds: 300, sets_count: 3)
+      expect(session.weight_agnostic_signature).to eq("3(5mw+5mr)")
+    end
+
+    it "renders a bare reps count for fixed_reps_for_time" do
+      session = build(:session, :fixed_reps_for_time, reps: 108)
+      expect(session.weight_agnostic_signature).to eq("108 reps")
+    end
+
+    it "renders a bare reps/min count for emom" do
+      session = build(:session, :emom, reps_per_minute: 20)
+      expect(session.weight_agnostic_signature).to eq("20 reps/min")
+    end
+  end
+
+  describe "#reps_summary" do
+    it "lists each set's reps in order, comma-separated" do
+      session = create(:session)
+      create(:session_set, session: session, set_number: 2, reps: 181)
+      create(:session_set, session: session, set_number: 1, reps: 184)
+      create(:session_set, session: session, set_number: 3, reps: 175)
+
+      expect(session.reps_summary).to eq("184, 181, 175")
+    end
+
+    it "returns an empty string when there are no sets" do
+      expect(create(:session).reps_summary).to eq("")
+    end
+  end
 end

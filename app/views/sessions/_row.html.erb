@@ -1,0 +1,20 @@
+<%= turbo_frame_tag dom_id(session) do %>
+  <div class="grid grid-cols-7 items-center gap-2 border-b border-border px-3 py-2 text-sm last:border-b-0">
+    <div class="text-muted"><%= session.date.to_fs(:short) %></div>
+    <div><%= session.exercise.display_name %></div>
+    <div class="font-mono"><%= session.weight_agnostic_signature %></div>
+    <div class="font-mono"><%= session.weight_kg %></div>
+    <div class="font-mono"><%= session.reps_summary %></div>
+    <div>
+      <% if session.is_benchmark? %>
+        <span class="rounded-full bg-brass-light px-2 py-0.5 text-xs font-semibold tracking-wide text-brass uppercase">Benchmark</span>
+      <% end %>
+    </div>
+    <div class="flex gap-3">
+      <%= link_to "Edit", edit_session_path(session), class: "font-medium text-rust hover:text-rust-dark" %>
+      <%= button_to "Delete", session_path(session), method: :delete,
+            data: { turbo_confirm: "Delete this session and all its sets?", turbo_frame: "_top" },
+            class: "font-medium text-crimson hover:text-crimson/80" %>
+    </div>
+  </div>
+<% end %>
