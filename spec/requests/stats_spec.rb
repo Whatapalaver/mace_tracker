@@ -107,5 +107,27 @@ RSpec.describe "Stats", type: :request do
       expect(chart_script).to include('"10.0kg"')
       expect(chart_script).not_to include('"8.0kg"')
     end
+
+    it "passes multi-series chart data as an array of {name, data} objects, not an array of pairs" do
+      # Chartkick 5's JS only recognizes multi-series data when the top-level payload is an
+      # array of plain objects (Array#chart_json's {name:, data:} shape) — passing a Ruby Hash
+      # of {series_name => {date => value}} straight to line_chart instead serializes as a flat
+      # array of [name, data] pairs (Hash#chart_json's fallback), which Chart.js silently
+      # misreads as a single series with the series names as x-axis categories.
+      exercise = create(:exercise)
+      shape = create(:session_shape, :interval_work)
+      light = create(:session, exercise: exercise, session_shape: shape, weight_kg: 8, work_seconds: 300)
+      create(:session_set, session: light, set_number: 1, reps: 20, duration_seconds: 300)
+      heavy = create(:session, exercise: exercise, session_shape: shape, weight_kg: 10, work_seconds: 300)
+      create(:session_set, session: heavy, set_number: 1, reps: 25, duration_seconds: 300)
+
+      get stats_path(exercise_id: exercise.id, shape: SessionShape::INTERVAL_WORK, structural_value: 300)
+      chart_script = response.body[/createChart[\s\S]*?;/]
+      data_json = chart_script[/new Chartkick\["LineChart"\]\("chart-1", (.*), \{/, 1]
+      data = JSON.parse(data_json)
+
+      expect(data).to all(include("name", "data"))
+      expect(data.map { |series| series["name"] }).to contain_exactly("8.0kg", "10.0kg")
+    end
   end
 end
