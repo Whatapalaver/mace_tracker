@@ -45,7 +45,7 @@
       </div>
     </header>
 
-    <main class="mx-auto max-w-md px-4 py-6 sm:max-w-xl md:max-w-2xl">
+    <main class="mx-auto px-4 py-6 <%= content_for(:main_class).presence || "max-w-md sm:max-w-xl md:max-w-2xl" %>">
       <% if notice %>
         <p class="mb-4 rounded-md border border-moss/20 bg-moss-light px-3 py-2 text-sm text-moss"><%= notice %></p>
       <% end %>
