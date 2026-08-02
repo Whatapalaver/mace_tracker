@@ -34,8 +34,36 @@ module Progression
     end
 
     def totals_by_period
-      session_sets.each_with_object(Hash.new(0)) do |set, totals|
-        totals[period_key(set.session.date)] += yield(set)
+      totals = session_sets.each_with_object(Hash.new(0)) do |set, hash|
+        hash[period_key(set.session.date)] += yield(set)
+      end
+      fill_gaps(totals)
+    end
+
+    # Chartkick's column charts plot a plain category axis — whatever keys are present, evenly
+    # spaced, with no notion of the calendar distance between them. Without this, a month with
+    # no sessions just doesn't appear, so neighboring bars sit flush together instead of leaving
+    # a visible gap. Filling every period in the range with 0 makes empty periods render as
+    # actual empty columns, turning the axis into a true (if manually stepped) timeline.
+    def fill_gaps(totals)
+      return totals if totals.empty?
+
+      keys = totals.keys.sort
+      filled = {}
+      current = keys.first
+      while current <= keys.last
+        filled[current] = totals[current] || 0
+        current = next_period(current)
+      end
+      filled
+    end
+
+    def next_period(date)
+      case period
+      when "weekly" then date + 7.days
+      when "monthly" then date.next_month
+      when "yearly" then date.next_year
+      else date + 1.day
       end
     end
 

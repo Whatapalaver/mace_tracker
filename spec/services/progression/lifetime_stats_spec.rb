@@ -39,19 +39,21 @@ RSpec.describe Progression::LifetimeStats do
   end
 
   describe "#reps_by_period and #volume_by_period" do
-    it "defaults to daily totals, keyed by date, in chronological order" do
+    it "defaults to daily totals, keyed by date, in chronological order, zero-filling gaps" do
       logged_set(exercise: mace, date: "2026-07-01", reps: 20, weight: 10)
-      logged_set(exercise: mace, date: "2026-07-08", reps: 30, weight: 10)
+      logged_set(exercise: mace, date: "2026-07-03", reps: 30, weight: 10)
 
       stats = described_class.new(exercise: mace)
 
       expect(stats.reps_by_period).to eq(
         Date.new(2026, 7, 1) => 20,
-        Date.new(2026, 7, 8) => 30
+        Date.new(2026, 7, 2) => 0,
+        Date.new(2026, 7, 3) => 30
       )
       expect(stats.volume_by_period).to eq(
         Date.new(2026, 7, 1) => 200,
-        Date.new(2026, 7, 8) => 300
+        Date.new(2026, 7, 2) => 0,
+        Date.new(2026, 7, 3) => 300
       )
     end
 
@@ -110,6 +112,25 @@ RSpec.describe Progression::LifetimeStats do
       stats = described_class.new(exercise: mace, period: "bogus")
 
       expect(stats.reps_by_period).to eq(Date.new(2026, 7, 1) => 20)
+    end
+
+    it "shows a skipped month as a zero-value bucket rather than omitting it" do
+      logged_set(exercise: mace, date: "2026-01-15", reps: 20, weight: 10)
+      logged_set(exercise: mace, date: "2026-03-15", reps: 15, weight: 10) # February skipped entirely
+
+      stats = described_class.new(exercise: mace, period: "monthly")
+
+      expect(stats.reps_by_period).to eq(
+        Date.new(2026, 1, 1) => 20,
+        Date.new(2026, 2, 1) => 0,
+        Date.new(2026, 3, 1) => 15
+      )
+    end
+
+    it "returns an empty series when nothing has been logged, without erroring" do
+      stats = described_class.new(exercise: mace)
+
+      expect(stats.reps_by_period).to eq({})
     end
   end
 end
