@@ -4,7 +4,8 @@ class SharedDashboardsController < ApplicationController
   before_action :set_share_link
 
   def show
-    @stats = Progression::LifetimeStats.new(exercise: @share_link.exercise)
+    @period = params[:period].presence || "daily"
+    @stats = Progression::LifetimeStats.new(exercise: @share_link.exercise, period: @period)
     @sessions = @share_link.sessions.order(date: :desc).limit(50)
   end
 

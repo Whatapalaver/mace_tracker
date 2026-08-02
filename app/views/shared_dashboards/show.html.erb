@@ -3,7 +3,8 @@
 <h1 class="mb-1 text-2xl font-semibold tracking-tight">Shared progress</h1>
 <p class="mb-6 text-sm text-muted"><%= @share_link.description %></p>
 
-<%= render "stats/lifetime_summary", stats: @stats %>
+<%= render "stats/lifetime_summary", stats: @stats, period: @period,
+      period_form_url: shared_dashboard_path(@share_link.token), period_hidden_params: {} %>
 
 <section class="mb-6">
   <h2 class="mb-2 text-xs font-semibold tracking-widest text-muted uppercase">Recent sessions</h2>

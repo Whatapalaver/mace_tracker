@@ -73,4 +73,5 @@
   </section>
 <% end %>
 
-<%= render "stats/lifetime_summary", stats: @stats %>
+<%= render "stats/lifetime_summary", stats: @stats, period: @period, period_form_url: stats_path,
+      period_hidden_params: { exercise_id: @exercise&.id } %>

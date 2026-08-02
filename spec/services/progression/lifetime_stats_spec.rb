@@ -38,31 +38,78 @@ RSpec.describe Progression::LifetimeStats do
     end
   end
 
-  describe "#cumulative_reps_by_date and #cumulative_volume_by_date" do
-    it "build a running total keyed by date, in chronological order" do
+  describe "#reps_by_period and #volume_by_period" do
+    it "defaults to daily totals, keyed by date, in chronological order" do
       logged_set(exercise: mace, date: "2026-07-01", reps: 20, weight: 10)
       logged_set(exercise: mace, date: "2026-07-08", reps: 30, weight: 10)
 
       stats = described_class.new(exercise: mace)
 
-      expect(stats.cumulative_reps_by_date).to eq(
+      expect(stats.reps_by_period).to eq(
         Date.new(2026, 7, 1) => 20,
-        Date.new(2026, 7, 8) => 50
+        Date.new(2026, 7, 8) => 30
       )
-      expect(stats.cumulative_volume_by_date).to eq(
+      expect(stats.volume_by_period).to eq(
         Date.new(2026, 7, 1) => 200,
-        Date.new(2026, 7, 8) => 500
+        Date.new(2026, 7, 8) => 300
       )
     end
 
-    it "accumulates multiple sets on the same date into one running total" do
+    it "sums multiple sets on the same date into one daily total" do
       session = create(:session, exercise: mace, date: "2026-07-01", weight_kg: 10)
       create(:session_set, session: session, set_number: 1, reps: 20)
       create(:session_set, session: session, set_number: 2, reps: 10)
 
       stats = described_class.new(exercise: mace)
 
-      expect(stats.cumulative_reps_by_date).to eq(Date.new(2026, 7, 1) => 30)
+      expect(stats.reps_by_period).to eq(Date.new(2026, 7, 1) => 30)
+    end
+
+    it "buckets by week when period is weekly" do
+      logged_set(exercise: mace, date: "2026-07-01", reps: 20, weight: 10) # Wednesday
+      logged_set(exercise: mace, date: "2026-07-02", reps: 10, weight: 10) # same week
+      logged_set(exercise: mace, date: "2026-07-09", reps: 15, weight: 10) # next week
+
+      stats = described_class.new(exercise: mace, period: "weekly")
+
+      expect(stats.reps_by_period).to eq(
+        Date.new(2026, 7, 1).beginning_of_week => 30,
+        Date.new(2026, 7, 9).beginning_of_week => 15
+      )
+    end
+
+    it "buckets by month when period is monthly" do
+      logged_set(exercise: mace, date: "2026-07-01", reps: 20, weight: 10)
+      logged_set(exercise: mace, date: "2026-07-28", reps: 10, weight: 10)
+      logged_set(exercise: mace, date: "2026-08-01", reps: 15, weight: 10)
+
+      stats = described_class.new(exercise: mace, period: "monthly")
+
+      expect(stats.reps_by_period).to eq(
+        Date.new(2026, 7, 1) => 30,
+        Date.new(2026, 8, 1) => 15
+      )
+    end
+
+    it "buckets by year when period is yearly" do
+      logged_set(exercise: mace, date: "2026-01-15", reps: 20, weight: 10)
+      logged_set(exercise: mace, date: "2026-12-15", reps: 10, weight: 10)
+      logged_set(exercise: mace, date: "2027-01-15", reps: 15, weight: 10)
+
+      stats = described_class.new(exercise: mace, period: "yearly")
+
+      expect(stats.reps_by_period).to eq(
+        Date.new(2026, 1, 1) => 30,
+        Date.new(2027, 1, 1) => 15
+      )
+    end
+
+    it "falls back to daily for an unrecognized period" do
+      logged_set(exercise: mace, date: "2026-07-01", reps: 20, weight: 10)
+
+      stats = described_class.new(exercise: mace, period: "bogus")
+
+      expect(stats.reps_by_period).to eq(Date.new(2026, 7, 1) => 20)
     end
   end
 end

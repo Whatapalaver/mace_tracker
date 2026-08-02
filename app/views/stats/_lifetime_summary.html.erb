@@ -9,20 +9,35 @@
   </div>
 </section>
 
+<%= form_with url: period_form_url, method: :get, class: "mb-3", data: { turbo: false } do %>
+  <% period_hidden_params.each do |name, value| %>
+    <%= hidden_field_tag name, value %>
+  <% end %>
+  <fieldset class="flex gap-4 text-sm">
+    <legend class="sr-only">Time period</legend>
+    <% Progression::LifetimeStats::PERIODS.each do |option| %>
+      <label class="flex items-center gap-1">
+        <%= radio_button_tag :period, option, period == option, class: "accent-rust", onchange: "this.form.requestSubmit()" %>
+        <%= option.capitalize %>
+      </label>
+    <% end %>
+  </fieldset>
+<% end %>
+
 <section class="mb-6 rounded-lg border border-border bg-surface p-4 text-sm">
-  <h2 class="mb-2 text-xs font-semibold tracking-widest text-muted uppercase">Cumulative reps</h2>
-  <% if stats.cumulative_reps_by_date.empty? %>
+  <h2 class="mb-2 text-xs font-semibold tracking-widest text-muted uppercase">Reps by period</h2>
+  <% if stats.reps_by_period.empty? %>
     <p class="text-sm text-muted">No sets logged yet.</p>
   <% else %>
-    <%= area_chart stats.cumulative_reps_by_date, xtitle: "Date", ytitle: "Total reps", colors: [ "#b5432b" ] %>
+    <%= column_chart stats.reps_by_period, xtitle: "Date", ytitle: "Total reps", colors: [ "#b5432b" ] %>
   <% end %>
 </section>
 
 <section class="mb-6 rounded-lg border border-border bg-surface p-4 text-sm">
-  <h2 class="mb-2 text-xs font-semibold tracking-widest text-muted uppercase">Cumulative volume</h2>
-  <% if stats.cumulative_volume_by_date.empty? %>
+  <h2 class="mb-2 text-xs font-semibold tracking-widest text-muted uppercase">Volume by period</h2>
+  <% if stats.volume_by_period.empty? %>
     <p class="text-sm text-muted">No sets logged yet.</p>
   <% else %>
-    <%= area_chart stats.cumulative_volume_by_date, xtitle: "Date", ytitle: "Total volume (kg)", colors: [ "#a9793c" ] %>
+    <%= column_chart stats.volume_by_period, xtitle: "Date", ytitle: "Total volume (kg)", colors: [ "#a9793c" ] %>
   <% end %>
 </section>

@@ -13,6 +13,29 @@ RSpec.describe "Stats", type: :request do
       expect(response.body).to include("200")
     end
 
+    it "defaults the period to daily and buckets reps by day" do
+      session = create(:session, weight_kg: 10, date: "2026-07-01")
+      create(:session_set, session: session, set_number: 1, reps: 20)
+
+      get stats_path
+
+      expect(response.body).to include("2026-07-01")
+      daily_radio = response.body[/<input[^>]*value="daily"[^>]*>/]
+      expect(daily_radio).to include("checked")
+    end
+
+    it "switches to weekly buckets when period=weekly" do
+      create(:session_set, session: create(:session, weight_kg: 10, date: "2026-07-01"), set_number: 1, reps: 20)
+      create(:session_set, session: create(:session, weight_kg: 10, date: "2026-07-02"), set_number: 1, reps: 10)
+
+      get stats_path(period: "weekly")
+
+      weekly_radio = response.body[/<input[^>]*value="weekly"[^>]*>/]
+      expect(weekly_radio).to include("checked")
+      expect(response.body).to include(Date.new(2026, 7, 1).beginning_of_week.to_s)
+      expect(response.body).not_to include("2026-07-02")
+    end
+
     it "filters totals to a single exercise when exercise_id is given" do
       mace = create(:exercise, name: "Mace 360")
       kettlebell = create(:exercise, name: "Kettlebell Swing")

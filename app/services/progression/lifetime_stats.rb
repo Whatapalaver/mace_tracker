@@ -1,7 +1,10 @@
 module Progression
   class LifetimeStats
-    def initialize(exercise: nil)
+    PERIODS = %w[daily weekly monthly yearly].freeze
+
+    def initialize(exercise: nil, period: "daily")
       @exercise = exercise
+      @period = PERIODS.include?(period) ? period : "daily"
     end
 
     def total_reps
@@ -12,17 +15,17 @@ module Progression
       session_sets.sum { |set| (set.reps || 0) * (set.effective_weight_kg || 0) }
     end
 
-    def cumulative_reps_by_date
-      cumulative_series { |set| set.reps || 0 }
+    def reps_by_period
+      totals_by_period { |set| set.reps || 0 }
     end
 
-    def cumulative_volume_by_date
-      cumulative_series { |set| (set.reps || 0) * (set.effective_weight_kg || 0) }
+    def volume_by_period
+      totals_by_period { |set| (set.reps || 0) * (set.effective_weight_kg || 0) }
     end
 
     private
 
-    attr_reader :exercise
+    attr_reader :exercise, :period
 
     def session_sets
       scope = SessionSet.joins(:session).includes(session: :exercise)
@@ -30,12 +33,18 @@ module Progression
       scope.order(sessions: { date: :asc })
     end
 
-    def cumulative_series
-      running_total = 0
+    def totals_by_period
+      session_sets.each_with_object(Hash.new(0)) do |set, totals|
+        totals[period_key(set.session.date)] += yield(set)
+      end
+    end
 
-      session_sets.each_with_object({}) do |set, series|
-        running_total += yield(set)
-        series[set.session.date] = running_total
+    def period_key(date)
+      case period
+      when "weekly" then date.beginning_of_week
+      when "monthly" then date.beginning_of_month
+      when "yearly" then date.beginning_of_year
+      else date
       end
     end
   end

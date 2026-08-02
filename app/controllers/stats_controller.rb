@@ -2,7 +2,8 @@ class StatsController < ApplicationController
   def show
     @exercises = Exercise.order(:name)
     @exercise = Exercise.find_by(id: params[:exercise_id])
-    @stats = Progression::LifetimeStats.new(exercise: @exercise)
+    @period = params[:period].presence || "daily"
+    @stats = Progression::LifetimeStats.new(exercise: @exercise, period: @period)
     @session_shapes = SessionShape.global_ordered
 
     return unless @exercise
