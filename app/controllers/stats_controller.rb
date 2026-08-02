@@ -12,7 +12,7 @@ class StatsController < ApplicationController
     return unless @shape
 
     @signatures = distinct_signatures
-    @structural_value = params[:structural_value].presence&.to_i
+    @structural_value = params[:structural_value].presence
     return unless @structural_value
 
     @weights = distinct_weights
@@ -29,34 +29,42 @@ class StatsController < ApplicationController
 
   private
 
-  def structural_column
-    Progression::ComparabilityKey.structural_column_for(@shape.name)
+  def structural_columns
+    Progression::ComparabilityKey.structural_columns_for(@shape.name)
   end
 
   def distinct_signatures
-    values = Session.where(exercise_id: @exercise.id, session_shape_id: @shape.id)
-                     .distinct.pluck(structural_column).compact.sort
-    values.map { |value| { value: value, label: signature_label(value) } }
+    rows = Session.where(exercise_id: @exercise.id, session_shape_id: @shape.id)
+                   .distinct.pluck(*structural_columns)
+    rows = rows.map { |row| structural_columns.size == 1 ? [ row ] : row }
+    rows.reject { |row| row.any?(&:nil?) }.uniq.sort.map do |row|
+      { value: row.join(":"), label: signature_label(row) }
+    end
   end
 
   # Weight-agnostic by design — the signature groups sessions across weight changes, so its
   # label must not bake in one arbitrary session's weight (that's what the separate Weight
   # filter is for).
-  def signature_label(value)
+  def signature_label(row)
     case @shape.name
     when SessionShape::INTERVAL_WORK
-      representative = Session.where(exercise_id: @exercise.id, session_shape_id: @shape.id,
-                                      structural_column => value).first
-      Progression::IntervalFormula.render_without_weight(representative)
+      work_seconds, rest_seconds, sets_count = row
+      Progression::IntervalFormula.render_without_weight_values(work_seconds: work_seconds, rest_seconds: rest_seconds,
+                                                                  sets_count: sets_count)
     when SessionShape::FIXED_REPS_FOR_TIME
-      "#{value} reps"
+      "#{row.first} reps"
     when SessionShape::EMOM
-      "#{value} reps/min"
+      "#{row.first} reps/min"
     end
   end
 
+  def decoded_structural_value
+    Progression::ComparabilityKey.decode_structural_value(@shape.name, @structural_value)
+  end
+
   def distinct_weights
-    Session.where(exercise_id: @exercise.id, session_shape_id: @shape.id, structural_column => @structural_value)
+    Session.where(exercise_id: @exercise.id, session_shape_id: @shape.id)
+           .where(decoded_structural_value)
            .distinct.pluck(:weight_kg).compact.sort
   end
 end

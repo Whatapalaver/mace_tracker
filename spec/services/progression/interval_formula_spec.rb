@@ -80,6 +80,33 @@ RSpec.describe Progression::IntervalFormula do
     end
   end
 
+  describe ".render_without_weight_values" do
+    it "renders from plain values instead of a session instance" do
+      expect(described_class.render_without_weight_values(work_seconds: 300, rest_seconds: 300, sets_count: 3))
+        .to eq("3(5mw+5mr)")
+    end
+  end
+
+  describe ".parse_without_weight" do
+    it "parses a bare notation with no weight suffix" do
+      result = described_class.parse_without_weight("3(5mw+5mr)")
+
+      expect(result.work_seconds).to eq(300)
+      expect(result.rest_seconds).to eq(300)
+      expect(result.sets_count).to eq(3)
+      expect(result.weight_kg).to be_nil
+    end
+
+    it "raises for invalid syntax" do
+      expect { described_class.parse_without_weight("5x") }.to raise_error(Progression::IntervalFormula::ParseError)
+    end
+
+    it "raises when there's no work segment" do
+      expect { described_class.parse_without_weight("30r") }
+        .to raise_error(Progression::IntervalFormula::ParseError, /work segment/i)
+    end
+  end
+
   describe "round-trip" do
     it "renders and re-parses to the same values" do
       session = build(:session, weight_kg: 8.5, work_seconds: 45, rest_seconds: 20, sets_count: 4)

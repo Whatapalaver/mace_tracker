@@ -101,19 +101,19 @@ RSpec.describe Session, type: :model do
   end
 
   describe "#structural_value" do
-    it "returns work_seconds for interval_work" do
-      session = build(:session, work_seconds: 300)
-      expect(session.structural_value).to eq(300)
+    it "encodes work_seconds, rest_seconds, and sets_count for interval_work" do
+      session = build(:session, work_seconds: 300, rest_seconds: 300, sets_count: 3)
+      expect(session.structural_value).to eq("300:300:3")
     end
 
     it "returns reps for fixed_reps_for_time" do
       session = build(:session, :fixed_reps_for_time, reps: 108)
-      expect(session.structural_value).to eq(108)
+      expect(session.structural_value).to eq("108")
     end
 
     it "returns reps_per_minute for emom" do
       session = build(:session, :emom, reps_per_minute: 20)
-      expect(session.structural_value).to eq(20)
+      expect(session.structural_value).to eq("20")
     end
   end
 end

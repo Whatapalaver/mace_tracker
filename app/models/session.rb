@@ -16,11 +16,11 @@ class Session < ApplicationRecord
 
   before_validation :derive_is_benchmark
 
-  # The one structural (non-weight) value defining this session's signature — e.g.
-  # work_seconds for interval_work — used to deep-link into the stats page's
+  # The structural (non-weight) value defining this session's signature — e.g.
+  # "300:300:3" (work/rest/sets) for interval_work — used to deep-link into the stats page's
   # signature browser.
   def structural_value
-    public_send(Progression::ComparabilityKey.structural_column_for(session_shape.name))
+    Progression::ComparabilityKey.encode_structural_value(self)
   end
 
   private

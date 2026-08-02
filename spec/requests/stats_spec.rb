@@ -91,7 +91,7 @@ RSpec.describe "Stats", type: :request do
                                   weight_kg: 10, work_seconds: 300, date: "2026-07-01")
       create(:session_set, session: session, set_number: 1, reps: 20, duration_seconds: 300)
 
-      get stats_path(exercise_id: exercise.id, shape: SessionShape::INTERVAL_WORK, structural_value: 300)
+      get stats_path(exercise_id: exercise.id, shape: SessionShape::INTERVAL_WORK, structural_value: "300:600:5")
 
       expect(response.body).to include("Best pace")
       expect(response.body).to include(session.date.to_s)
@@ -105,7 +105,7 @@ RSpec.describe "Stats", type: :request do
       create(:session_set, session: session, set_number: 1, reps: 20, duration_seconds: 300)
 
       get stats_path(exercise_id: exercise.id, shape: SessionShape::INTERVAL_WORK,
-                      structural_value: 300, output: "Total output")
+                      structural_value: "300:600:5", output: "Total output")
 
       expect(response.body).to include("200")
     end
@@ -120,12 +120,12 @@ RSpec.describe "Stats", type: :request do
                                 weight_kg: 10, work_seconds: 300, date: "2026-07-08")
       create(:session_set, session: heavy, set_number: 1, reps: 25, duration_seconds: 300)
 
-      get stats_path(exercise_id: exercise.id, shape: SessionShape::INTERVAL_WORK, structural_value: 300)
+      get stats_path(exercise_id: exercise.id, shape: SessionShape::INTERVAL_WORK, structural_value: "300:600:5")
       chart_script = response.body[/createChart[\s\S]*?;/]
       expect(chart_script).to include('"8.0kg"', '"10.0kg"')
 
       get stats_path(exercise_id: exercise.id, shape: SessionShape::INTERVAL_WORK,
-                      structural_value: 300, weight: "10")
+                      structural_value: "300:600:5", weight: "10")
       chart_script = response.body[/createChart[\s\S]*?;/]
       expect(chart_script).to include('"10.0kg"')
       expect(chart_script).not_to include('"8.0kg"')
@@ -144,7 +144,7 @@ RSpec.describe "Stats", type: :request do
       heavy = create(:session, exercise: exercise, session_shape: shape, weight_kg: 10, work_seconds: 300)
       create(:session_set, session: heavy, set_number: 1, reps: 25, duration_seconds: 300)
 
-      get stats_path(exercise_id: exercise.id, shape: SessionShape::INTERVAL_WORK, structural_value: 300)
+      get stats_path(exercise_id: exercise.id, shape: SessionShape::INTERVAL_WORK, structural_value: "300:600:5")
       chart_script = response.body[/createChart[\s\S]*?;/]
       data_json = chart_script[/new Chartkick\["LineChart"\]\("chart-1", (.*), \{/, 1]
       data = JSON.parse(data_json)

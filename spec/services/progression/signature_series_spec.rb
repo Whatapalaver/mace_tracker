@@ -7,7 +7,7 @@ RSpec.describe Progression::SignatureSeries do
   def series_for(**overrides)
     described_class.new(
       exercise: exercise, session_shape: interval_work_shape,
-      structural_value: 300, output_label: "Best pace",
+      structural_value: "300:600:5", output_label: "Best pace",
       **overrides
     ).to_h
   end

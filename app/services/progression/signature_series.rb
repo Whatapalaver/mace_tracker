@@ -1,7 +1,8 @@
 module Progression
   # Chart-ready {series_label => {date => value}} data for a chosen output across every session
-  # matching a structural signature (exercise + shape + the shape's one structural key column),
-  # replacing the interval_work-only Progression::IntervalWorkPaceSeries. Weight is off by
+  # matching a structural signature (exercise + shape + the shape's structural key columns,
+  # encoded as a single "300:300:5"-style string — see ComparabilityKey), replacing the
+  # interval_work-only Progression::IntervalWorkPaceSeries. Weight is off by
   # default (each distinct weight becomes its own series, e.g. "8kg"/"10kg", so a weight change
   # over time stays visible); passing weight: locks to a single series for that weight.
   class SignatureSeries
@@ -29,8 +30,8 @@ module Progression
     private
 
     def matching_sessions
-      column = ComparabilityKey.structural_column_for(@session_shape.name)
-      scope = Session.where(exercise_id: @exercise.id, session_shape_id: @session_shape.id, column => @structural_value)
+      criteria = ComparabilityKey.decode_structural_value(@session_shape.name, @structural_value)
+      scope = Session.where(exercise_id: @exercise.id, session_shape_id: @session_shape.id).where(criteria)
       scope = scope.where(is_benchmark: true) if @benchmarks_only
       scope.includes(:session_sets).order(:date).to_a
     end
