@@ -15,7 +15,7 @@
           <p class="font-medium"><%= preset.name %></p>
           <p class="text-xs text-muted"><%= preset.exercise.display_name %> · <%= preset.session_shape.label %></p>
         </div>
-        <%= link_to "Start session", new_session_path(benchmark_preset_id: preset.id), class: "font-medium text-rust hover:text-rust-dark" %>
+        <%= link_to "Log session", new_session_path(benchmark_preset_id: preset.id), class: "font-medium text-rust hover:text-rust-dark" %>
       </li>
     <% end %>
   </ul>
