@@ -1,6 +1,7 @@
 class SharedDashboardsController < ApplicationController
   layout "shared"
 
+  skip_before_action :authenticate_owner!
   before_action :set_share_link
 
   def show
