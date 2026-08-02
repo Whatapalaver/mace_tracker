@@ -11,7 +11,7 @@ module Progression
       case shape_name
       when SessionShape::INTERVAL_WORK
         IntervalFormula.parse(text)
-      when SessionShape::FIXED_REPS_FOR_TIME, SessionShape::EMOM
+      when SessionShape::FIXED_REPS_FOR_TIME, SessionShape::EMOM, SessionShape::SETS_AND_REPS
         RepsFormula.parse(text)
       else
         raise ParseError, "No formula parser for session shape #{shape_name.inspect}"

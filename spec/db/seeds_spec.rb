@@ -5,11 +5,11 @@ RSpec.describe "db/seeds.rb" do
     load Rails.root.join("db/seeds.rb")
   end
 
-  it "creates the three global session shapes" do
+  it "creates the four global session shapes" do
     load_seeds
 
     expect(SessionShape.where(user_id: nil).pluck(:name)).to contain_exactly(
-      "interval_work", "fixed_reps_for_time", "emom"
+      "interval_work", "fixed_reps_for_time", "emom", "sets_and_reps"
     )
   end
 

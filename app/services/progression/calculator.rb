@@ -5,7 +5,8 @@ module Progression
     REGISTRY = {
       SessionShape::INTERVAL_WORK => IntervalWorkCalculator,
       SessionShape::FIXED_REPS_FOR_TIME => FixedRepsForTimeCalculator,
-      SessionShape::EMOM => EmomCalculator
+      SessionShape::EMOM => EmomCalculator,
+      SessionShape::SETS_AND_REPS => SetsAndRepsCalculator
     }.freeze
 
     def self.for(session)

@@ -227,6 +227,41 @@ RSpec.describe "Sessions", type: :request do
         expect(session.is_benchmark).to eq(true)
       end
     end
+
+    context "sets_and_reps" do
+      let(:sets_and_reps_shape) { create(:session_shape, :sets_and_reps) }
+
+      it "parses the formula and renders a review step with reps pre-filled, no duration field" do
+        post sessions_path, params: { session: {
+          date: "2026-07-30", exercise_id: exercise.id, session_shape_id: sets_and_reps_shape.id,
+          formula: "4(24@10kg)"
+        } }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include('value="24"')
+        expect(response.body).not_to include('placeholder="seconds"')
+        expect(response.body).not_to include("session_sets_attributes][0][duration_seconds]")
+      end
+
+      it "creates the session and its sets once the review is confirmed" do
+        params = {
+          date: "2026-07-30", exercise_id: exercise.id, session_shape_id: sets_and_reps_shape.id,
+          weight_kg: "10", reps: "24",
+          session_sets_attributes: {
+            "0" => { set_number: "1", reps: "24" },
+            "1" => { set_number: "2", reps: "24" },
+            "2" => { set_number: "3", reps: "22" },
+            "3" => { set_number: "4", reps: "20" }
+          }
+        }
+
+        expect { post sessions_path, params: { session: params } }.to change(Session, :count).by(1)
+
+        session = Session.last
+        expect(session.session_sets.order(:set_number).pluck(:reps)).to eq([ 24, 24, 22, 20 ])
+        expect(session.session_sets.pluck(:duration_seconds).uniq).to eq([ nil ])
+      end
+    end
   end
 
   describe "GET /sessions/:id" do

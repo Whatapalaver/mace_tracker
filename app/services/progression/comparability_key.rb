@@ -9,7 +9,7 @@ module Progression
       when SessionShape::INTERVAL_WORK
         base.merge(weight: session.weight_kg, work_duration: session.work_seconds,
                     rest_duration: session.rest_seconds, sets_count: session.sets_count)
-      when SessionShape::FIXED_REPS_FOR_TIME
+      when SessionShape::FIXED_REPS_FOR_TIME, SessionShape::SETS_AND_REPS
         base.merge(weight: session.weight_kg, reps: session.reps)
       when SessionShape::EMOM
         base.merge(weight: session.weight_kg, reps_per_minute: session.reps_per_minute)
@@ -38,7 +38,7 @@ module Progression
       case shape_name
       when SessionShape::INTERVAL_WORK
         granularity == "segment" ? [ :work_seconds ] : [ :work_seconds, :rest_seconds, :sets_count ]
-      when SessionShape::FIXED_REPS_FOR_TIME then [ :reps ]
+      when SessionShape::FIXED_REPS_FOR_TIME, SessionShape::SETS_AND_REPS then [ :reps ]
       when SessionShape::EMOM then [ :reps_per_minute ]
       else
         raise UnknownShapeError, "No comparability key defined for session shape #{shape_name.inspect}"

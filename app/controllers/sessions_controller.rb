@@ -123,7 +123,7 @@ class SessionsController < ApplicationController
       result.work_segments.each_with_index do |segment, index|
         @session.session_sets.build(set_number: index + 1, duration_seconds: segment[:duration_seconds])
       end
-    when SessionShape::FIXED_REPS_FOR_TIME
+    when SessionShape::FIXED_REPS_FOR_TIME, SessionShape::SETS_AND_REPS
       @session.weight_kg = result.weight_kg
       @session.reps = result.reps
       result.count.times { |index| @session.session_sets.build(set_number: index + 1, reps: result.reps) }
@@ -145,7 +145,7 @@ class SessionsController < ApplicationController
       scope = scope.where(work_seconds: @session.work_seconds,
                            rest_seconds: @session.rest_seconds,
                            sets_count: @session.sets_count)
-    when SessionShape::FIXED_REPS_FOR_TIME
+    when SessionShape::FIXED_REPS_FOR_TIME, SessionShape::SETS_AND_REPS
       scope = scope.where(reps: @session.reps)
     end
     scope.first
@@ -181,7 +181,7 @@ class SessionsController < ApplicationController
     case preset.session_shape.name
     when SessionShape::INTERVAL_WORK
       Progression::IntervalFormula.render(preset)
-    when SessionShape::FIXED_REPS_FOR_TIME
+    when SessionShape::FIXED_REPS_FOR_TIME, SessionShape::SETS_AND_REPS
       Progression::RepsFormula.render(count: 1, reps: preset.reps, weight_kg: preset.weight_kg)
     when SessionShape::EMOM
       Progression::RepsFormula.render(count: 1, reps: preset.reps_per_minute, weight_kg: preset.weight_kg)

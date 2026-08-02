@@ -20,6 +20,12 @@ RSpec.describe Progression::Calculator do
       expect(described_class.for(session)).to be_a(Progression::EmomCalculator)
     end
 
+    it "returns a SetsAndRepsCalculator for a sets_and_reps session" do
+      session = create(:session, :sets_and_reps)
+
+      expect(described_class.for(session)).to be_a(Progression::SetsAndRepsCalculator)
+    end
+
     it "raises for a session shape with no registered calculator" do
       shape = create(:session_shape, name: "unregistered_shape")
       session = create(:session, session_shape: shape)

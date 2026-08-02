@@ -18,5 +18,10 @@ FactoryBot.define do
       name { "emom" }
       description { "Every minute on the minute, until failure" }
     end
+
+    trait :sets_and_reps do
+      name { "sets_and_reps" }
+      description { "Untimed straight sets" }
+    end
   end
 end

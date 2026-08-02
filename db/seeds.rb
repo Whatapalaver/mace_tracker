@@ -14,6 +14,10 @@
   {
     name: "emom",
     description: "A fixed number of reps every minute on the minute, until failure"
+  },
+  {
+    name: "sets_and_reps",
+    description: "Untimed straight sets, e.g. 4 sets of 24 reps"
   }
 ].each do |attrs|
   SessionShape.find_or_create_by!(name: attrs[:name], user_id: nil) do |shape|

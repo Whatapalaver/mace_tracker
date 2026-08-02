@@ -13,6 +13,10 @@ RSpec.describe Session, type: :model do
     expect(build(:session, :emom)).to be_valid
   end
 
+  it "has a valid sets_and_reps factory" do
+    expect(build(:session, :sets_and_reps)).to be_valid
+  end
+
   describe "validations" do
     it { is_expected.to validate_presence_of(:date) }
     it { is_expected.to belong_to(:exercise) }
@@ -78,6 +82,20 @@ RSpec.describe Session, type: :model do
         expect(session.errors.attribute_names).to contain_exactly(:weight_kg, :reps_per_minute)
       end
     end
+
+    context "sets_and_reps" do
+      it "requires weight_kg and reps" do
+        session = build(:session, :sets_and_reps, weight_kg: nil, reps: nil)
+
+        expect(session).not_to be_valid
+        expect(session.errors.attribute_names).to contain_exactly(:weight_kg, :reps)
+      end
+
+      it "does not require interval-specific fields" do
+        session = build(:session, :sets_and_reps, work_seconds: nil, rest_seconds: nil, sets_count: nil)
+        expect(session).to be_valid
+      end
+    end
   end
 
   describe "is_benchmark" do
@@ -115,6 +133,11 @@ RSpec.describe Session, type: :model do
       session = build(:session, :emom, reps_per_minute: 20)
       expect(session.structural_value).to eq("20")
     end
+
+    it "returns reps for sets_and_reps" do
+      session = build(:session, :sets_and_reps, reps: 24)
+      expect(session.structural_value).to eq("24")
+    end
   end
 
   describe "#weight_agnostic_signature" do
@@ -131,6 +154,11 @@ RSpec.describe Session, type: :model do
     it "renders a bare reps/min count for emom" do
       session = build(:session, :emom, reps_per_minute: 20)
       expect(session.weight_agnostic_signature).to eq("20 reps/min")
+    end
+
+    it "renders a bare reps count for sets_and_reps" do
+      session = build(:session, :sets_and_reps, reps: 24)
+      expect(session.weight_agnostic_signature).to eq("24 reps")
     end
   end
 

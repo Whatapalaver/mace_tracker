@@ -28,10 +28,11 @@ RSpec.describe SessionShape, type: :model do
       create(:session_shape, :emom)
       create(:session_shape, :interval_work)
       create(:session_shape, :fixed_reps_for_time)
+      create(:session_shape, :sets_and_reps)
       create(:session_shape, name: "custom", user_id: 42)
 
       expect(SessionShape.global_ordered.map(&:name)).to eq(
-        %w[interval_work fixed_reps_for_time emom]
+        %w[interval_work fixed_reps_for_time emom sets_and_reps]
       )
     end
   end
@@ -39,6 +40,7 @@ RSpec.describe SessionShape, type: :model do
   describe "#label" do
     it "returns a human-friendly label for known shapes" do
       expect(build(:session_shape, :emom).label).to eq("EMOM")
+      expect(build(:session_shape, :sets_and_reps).label).to eq("Sets & reps")
     end
 
     it "humanizes the name for an unrecognized shape" do

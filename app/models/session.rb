@@ -30,7 +30,7 @@ class Session < ApplicationRecord
     case session_shape.name
     when SessionShape::INTERVAL_WORK
       Progression::IntervalFormula.render_without_weight(self)
-    when SessionShape::FIXED_REPS_FOR_TIME
+    when SessionShape::FIXED_REPS_FOR_TIME, SessionShape::SETS_AND_REPS
       "#{reps} reps"
     when SessionShape::EMOM
       "#{reps_per_minute} reps/min"

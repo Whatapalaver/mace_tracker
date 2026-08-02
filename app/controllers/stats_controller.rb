@@ -62,7 +62,7 @@ class StatsController < ApplicationController
         Progression::IntervalFormula.render_without_weight_values(work_seconds: work_seconds, rest_seconds: rest_seconds,
                                                                     sets_count: sets_count)
       end
-    when SessionShape::FIXED_REPS_FOR_TIME
+    when SessionShape::FIXED_REPS_FOR_TIME, SessionShape::SETS_AND_REPS
       "#{row.first} reps"
     when SessionShape::EMOM
       "#{row.first} reps/min"

@@ -25,5 +25,13 @@ FactoryBot.define do
       sets_count { nil }
       reps_per_minute { 20 }
     end
+
+    trait :sets_and_reps do
+      session_shape { SessionShape.find_or_create_by!(name: SessionShape::SETS_AND_REPS, user_id: nil) }
+      work_seconds { nil }
+      rest_seconds { nil }
+      sets_count { nil }
+      reps { 24 }
+    end
   end
 end
