@@ -11,18 +11,25 @@ class StatsController < ApplicationController
     @shape = SessionShape.find_by(name: params[:shape], user_id: nil) if params[:shape].present?
     return unless @shape
 
+    # Granularity only means anything for interval_work — the other shapes have no wrapping
+    # "N(...)" structure to optionally ignore, so segment and full are identical for them.
+    @granularity = params[:granularity].presence || "full"
+    @granularity = "full" unless @shape.name == SessionShape::INTERVAL_WORK
+
     @signatures = distinct_signatures
     @structural_value = params[:structural_value].presence
+    @structural_value = nil unless @signatures.any? { |signature| signature[:value] == @structural_value }
     return unless @structural_value
 
     @weights = distinct_weights
     @weight = params[:weight].presence
-    @output_labels = Progression::Calculator.output_labels_for(@shape.name)
-    @output_label = params[:output].presence || @output_labels.first
+    @output_labels = output_labels
+    @output_label = params[:output].presence
+    @output_label = @output_labels.first unless @output_labels.include?(@output_label)
     @benchmarks_only = ActiveModel::Type::Boolean.new.cast(params[:benchmarks_only])
 
     @series = Progression::SignatureSeries.new(
-      exercise: @exercise, session_shape: @shape, structural_value: @structural_value,
+      exercise: @exercise, session_shape: @shape, structural_value: @structural_value, granularity: @granularity,
       output_label: @output_label, weight: @weight, benchmarks_only: @benchmarks_only
     ).to_h
   end
@@ -30,7 +37,7 @@ class StatsController < ApplicationController
   private
 
   def structural_columns
-    Progression::ComparabilityKey.structural_columns_for(@shape.name)
+    Progression::ComparabilityKey.structural_columns_for(@shape.name, granularity: @granularity)
   end
 
   def distinct_signatures
@@ -48,9 +55,13 @@ class StatsController < ApplicationController
   def signature_label(row)
     case @shape.name
     when SessionShape::INTERVAL_WORK
-      work_seconds, rest_seconds, sets_count = row
-      Progression::IntervalFormula.render_without_weight_values(work_seconds: work_seconds, rest_seconds: rest_seconds,
-                                                                  sets_count: sets_count)
+      if @granularity == "segment"
+        Progression::IntervalFormula.render_without_weight_values(work_seconds: row.first, rest_seconds: 0, sets_count: 1)
+      else
+        work_seconds, rest_seconds, sets_count = row
+        Progression::IntervalFormula.render_without_weight_values(work_seconds: work_seconds, rest_seconds: rest_seconds,
+                                                                    sets_count: sets_count)
+      end
     when SessionShape::FIXED_REPS_FOR_TIME
       "#{row.first} reps"
     when SessionShape::EMOM
@@ -59,12 +70,24 @@ class StatsController < ApplicationController
   end
 
   def decoded_structural_value
-    Progression::ComparabilityKey.decode_structural_value(@shape.name, @structural_value)
+    Progression::ComparabilityKey.decode_structural_value(@shape.name, @structural_value, granularity: @granularity)
   end
 
   def distinct_weights
     Session.where(exercise_id: @exercise.id, session_shape_id: @shape.id)
            .where(decoded_structural_value)
            .distinct.pluck(:weight_kg).compact.sort
+  end
+
+  # Total output / output-per-time only mean something when every matching session shares the
+  # same rest and set-count structure — under segment granularity that's no longer guaranteed
+  # (a single 5-minute set and three 5-minute sets with rest both count), so only the rate-based
+  # pace outputs, which already collapse to one value per session regardless of set count, stay
+  # available.
+  def output_labels
+    labels = Progression::Calculator.output_labels_for(@shape.name)
+    return labels unless @shape.name == SessionShape::INTERVAL_WORK && @granularity == "segment"
+
+    labels & [ "Best pace", "Avg pace" ]
   end
 end

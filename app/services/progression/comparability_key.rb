@@ -24,13 +24,20 @@ module Progression
       self.for(session).except(:weight)
     end
 
+    GRANULARITIES = %w[full segment].freeze
+
     # The Session columns holding the structural (non-weight) key components for a shape — used
-    # to query/group sessions by signature without needing a session instance in hand. Multiple
-    # columns for interval_work: work duration alone can't distinguish a single 5-minute set
-    # from 3 sets of 5 minutes with rest between, so rest and set count are part of the shape too.
-    def self.structural_columns_for(shape_name)
+    # to query/group sessions by signature without needing a session instance in hand. Two
+    # granularities for interval_work: "full" distinguishes a single 5-minute set from 3 sets of
+    # 5 minutes with rest between (work+rest+sets all matter); "segment" groups by work duration
+    # alone, so every session containing a 5-minute work set — however many sets or how much rest
+    # surrounded it — counts as the same bucket. Meaningless for fixed_reps_for_time/emom, which
+    # have no wrapping "N(...)" structure to ignore in the first place, so granularity is a no-op
+    # there.
+    def self.structural_columns_for(shape_name, granularity: "full")
       case shape_name
-      when SessionShape::INTERVAL_WORK then [ :work_seconds, :rest_seconds, :sets_count ]
+      when SessionShape::INTERVAL_WORK
+        granularity == "segment" ? [ :work_seconds ] : [ :work_seconds, :rest_seconds, :sets_count ]
       when SessionShape::FIXED_REPS_FOR_TIME then [ :reps ]
       when SessionShape::EMOM then [ :reps_per_minute ]
       else
@@ -40,15 +47,16 @@ module Progression
 
     # Packs a session's structural columns into one URL-safe string (e.g. "300:300:5"), so a
     # multi-column signature like interval_work's can still round-trip through a single query
-    # param the way a one-column shape's bare value ("108") already does.
+    # param the way a one-column shape's bare value ("108") already does. Always "full" — this is
+    # for a specific session's own signature (e.g. the "view progression" link), not a browsed one.
     def self.encode_structural_value(session)
       structural_columns_for(session.session_shape.name).map { |col| session.public_send(col) }.join(":")
     end
 
     # The inverse of .encode_structural_value — {column => value} ready to pass straight to
     # Session.where.
-    def self.decode_structural_value(shape_name, encoded)
-      columns = structural_columns_for(shape_name)
+    def self.decode_structural_value(shape_name, encoded, granularity: "full")
+      columns = structural_columns_for(shape_name, granularity: granularity)
       values = encoded.to_s.split(":").map(&:to_i)
       columns.zip(values).to_h
     end

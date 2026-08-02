@@ -21,6 +21,20 @@
     </div>
   <% end %>
 
+  <% if @shape&.name == SessionShape::INTERVAL_WORK %>
+    <fieldset class="flex gap-4 text-sm">
+      <legend class="sr-only">Signature granularity</legend>
+      <label class="flex items-center gap-1">
+        <%= radio_button_tag :granularity, "full", @granularity == "full", class: "accent-rust", onchange: "this.form.requestSubmit()" %>
+        Full signature
+      </label>
+      <label class="flex items-center gap-1">
+        <%= radio_button_tag :granularity, "segment", @granularity == "segment", class: "accent-rust", onchange: "this.form.requestSubmit()" %>
+        Set duration only
+      </label>
+    </fieldset>
+  <% end %>
+
   <% if @shape %>
     <div>
       <%= label_tag :structural_value, "Signature", class: "mb-1 block text-xs font-semibold tracking-widest text-muted uppercase" %>

@@ -66,4 +66,32 @@ RSpec.describe Progression::SignatureSeries do
 
     expect(result["10.0kg"].keys).to eq([ benchmark.date ])
   end
+
+  describe "segment granularity" do
+    it "includes multi-set sessions sharing the same work duration, regardless of rest or set count" do
+      single_set = session_with_set(date: "2026-07-01", reps: 20, weight: 10, work_seconds: 300)
+
+      multi_set = create(:session, exercise: exercise, session_shape: interval_work_shape, date: "2026-07-08",
+                                    weight_kg: 10, work_seconds: 300, rest_seconds: 300, sets_count: 3)
+      create(:session_set, session: multi_set, set_number: 1, reps: 30, duration_seconds: 300)
+      create(:session_set, session: multi_set, set_number: 2, reps: 25, duration_seconds: 300)
+      create(:session_set, session: multi_set, set_number: 3, reps: 20, duration_seconds: 300)
+
+      result = series_for(structural_value: "300", granularity: "segment")
+
+      expect(result["10.0kg"]).to eq(
+        single_set.date => 20 * 60.0 / 300,
+        multi_set.date => 30 * 60.0 / 300 # best_pace takes the max across the session's sets
+      )
+    end
+
+    it "excludes sessions with a different work duration even under segment granularity" do
+      session_with_set(date: "2026-07-01", reps: 20, weight: 10, work_seconds: 180)
+      matching = session_with_set(date: "2026-07-08", reps: 25, weight: 10, work_seconds: 300)
+
+      result = series_for(structural_value: "300", granularity: "segment")
+
+      expect(result["10.0kg"]).to eq(matching.date => 25 * 60.0 / 300)
+    end
+  end
 end

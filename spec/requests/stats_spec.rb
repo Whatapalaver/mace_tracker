@@ -84,6 +84,51 @@ RSpec.describe "Stats", type: :request do
       expect(response.body).not_to include("5(3mw+10mr)@12kg")
     end
 
+    it "lists a coarser work-duration-only signature under segment granularity" do
+      exercise = create(:exercise)
+      shape = create(:session_shape, :interval_work)
+      create(:session, exercise: exercise, session_shape: shape, weight_kg: 10,
+                        work_seconds: 300, rest_seconds: 0, sets_count: 1)
+      create(:session, exercise: exercise, session_shape: shape, weight_kg: 10,
+                        work_seconds: 300, rest_seconds: 300, sets_count: 3)
+
+      get stats_path(exercise_id: exercise.id, shape: SessionShape::INTERVAL_WORK, granularity: "segment")
+
+      expect(response.body).to include("5mw")
+      expect(response.body).not_to include("3(5mw+5mr)")
+    end
+
+    it "restricts outputs to pace metrics under segment granularity" do
+      exercise = create(:exercise)
+      shape = create(:session_shape, :interval_work)
+      session = create(:session, exercise: exercise, session_shape: shape, weight_kg: 10, work_seconds: 300)
+      create(:session_set, session: session, set_number: 1, reps: 20, duration_seconds: 300)
+
+      get stats_path(exercise_id: exercise.id, shape: SessionShape::INTERVAL_WORK,
+                      granularity: "segment", structural_value: "300")
+
+      expect(response.body).to include("Best pace", "Avg pace")
+      expect(response.body).not_to include('value="Total output"')
+    end
+
+    it "includes a multi-set session under segment granularity when its work duration matches" do
+      exercise = create(:exercise)
+      shape = create(:session_shape, :interval_work)
+      single = create(:session, exercise: exercise, session_shape: shape, weight_kg: 10,
+                                 work_seconds: 300, rest_seconds: 0, sets_count: 1, date: "2026-07-01")
+      create(:session_set, session: single, set_number: 1, reps: 20, duration_seconds: 300)
+      multi = create(:session, exercise: exercise, session_shape: shape, weight_kg: 10,
+                                work_seconds: 300, rest_seconds: 300, sets_count: 3, date: "2026-07-08")
+      create(:session_set, session: multi, set_number: 1, reps: 30, duration_seconds: 300)
+      create(:session_set, session: multi, set_number: 2, reps: 25, duration_seconds: 300)
+
+      get stats_path(exercise_id: exercise.id, shape: SessionShape::INTERVAL_WORK,
+                      granularity: "segment", structural_value: "300")
+
+      expect(response.body).to include(single.date.to_s)
+      expect(response.body).to include(multi.date.to_s)
+    end
+
     it "charts the requested output across sessions sharing a signature" do
       exercise = create(:exercise)
       shape = create(:session_shape, :interval_work)

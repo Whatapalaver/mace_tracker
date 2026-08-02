@@ -77,21 +77,41 @@ RSpec.describe Progression::ComparabilityKey do
   end
 
   describe ".structural_columns_for" do
-    it "maps interval_work to work duration, rest duration, and sets count" do
+    it "maps interval_work to work duration, rest duration, and sets count by default (full granularity)" do
       expect(described_class.structural_columns_for(SessionShape::INTERVAL_WORK)).to eq(
         [ :work_seconds, :rest_seconds, :sets_count ]
       )
     end
 
-    it "maps fixed_reps_for_time and emom to their single reps column" do
-      expect(described_class.structural_columns_for(SessionShape::FIXED_REPS_FOR_TIME)).to eq([ :reps ])
-      expect(described_class.structural_columns_for(SessionShape::EMOM)).to eq([ :reps_per_minute ])
+    it "maps interval_work to work duration alone under segment granularity" do
+      expect(described_class.structural_columns_for(SessionShape::INTERVAL_WORK, granularity: "segment"))
+        .to eq([ :work_seconds ])
+    end
+
+    it "ignores granularity for fixed_reps_for_time and emom, which have no wrapping structure to drop" do
+      expect(described_class.structural_columns_for(SessionShape::FIXED_REPS_FOR_TIME, granularity: "segment"))
+        .to eq([ :reps ])
+      expect(described_class.structural_columns_for(SessionShape::EMOM, granularity: "segment"))
+        .to eq([ :reps_per_minute ])
     end
 
     it "raises for an unregistered shape" do
       expect { described_class.structural_columns_for("unregistered_shape") }.to raise_error(
         Progression::ComparabilityKey::UnknownShapeError
       )
+    end
+  end
+
+  describe ".decode_structural_value" do
+    it "decodes a full-granularity interval_work value into all three columns" do
+      expect(described_class.decode_structural_value(SessionShape::INTERVAL_WORK, "300:300:3")).to eq(
+        work_seconds: 300, rest_seconds: 300, sets_count: 3
+      )
+    end
+
+    it "decodes a segment-granularity interval_work value into just work_seconds" do
+      expect(described_class.decode_structural_value(SessionShape::INTERVAL_WORK, "300", granularity: "segment"))
+        .to eq(work_seconds: 300)
     end
   end
 end
