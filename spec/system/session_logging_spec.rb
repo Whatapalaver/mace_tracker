@@ -26,6 +26,23 @@ RSpec.describe "Notation-driven session logging", type: :system, js: true do
     expect(page).to have_content("Session logged")
   end
 
+  it "fills every blank reps field from the first one entered, but leaves manual edits alone" do
+    visit new_session_path
+    select "Mace 360", from: "Exercise"
+    fill_in "Formula", with: "3(5mw+5mr)@10kg"
+
+    click_button "Continue"
+
+    reps_fields = all("input[type=number]")
+    reps_fields[0].set("20")
+    reps_fields[1].send_keys(:tab)
+    reps_fields[2].set("15")
+
+    expect(reps_fields[0].value).to eq("20")
+    expect(reps_fields[1].value).to eq("20")
+    expect(reps_fields[2].value).to eq("15")
+  end
+
   it "logs an emom session immediately, with no review step" do
     visit new_session_path
     select "Mace 360", from: "Exercise"

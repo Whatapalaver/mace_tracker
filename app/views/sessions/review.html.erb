@@ -42,9 +42,13 @@
     </label>
   <% end %>
 
-  <fieldset class="space-y-2">
+  <fieldset class="space-y-2" data-controller="fill-down">
     <legend class="mb-1 text-xs font-semibold tracking-widest text-muted uppercase">Sets</legend>
+    <% if @session.session_sets.size > 1 %>
+      <p class="text-xs text-muted">Tip: enter the first set's reps and the rest will fill in to match — still editable individually.</p>
+    <% end %>
     <%= form.fields_for :session_sets do |set_form| %>
+      <% reps_data = set_form.index.zero? ? { fill_down_target: "source field", action: "change->fill-down#fill" } : { fill_down_target: "field" } %>
       <div class="rounded-md border border-border bg-surface p-3">
         <%= set_form.hidden_field :set_number %>
         <% if @session.session_shape.name == SessionShape::INTERVAL_WORK %>
@@ -54,19 +58,19 @@
               Set <%= set_form.object.set_number %> <span class="font-mono">(<%= set_form.object.duration_seconds %>s)</span>
             </span>
             <%= set_form.label :reps, "Reps", class: "sr-only" %>
-            <%= set_form.number_field :reps, class: "w-24 rounded-md border border-border bg-surface px-2 py-1 text-base" %>
+            <%= set_form.number_field :reps, data: reps_data, class: "w-24 rounded-md border border-border bg-surface px-2 py-1 text-base" %>
           </div>
         <% elsif @session.session_shape.name == SessionShape::SETS_AND_REPS %>
           <div class="flex items-center justify-between gap-3">
             <span class="text-sm text-muted">Set <%= set_form.object.set_number %></span>
             <%= set_form.label :reps, "Reps", class: "sr-only" %>
-            <%= set_form.number_field :reps, class: "w-24 rounded-md border border-border bg-surface px-2 py-1 text-base" %>
+            <%= set_form.number_field :reps, data: reps_data, class: "w-24 rounded-md border border-border bg-surface px-2 py-1 text-base" %>
           </div>
         <% else %>
           <div class="flex items-center justify-between gap-3">
             <span class="text-sm text-muted">Set <%= set_form.object.set_number %></span>
             <%= set_form.label :reps, "Reps", class: "sr-only" %>
-            <%= set_form.number_field :reps, class: "w-20 rounded-md border border-border bg-surface px-2 py-1 text-base" %>
+            <%= set_form.number_field :reps, data: reps_data, class: "w-20 rounded-md border border-border bg-surface px-2 py-1 text-base" %>
             <%= set_form.label :duration_seconds, "Seconds", class: "sr-only" %>
             <%= set_form.number_field :duration_seconds, placeholder: "seconds",
                   class: "w-24 rounded-md border border-border bg-surface px-2 py-1 text-base" %>
