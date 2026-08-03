@@ -1,0 +1,27 @@
+# Manually-triggered runbook for one-off commands against the deployed app (seeding,
+# imports, console-style maintenance) — runs from GitHub's infrastructure via the Machines
+# API, so it works regardless of local network/DNS conditions. Trigger from the Actions tab:
+# Actions -> Fly Run Command -> Run workflow, filling in the command to run.
+name: Fly Run Command
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "Command to run on the deployed machine"
+        required: true
+        default: "bin/rails db:seed"
+
+jobs:
+  run:
+    name: Run command on Fly
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Wake the app (it scales to zero when idle)
+        run: curl -sf --retry 3 --retry-delay 2 https://mace-tracker.fly.dev/up || true
+      - name: Run command
+        run: flyctl ssh console -a mace-tracker -C "${{ github.event.inputs.command }}"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
