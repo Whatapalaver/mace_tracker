@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /*
- * Mace Tracker design tokens — an iron-and-chalk palette grounded in the actual equipment
+ * Warrior Tracker design tokens — an iron-and-chalk palette grounded in the actual equipment
  * (raw cast iron, gym chalk, oxide-red powder coat) rather than default Tailwind blue/gray.
  * Rust is the one bold accent (buttons, links, the notation "readout") — everything else stays
  * quiet on purpose.

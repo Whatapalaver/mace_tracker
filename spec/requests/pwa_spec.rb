@@ -6,7 +6,7 @@ RSpec.describe "PWA", type: :request do
 
     expect(response).to have_http_status(:ok)
     manifest = JSON.parse(response.body)
-    expect(manifest["name"]).to eq("Mace Tracker")
+    expect(manifest["name"]).to eq("Warrior Tracker")
     expect(manifest["start_url"]).to eq("/")
   end
 
