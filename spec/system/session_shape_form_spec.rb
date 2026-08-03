@@ -5,7 +5,7 @@ require "rails_helper"
 # for all three shapes (no toggling needed), covered instead by spec/system/session_logging_spec.rb.
 RSpec.describe "Shape-aware benchmark preset form", type: :system, js: true do
   before do
-    create(:exercise, name: "Mace 360")
+    create(:exercise, name: "360", equipment: create(:equipment, name: "Mace"))
     create(:session_shape, :interval_work)
     create(:session_shape, :fixed_reps_for_time)
     create(:session_shape, :emom)

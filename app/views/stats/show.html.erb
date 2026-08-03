@@ -5,6 +5,13 @@
 
 <%= form_with url: stats_path, method: :get, class: "mb-6 space-y-4", data: { turbo: false } do |form| %>
   <div>
+    <%= form.label :equipment_id, "Equipment", class: "mb-1 block text-sm font-medium" %>
+    <%= form.collection_select :equipment_id, @equipment_list, :id, :name,
+          { include_blank: "All equipment", selected: @equipment_id },
+          class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base", onchange: "this.form.requestSubmit()" %>
+  </div>
+
+  <div>
     <%= form.label :exercise_id, "Exercise", class: "mb-1 block text-sm font-medium" %>
     <%= form.collection_select :exercise_id, @exercises, :id, :display_name,
           { include_blank: "All exercises", selected: @exercise&.id },
@@ -88,4 +95,4 @@
 <% end %>
 
 <%= render "stats/lifetime_summary", stats: @stats, period: @period, period_form_url: stats_path,
-      period_hidden_params: { exercise_id: @exercise&.id } %>
+      period_hidden_params: { exercise_id: @exercise&.id, equipment_id: @equipment_id } %>

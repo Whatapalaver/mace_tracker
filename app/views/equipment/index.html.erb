@@ -1,0 +1,18 @@
+<% content_for :title, "Equipment" %>
+
+<div class="mb-4 flex items-center justify-between">
+  <h1 class="text-2xl font-semibold tracking-tight">Equipment</h1>
+  <%= link_to "Add equipment", new_equipment_path, class: "text-sm font-medium text-rust hover:text-rust-dark" %>
+</div>
+
+<% if @equipment.empty? %>
+  <p class="text-sm text-muted">No equipment yet. Add one to start categorizing exercises.</p>
+<% else %>
+  <ul class="divide-y divide-border rounded-lg border border-border bg-surface">
+    <% @equipment.each do |equipment| %>
+      <li class="px-4 py-3">
+        <span><%= equipment.name %></span>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

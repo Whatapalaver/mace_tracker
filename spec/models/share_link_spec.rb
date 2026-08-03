@@ -46,8 +46,8 @@ RSpec.describe ShareLink, type: :model do
 
   describe "#exercise and #sessions" do
     it "returns nil exercise and all sessions when scope is empty (unscoped link)" do
-      mace = create(:exercise, name: "Mace 360")
-      kettlebell = create(:exercise, name: "Kettlebell Swing")
+      mace = create(:exercise, name: "360", equipment: create(:equipment, name: "Mace"))
+      kettlebell = create(:exercise, name: "Swing", equipment: create(:equipment, name: "Kettlebell"))
       create(:session, exercise: mace)
       create(:session, exercise: kettlebell)
 
@@ -58,8 +58,8 @@ RSpec.describe ShareLink, type: :model do
     end
 
     it "restricts sessions to the scoped exercise" do
-      mace = create(:exercise, name: "Mace 360")
-      kettlebell = create(:exercise, name: "Kettlebell Swing")
+      mace = create(:exercise, name: "360", equipment: create(:equipment, name: "Mace"))
+      kettlebell = create(:exercise, name: "Swing", equipment: create(:equipment, name: "Kettlebell"))
       mace_session = create(:session, exercise: mace)
       create(:session, exercise: kettlebell)
 
@@ -76,7 +76,7 @@ RSpec.describe ShareLink, type: :model do
     end
 
     it "describes a scoped link by exercise name" do
-      exercise = create(:exercise, name: "Mace 360", arm: :double)
+      exercise = create(:exercise, name: "360", arm: :double, equipment: create(:equipment, name: "Mace"))
       share_link = build(:share_link, :scoped_to_exercise, exercise: exercise)
 
       expect(share_link.description).to eq("Mace 360 (Double arm) only")

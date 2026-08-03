@@ -1,8 +1,8 @@
 require "rails_helper"
 
 RSpec.describe Progression::LifetimeStats do
-  let(:mace) { create(:exercise, name: "Mace 360") }
-  let(:kettlebell) { create(:exercise, name: "Kettlebell Swing") }
+  let(:mace) { create(:exercise, name: "360", equipment: create(:equipment, name: "Mace")) }
+  let(:kettlebell) { create(:exercise, name: "Swing", equipment: create(:equipment, name: "Kettlebell")) }
 
   def logged_set(exercise:, date:, reps:, weight:)
     session = create(:session, exercise: exercise, date: date, weight_kg: weight)

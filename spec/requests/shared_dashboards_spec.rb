@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe "SharedDashboards", type: :request do
   describe "GET /shared/:token" do
     it "renders the dashboard for a valid, unexpired token" do
-      exercise = create(:exercise, name: "Mace 360")
+      exercise = create(:exercise, name: "360", equipment: create(:equipment, name: "Mace"))
       session = create(:session, exercise: exercise, weight_kg: 10)
       create(:session_set, session: session, set_number: 1, reps: 20)
       share_link = create(:share_link)
@@ -16,8 +16,8 @@ RSpec.describe "SharedDashboards", type: :request do
     end
 
     it "restricts sessions to the scoped exercise" do
-      mace = create(:exercise, name: "Mace 360")
-      kettlebell = create(:exercise, name: "Kettlebell Swing")
+      mace = create(:exercise, name: "360", equipment: create(:equipment, name: "Mace"))
+      kettlebell = create(:exercise, name: "Swing", equipment: create(:equipment, name: "Kettlebell"))
       create(:session, exercise: mace)
       create(:session, exercise: kettlebell)
       share_link = create(:share_link, :scoped_to_exercise, exercise: mace)

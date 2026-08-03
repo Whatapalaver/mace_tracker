@@ -1,9 +1,14 @@
 class StatsController < ApplicationController
   def show
+    @equipment_list = Equipment.order(:name)
+    @equipment_id = params[:equipment_id].presence
     @exercises = Exercise.order(:name)
+    @exercises = @exercises.where(equipment_id: @equipment_id) if @equipment_id
     @exercise = Exercise.find_by(id: params[:exercise_id])
+    @exercise = nil if @exercise && @equipment_id.present? && @exercise.equipment_id.to_s != @equipment_id
     @period = params[:period].presence || "daily"
-    @stats = Progression::LifetimeStats.new(exercise: @exercise, period: @period)
+    @stats = Progression::LifetimeStats.new(exercise: @exercise, exercise_ids: @equipment_id && @exercises.ids,
+                                             period: @period)
     @session_shapes = SessionShape.global_ordered
 
     return unless @exercise

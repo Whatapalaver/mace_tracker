@@ -1,10 +1,11 @@
 class ExercisesController < ApplicationController
   def index
-    @exercises = Exercise.order(:name)
+    @exercises = Exercise.includes(:equipment).order(:name)
   end
 
   def new
     @exercise = Exercise.new
+    @equipment = Equipment.order(:name)
   end
 
   def create
@@ -13,6 +14,7 @@ class ExercisesController < ApplicationController
     if @exercise.save
       redirect_to exercises_path, notice: "Exercise added."
     else
+      @equipment = Equipment.order(:name)
       render :new, status: :unprocessable_content
     end
   end
@@ -20,6 +22,6 @@ class ExercisesController < ApplicationController
   private
 
   def exercise_params
-    params.expect(exercise: [ :name, :arm, :notes ])
+    params.expect(exercise: [ :name, :arm, :equipment_id, :notes ])
   end
 end

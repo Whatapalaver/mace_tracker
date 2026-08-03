@@ -7,6 +7,7 @@ RSpec.describe Exercise, type: :model do
 
   describe "validations" do
     it { is_expected.to validate_presence_of(:name) }
+    it { is_expected.to belong_to(:equipment) }
 
     it { is_expected.to define_enum_for(:arm).with_values(single: 0, double: 1, n_a: 2) }
 
@@ -15,25 +16,36 @@ RSpec.describe Exercise, type: :model do
       expect(exercise).not_to be_valid
     end
 
-    it "requires name to be unique within the same arm and user scope" do
-      create(:exercise, name: "Clean & Press", arm: :single, user_id: nil)
-      duplicate = build(:exercise, name: "Clean & Press", arm: :single, user_id: nil)
+    it "requires name to be unique within the same equipment, arm, and user scope" do
+      equipment = create(:equipment)
+      create(:exercise, name: "Clean & Press", equipment: equipment, arm: :single, user_id: nil)
+      duplicate = build(:exercise, name: "Clean & Press", equipment: equipment, arm: :single, user_id: nil)
 
       expect(duplicate).not_to be_valid
     end
 
     it "allows the same name for a different arm" do
-      create(:exercise, name: "Clean & Press", arm: :single, user_id: nil)
-      other_arm = build(:exercise, name: "Clean & Press", arm: :double, user_id: nil)
+      equipment = create(:equipment)
+      create(:exercise, name: "Clean & Press", equipment: equipment, arm: :single, user_id: nil)
+      other_arm = build(:exercise, name: "Clean & Press", equipment: equipment, arm: :double, user_id: nil)
 
       expect(other_arm).to be_valid
     end
 
     it "allows the same name for a different user" do
-      create(:exercise, name: "Clean & Press", arm: :single, user_id: nil)
-      other_user = build(:exercise, name: "Clean & Press", arm: :single, user_id: 42)
+      equipment = create(:equipment)
+      create(:exercise, name: "Clean & Press", equipment: equipment, arm: :single, user_id: nil)
+      other_user = build(:exercise, name: "Clean & Press", equipment: equipment, arm: :single, user_id: 42)
 
       expect(other_user).to be_valid
+    end
+
+    it "allows the same name for a different equipment" do
+      create(:exercise, name: "Snatch", equipment: create(:equipment, name: "Kettlebell"), arm: :single, user_id: nil)
+      other_equipment = build(:exercise, name: "Snatch", equipment: create(:equipment, name: "Barbell"),
+                                          arm: :single, user_id: nil)
+
+      expect(other_equipment).to be_valid
     end
   end
 
@@ -58,8 +70,8 @@ RSpec.describe Exercise, type: :model do
   end
 
   describe "#display_name" do
-    it "includes the arm so same-named single/double variants are distinguishable" do
-      exercise = build(:exercise, name: "Mace 360", arm: :single)
+    it "includes the equipment and arm so same-named variants are distinguishable" do
+      exercise = build(:exercise, equipment: build(:equipment, name: "Mace"), name: "360", arm: :single)
       expect(exercise.display_name).to eq("Mace 360 (Single arm)")
     end
   end

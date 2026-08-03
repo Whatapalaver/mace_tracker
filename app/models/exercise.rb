@@ -1,7 +1,9 @@
 class Exercise < ApplicationRecord
+  belongs_to :equipment
+
   enum :arm, { single: 0, double: 1, n_a: 2 }, validate: true
 
-  validates :name, presence: true, uniqueness: { scope: [ :arm, :user_id ] }
+  validates :name, presence: true, uniqueness: { scope: [ :equipment_id, :arm, :user_id ] }
 
   ARM_LABELS = { "single" => "Single arm", "double" => "Double arm", "n_a" => "N/A" }.freeze
 
@@ -14,6 +16,6 @@ class Exercise < ApplicationRecord
   end
 
   def display_name
-    "#{name} (#{arm_label})"
+    "#{equipment.name} #{name} (#{arm_label})"
   end
 end

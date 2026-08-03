@@ -11,7 +11,7 @@
   <ul class="divide-y divide-border rounded-lg border border-border bg-surface">
     <% @exercises.each do |exercise| %>
       <li class="flex items-center justify-between px-4 py-3">
-        <span><%= exercise.name %></span>
+        <span><%= exercise.equipment.name %> <%= exercise.name %></span>
         <span class="text-xs text-muted"><%= exercise.arm_label %></span>
       </li>
     <% end %>

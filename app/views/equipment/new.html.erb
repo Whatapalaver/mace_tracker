@@ -1,0 +1,22 @@
+<% content_for :title, "Add Equipment" %>
+
+<h1 class="mb-4 text-2xl font-semibold tracking-tight">Add equipment</h1>
+
+<%= form_with model: @equipment, url: equipment_index_path, class: "space-y-4" do |form| %>
+  <% if @equipment.errors.any? %>
+    <div class="rounded-md border border-crimson/20 bg-crimson-light px-3 py-2 text-sm text-crimson">
+      <ul class="list-inside list-disc">
+        <% @equipment.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :name, class: "mb-1 block text-sm font-medium" %>
+    <%= form.text_field :name, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
+  </div>
+
+  <%= form.submit "Add equipment", class: "w-full rounded-md bg-rust py-3 text-base font-semibold text-paper transition-colors hover:bg-rust-dark" %>
+<% end %>

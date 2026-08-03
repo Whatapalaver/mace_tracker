@@ -14,7 +14,13 @@
   <% end %>
 
   <div>
-    <%= form.label :name, class: "mb-1 block text-sm font-medium" %>
+    <%= form.label :equipment_id, "Equipment", class: "mb-1 block text-sm font-medium" %>
+    <%= form.collection_select :equipment_id, @equipment, :id, :name, { prompt: "Select equipment" },
+          class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
+  </div>
+
+  <div>
+    <%= form.label :name, "Movement name", class: "mb-1 block text-sm font-medium" %>
     <%= form.text_field :name, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
   </div>
 

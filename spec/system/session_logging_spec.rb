@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe "Notation-driven session logging", type: :system, js: true do
   before do
-    create(:exercise, name: "Mace 360")
+    create(:exercise, name: "360", equipment: create(:equipment, name: "Mace"))
     create(:session_shape, :interval_work)
     create(:session_shape, :fixed_reps_for_time)
     create(:session_shape, :emom)

@@ -3,7 +3,8 @@ namespace :demo do
   task seed: [ :environment, "db:seed" ] do
     abort "Refusing to seed demo session data outside development" unless Rails.env.local?
 
-    exercise = Exercise.find_by!(name: "Mace 10-2", arm: "double", user_id: nil)
+    exercise = Exercise.find_by!(name: "10-2", arm: "double", equipment: Equipment.find_by!(name: "Mace", user_id: nil),
+                                  user_id: nil)
     interval_work = SessionShape.find_by!(name: SessionShape::INTERVAL_WORK, user_id: nil)
     fixed_reps_for_time = SessionShape.find_by!(name: SessionShape::FIXED_REPS_FOR_TIME, user_id: nil)
     emom = SessionShape.find_by!(name: SessionShape::EMOM, user_id: nil)

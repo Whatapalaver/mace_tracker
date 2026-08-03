@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_02_112253) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_03_202732) do
   create_table "benchmark_presets", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "exercise_id", null: false
@@ -27,14 +27,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_02_112253) do
     t.index ["session_shape_id"], name: "index_benchmark_presets_on_session_shape_id"
   end
 
+  create_table "equipment", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id"
+    t.index ["name", "user_id"], name: "index_equipment_on_name_and_user_id", unique: true
+  end
+
   create_table "exercises", force: :cascade do |t|
     t.integer "arm", null: false
     t.datetime "created_at", null: false
+    t.integer "equipment_id", null: false
     t.string "name", null: false
     t.text "notes"
     t.datetime "updated_at", null: false
     t.integer "user_id"
-    t.index ["name", "arm", "user_id"], name: "index_exercises_on_name_and_arm_and_user_id", unique: true
+    t.index ["equipment_id", "name", "arm", "user_id"], name: "index_exercises_on_equipment_name_arm_user", unique: true
+    t.index ["equipment_id"], name: "index_exercises_on_equipment_id"
     t.index ["user_id"], name: "index_exercises_on_user_id"
   end
 
@@ -96,6 +106,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_02_112253) do
 
   add_foreign_key "benchmark_presets", "exercises"
   add_foreign_key "benchmark_presets", "session_shapes"
+  add_foreign_key "exercises", "equipment"
   add_foreign_key "session_sets", "sessions"
   add_foreign_key "sessions", "benchmark_presets"
   add_foreign_key "sessions", "exercises"

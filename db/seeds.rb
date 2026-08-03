@@ -25,16 +25,18 @@
   end
 end
 
+mace = Equipment.find_or_create_by!(name: "Mace", user_id: nil)
+
 [
-  { name: "Mace 360", arm: "single" },
-  { name: "Mace 360", arm: "double" },
-  { name: "Mace 10-2", arm: "single" },
-  { name: "Mace 10-2", arm: "double" }
+  { name: "360", arm: "single" },
+  { name: "360", arm: "double" },
+  { name: "10-2", arm: "single" },
+  { name: "10-2", arm: "double" }
 ].each do |attrs|
-  Exercise.find_or_create_by!(name: attrs[:name], arm: attrs[:arm], user_id: nil)
+  Exercise.find_or_create_by!(name: attrs[:name], arm: attrs[:arm], equipment: mace, user_id: nil)
 end
 
-mace_10_2_double = Exercise.find_by!(name: "Mace 10-2", arm: "double", user_id: nil)
+mace_10_2_double = Exercise.find_by!(name: "10-2", arm: "double", equipment: mace, user_id: nil)
 interval_work = SessionShape.find_by!(name: SessionShape::INTERVAL_WORK, user_id: nil)
 fixed_reps_for_time = SessionShape.find_by!(name: SessionShape::FIXED_REPS_FOR_TIME, user_id: nil)
 

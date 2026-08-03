@@ -1,9 +1,10 @@
 namespace :historic do
   desc "One-time bulk import of real historic sessions logged before this app existed"
   task import: [ :environment, "db:seed" ] do
+    mace = Equipment.find_by!(name: "Mace", user_id: nil)
     exercises = {
-      "double" => Exercise.find_by!(name: "Mace 10-2", arm: "double", user_id: nil),
-      "single" => Exercise.find_by!(name: "Mace 10-2", arm: "single", user_id: nil)
+      "double" => Exercise.find_by!(name: "10-2", arm: "double", equipment: mace, user_id: nil),
+      "single" => Exercise.find_by!(name: "10-2", arm: "single", equipment: mace, user_id: nil)
     }
     shapes = {
       interval_work: SessionShape.find_by!(name: SessionShape::INTERVAL_WORK, user_id: nil),

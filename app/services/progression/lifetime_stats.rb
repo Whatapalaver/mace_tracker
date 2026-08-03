@@ -2,8 +2,9 @@ module Progression
   class LifetimeStats
     PERIODS = %w[daily weekly monthly yearly].freeze
 
-    def initialize(exercise: nil, period: "daily")
+    def initialize(exercise: nil, exercise_ids: nil, period: "daily")
       @exercise = exercise
+      @exercise_ids = exercise_ids
       @period = PERIODS.include?(period) ? period : "daily"
     end
 
@@ -25,11 +26,15 @@ module Progression
 
     private
 
-    attr_reader :exercise, :period
+    attr_reader :exercise, :exercise_ids, :period
 
     def session_sets
       scope = SessionSet.joins(:session).includes(session: :exercise)
-      scope = scope.where(sessions: { exercise_id: exercise.id }) if exercise
+      if exercise
+        scope = scope.where(sessions: { exercise_id: exercise.id })
+      elsif exercise_ids
+        scope = scope.where(sessions: { exercise_id: exercise_ids })
+      end
       scope.order(sessions: { date: :asc })
     end
 

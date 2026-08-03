@@ -13,20 +13,23 @@ RSpec.describe "db/seeds.rb" do
     )
   end
 
-  it "creates the four global exercises" do
+  it "creates the Mace equipment and its four global exercises" do
     load_seeds
+
+    expect(Equipment.where(user_id: nil).pluck(:name)).to contain_exactly("Mace")
 
     exercises = Exercise.where(user_id: nil).pluck(:name, :arm)
     expect(exercises).to contain_exactly(
-      [ "Mace 360", "single" ], [ "Mace 360", "double" ],
-      [ "Mace 10-2", "single" ], [ "Mace 10-2", "double" ]
+      [ "360", "single" ], [ "360", "double" ],
+      [ "10-2", "single" ], [ "10-2", "double" ]
     )
   end
 
   it "creates the three benchmark presets against Mace 10-2 (double)" do
     load_seeds
 
-    mace_10_2_double = Exercise.find_by!(name: "Mace 10-2", arm: "double", user_id: nil)
+    mace_10_2_double = Exercise.find_by!(name: "10-2", arm: "double", equipment: Equipment.find_by!(name: "Mace"),
+                                          user_id: nil)
     presets = BenchmarkPreset.where(exercise: mace_10_2_double).index_by(&:name)
 
     expect(presets.keys).to contain_exactly("Time to 108", "5 x 5", "5min sprint")
@@ -54,6 +57,7 @@ RSpec.describe "db/seeds.rb" do
     load_seeds
 
     expect { load_seeds }.not_to change(SessionShape, :count)
+    expect { load_seeds }.not_to change(Equipment, :count)
     expect { load_seeds }.not_to change(Exercise, :count)
     expect { load_seeds }.not_to change(BenchmarkPreset, :count)
   end

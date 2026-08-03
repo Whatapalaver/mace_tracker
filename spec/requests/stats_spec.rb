@@ -37,8 +37,8 @@ RSpec.describe "Stats", type: :request do
     end
 
     it "filters totals to a single exercise when exercise_id is given" do
-      mace = create(:exercise, name: "Mace 360")
-      kettlebell = create(:exercise, name: "Kettlebell Swing")
+      mace = create(:exercise, name: "360", equipment: create(:equipment, name: "Mace"))
+      kettlebell = create(:exercise, name: "Swing", equipment: create(:equipment, name: "Kettlebell"))
       mace_session = create(:session, exercise: mace, weight_kg: 10)
       create(:session_set, session: mace_session, set_number: 1, reps: 20)
       kettlebell_session = create(:session, exercise: kettlebell, weight_kg: 16)
@@ -48,6 +48,43 @@ RSpec.describe "Stats", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("20")
+    end
+
+    it "narrows total reps to the selected equipment when no specific exercise is chosen" do
+      mace_equipment = create(:equipment, name: "Mace")
+      kettlebell_equipment = create(:equipment, name: "Kettlebell")
+      mace_session = create(:session, exercise: create(:exercise, name: "360", equipment: mace_equipment), weight_kg: 10)
+      create(:session_set, session: mace_session, set_number: 1, reps: 20)
+      kettlebell_session = create(:session, exercise: create(:exercise, name: "Swing", equipment: kettlebell_equipment),
+                                             weight_kg: 16)
+      create(:session_set, session: kettlebell_session, set_number: 1, reps: 15)
+
+      get stats_path(equipment_id: mace_equipment.id)
+
+      expect(response.body).to include("20")
+    end
+
+    it "narrows the exercise dropdown to the selected equipment" do
+      mace_equipment = create(:equipment, name: "Mace")
+      kettlebell_equipment = create(:equipment, name: "Kettlebell")
+      create(:exercise, name: "360", equipment: mace_equipment)
+      create(:exercise, name: "Swing", equipment: kettlebell_equipment)
+
+      get stats_path(equipment_id: mace_equipment.id)
+
+      expect(response.body).to include("Mace 360")
+      expect(response.body).not_to include("Kettlebell Swing")
+    end
+
+    it "drops an exercise selection that doesn't belong to a newly chosen equipment" do
+      mace_equipment = create(:equipment, name: "Mace")
+      kettlebell_equipment = create(:equipment, name: "Kettlebell")
+      mace_exercise = create(:exercise, name: "360", equipment: mace_equipment)
+      create(:exercise, name: "Swing", equipment: kettlebell_equipment)
+
+      get stats_path(equipment_id: kettlebell_equipment.id, exercise_id: mace_exercise.id)
+
+      expect(response.body).not_to include("Choose a shape")
     end
 
     it "shows a placeholder when nothing has been logged" do
