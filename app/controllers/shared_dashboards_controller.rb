@@ -1,13 +1,18 @@
 class SharedDashboardsController < ApplicationController
+  include StatsExplorer
+  include SessionsExplorer
+
   layout "shared"
 
   skip_before_action :authenticate_owner!
   before_action :set_share_link
 
   def show
-    @period = params[:period].presence || "monthly"
-    @stats = Progression::LifetimeStats.new(exercise: @share_link.exercise, period: @period)
-    @sessions = @share_link.sessions.order(date: :desc).limit(50)
+    build_stats_explorer(locked_exercise: @share_link.exercise)
+  end
+
+  def sessions
+    build_sessions_explorer(locked_exercise: @share_link.exercise)
   end
 
   private

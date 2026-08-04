@@ -30,6 +30,7 @@ Rails.application.routes.draw do
   end
 
   get "shared/:token" => "shared_dashboards#show", as: :shared_dashboard
+  get "shared/:token/sessions" => "shared_dashboards#sessions", as: :shared_dashboard_sessions
 
   # Defines the root path route ("/")
   root "sessions#new"

@@ -1,0 +1,86 @@
+<%# locals: (url:, read_only: false) %>
+<p class="mb-4 text-sm text-muted"><%= @total_count %> sessions logged.</p>
+
+<% if @years.any? %>
+  <%= form_with url: url, method: :get, class: "mb-4 grid grid-cols-2 gap-3",
+        data: { turbo: false, controller: "scroll-preserving-form" } do %>
+    <div>
+      <%= label_tag :year, "Year", class: "mb-1 block text-sm font-medium" %>
+      <%= select_tag :year, options_for_select(@years, @year),
+            include_blank: "All years",
+            class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base",
+            data: { action: "change->scroll-preserving-form#submit" } %>
+    </div>
+    <% if @year %>
+      <div>
+        <%= label_tag :month, "Month", class: "mb-1 block text-sm font-medium" %>
+        <%= select_tag :month,
+              options_for_select(@months.map { |m| [ Date::MONTHNAMES[m], m ] }, @month),
+              include_blank: "All months",
+              class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base",
+              data: { action: "change->scroll-preserving-form#submit" } %>
+      </div>
+    <% end %>
+
+    <% unless @exercise_locked %>
+      <div>
+        <%= label_tag :equipment_id, "Equipment", class: "mb-1 block text-sm font-medium" %>
+        <%= select_tag :equipment_id, options_from_collection_for_select(@equipment_list, :id, :name, @equipment_id),
+              include_blank: "All equipment",
+              class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base",
+              data: { action: "change->scroll-preserving-form#submit" } %>
+      </div>
+
+      <div>
+        <%= label_tag :exercise_id, "Exercise", class: "mb-1 block text-sm font-medium" %>
+        <%= select_tag :exercise_id, options_from_collection_for_select(@exercises, :id, :display_name, @exercise_id),
+              include_blank: "All exercises",
+              class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base",
+              data: { action: "change->scroll-preserving-form#submit" } %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @sessions.empty? %>
+  <p class="text-sm text-muted">
+    <%= @years.empty? ? "No sessions logged yet." : "No sessions match the selected filters." %>
+  </p>
+<% else %>
+  <div class="overflow-x-auto rounded-lg border border-border bg-surface">
+    <div class="lg:min-w-[60rem]">
+      <div class="hidden <%= read_only ? "grid-cols-8" : "grid-cols-9" %> gap-2 border-b border-border bg-paper px-3 py-2 text-xs font-semibold tracking-widest text-muted uppercase lg:grid">
+        <div>Date</div>
+        <div>Exercise</div>
+        <div>Shape</div>
+        <div>Signature</div>
+        <div>Weight</div>
+        <div>Reps</div>
+        <div>Benchmark</div>
+        <div>Notes</div>
+        <% unless read_only %>
+          <div>Actions</div>
+        <% end %>
+      </div>
+      <% @sessions.each do |session| %>
+        <%= render "sessions/row", session: session, read_only: read_only %>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @total_pages > 1 %>
+    <nav class="mt-4 flex items-center justify-between text-sm">
+      <% if @page > 1 %>
+        <%= link_to "← Previous", paginated_url(url, @page - 1), class: "font-medium text-rust hover:text-rust-dark" %>
+      <% else %>
+        <span class="text-muted/50">← Previous</span>
+      <% end %>
+      <span class="text-muted">Page <%= @page %> of <%= @total_pages %></span>
+      <% if @page < @total_pages %>
+        <%= link_to "Next →", paginated_url(url, @page + 1), class: "font-medium text-rust hover:text-rust-dark" %>
+      <% else %>
+        <span class="text-muted/50">Next →</span>
+      <% end %>
+    </nav>
+  <% end %>
+<% end %>

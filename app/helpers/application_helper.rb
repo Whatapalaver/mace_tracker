@@ -22,4 +22,14 @@ module ApplicationHelper
   def chart_colors
     CHART_COLORS
   end
+
+  # Builds a pagination link that preserves whatever filters are already in the query string
+  # (year/month/equipment_id/exercise_id, or nothing at all) while overriding the page number —
+  # works against any base path, so the same session-history partial can paginate both the
+  # owner's /sessions and the token-scoped /shared/:token/sessions without route-specific code.
+  def paginated_url(base_url, page)
+    # request.query_parameters has string keys ("page" => "1") — merging with a symbol :page
+    # would add a second, distinct key instead of overwriting it, producing "page=1&page=2".
+    "#{base_url}?#{request.query_parameters.merge("page" => page).to_query}"
+  end
 end

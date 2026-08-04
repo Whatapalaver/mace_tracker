@@ -1,5 +1,6 @@
+<%# locals: (session:, read_only: false) %>
 <%= turbo_frame_tag dom_id(session) do %>
-  <div class="hidden grid-cols-9 items-center gap-2 border-b border-border px-3 py-2 text-sm last:border-b-0 lg:grid">
+  <div class="hidden <%= read_only ? "grid-cols-8" : "grid-cols-9" %> items-center gap-2 border-b border-border px-3 py-2 text-sm last:border-b-0 lg:grid">
     <div class="text-muted"><%= session.date.to_fs(:short) %></div>
     <div><%= session.exercise.display_name %></div>
     <div class="text-muted"><%= session.session_shape.label %></div>
@@ -12,12 +13,14 @@
       <% end %>
     </div>
     <div class="truncate text-muted" title="<%= session.notes %>"><%= session.notes %></div>
-    <div class="flex gap-3">
-      <%= link_to "Edit", edit_session_path(session), class: "font-medium text-rust hover:text-rust-dark" %>
-      <%= button_to "Delete", session_path(session), method: :delete,
-            data: { turbo_confirm: "Delete this session and all its sets?", turbo_frame: "_top" },
-            class: "font-medium text-crimson hover:text-crimson/80" %>
-    </div>
+    <% unless read_only %>
+      <div class="flex gap-3">
+        <%= link_to "Edit", edit_session_path(session), class: "font-medium text-rust hover:text-rust-dark" %>
+        <%= button_to "Delete", session_path(session), method: :delete,
+              data: { turbo_confirm: "Delete this session and all its sets?", turbo_frame: "_top" },
+              class: "font-medium text-crimson hover:text-crimson/80" %>
+      </div>
+    <% end %>
   </div>
 
   <div class="border-b border-border px-3 py-3 text-sm last:border-b-0 lg:hidden">
@@ -37,11 +40,13 @@
     <% if session.notes.present? %>
       <p class="mt-1 truncate text-xs text-muted"><%= session.notes %></p>
     <% end %>
-    <div class="mt-2 flex gap-3 text-xs">
-      <%= link_to "Edit", edit_session_path(session), class: "font-medium text-rust hover:text-rust-dark" %>
-      <%= button_to "Delete", session_path(session), method: :delete,
-            data: { turbo_confirm: "Delete this session and all its sets?", turbo_frame: "_top" },
-            class: "font-medium text-crimson hover:text-crimson/80" %>
-    </div>
+    <% unless read_only %>
+      <div class="mt-2 flex gap-3 text-xs">
+        <%= link_to "Edit", edit_session_path(session), class: "font-medium text-rust hover:text-rust-dark" %>
+        <%= button_to "Delete", session_path(session), method: :delete,
+              data: { turbo_confirm: "Delete this session and all its sets?", turbo_frame: "_top" },
+              class: "font-medium text-crimson hover:text-crimson/80" %>
+      </div>
+    <% end %>
   </div>
 <% end %>

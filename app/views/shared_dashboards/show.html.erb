@@ -3,24 +3,4 @@
 <h1 class="mb-1 text-2xl font-semibold tracking-tight">Shared progress</h1>
 <p class="mb-6 text-sm text-muted"><%= @share_link.description %></p>
 
-<%= render "stats/lifetime_summary", stats: @stats, period: @period,
-      period_form_url: shared_dashboard_path(@share_link.token), period_hidden_params: {} %>
-
-<section class="mb-6">
-  <h2 class="mb-2 text-xs font-semibold tracking-widest text-muted uppercase">Recent sessions</h2>
-  <% if @sessions.empty? %>
-    <p class="text-sm text-muted">No sessions logged yet.</p>
-  <% else %>
-    <ul class="divide-y divide-border rounded-lg border border-border bg-surface">
-      <% @sessions.each do |session| %>
-        <li class="px-4 py-3 text-sm">
-          <div class="flex items-center justify-between">
-            <span class="font-medium"><%= session.exercise.display_name %></span>
-            <span class="text-xs text-muted"><%= session.date.to_fs(:long) %></span>
-          </div>
-          <p class="text-xs text-muted"><%= session.session_shape.label %></p>
-        </li>
-      <% end %>
-    </ul>
-  <% end %>
-</section>
+<%= render "stats/explorer", url: shared_dashboard_path(@share_link.token) %>

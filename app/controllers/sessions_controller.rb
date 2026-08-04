@@ -1,41 +1,12 @@
 class SessionsController < ApplicationController
   include SessionShapeOptions
-
-  PER_PAGE = 50
+  include SessionsExplorer
 
   before_action :set_session, only: [ :show, :edit, :update, :destroy, :row ]
   before_action :set_exercises, only: [ :edit, :update ]
 
   def index
-    # @years/@months only ever populate the filter dropdowns' options (so they only ever offer
-    # choices with actual data) — the incoming params are validated separately and more loosely,
-    # so that filtering down to a year/month with zero matching sessions still applies the filter
-    # and shows an empty result, rather than being treated as "invalid" and silently ignored.
-    @years = Session.distinct.pluck(:date).map(&:year).uniq.sort.reverse
-    @year = params[:year].presence&.to_i
-
-    @months = @year ? Session.where(date: Date.new(@year, 1, 1)..Date.new(@year, 12, 31))
-                              .distinct.pluck(:date).map(&:month).uniq.sort : []
-    @month = params[:month].presence&.to_i
-    @month = nil unless @year && (1..12).cover?(@month)
-
-    @equipment_list = Equipment.order(:name)
-    @equipment_id = params[:equipment_id].presence
-    @exercises = Exercise.order(:name)
-    @exercises = @exercises.where(equipment_id: @equipment_id) if @equipment_id
-    @exercise_id = params[:exercise_id].presence
-    @exercise_id = nil if @exercise_id && !@exercises.exists?(id: @exercise_id)
-
-    scope = Session.order(date: :desc, id: :desc)
-    scope = scope.where(date: Date.new(@year, 1, 1)..Date.new(@year, 12, 31)) if @year
-    scope = scope.where(date: Date.new(@year, @month, 1)..Date.new(@year, @month, -1)) if @year && @month
-    scope = scope.where(exercise_id: @exercise_id) if @exercise_id
-    scope = scope.joins(:exercise).where(exercise: { equipment_id: @equipment_id }) if @equipment_id && !@exercise_id
-
-    @total_count = scope.count
-    @total_pages = [ (@total_count / PER_PAGE.to_f).ceil, 1 ].max
-    @page = [ [ params[:page].to_i, 1 ].max, @total_pages ].min
-    @sessions = scope.includes(:exercise, :session_shape, :session_sets).offset((@page - 1) * PER_PAGE).limit(PER_PAGE)
+    build_sessions_explorer
   end
 
   def new

@@ -18,14 +18,18 @@
 
   <body class="min-h-screen bg-paper font-sans text-ink antialiased">
     <header class="border-b border-border bg-surface px-4 py-3">
-      <div class="mx-auto flex max-w-md items-center gap-2 sm:max-w-xl md:max-w-2xl">
+      <div class="mx-auto flex max-w-md items-center gap-3 sm:max-w-xl md:max-w-2xl lg:max-w-5xl xl:max-w-6xl">
         <span class="flex h-7 w-7 items-center justify-center rounded bg-ink font-mono text-sm font-semibold text-paper">W</span>
         <span class="text-base font-semibold tracking-tight">Warrior Tracker</span>
         <span class="text-sm text-muted">— shared, read-only</span>
+        <nav class="ml-auto flex gap-4 text-sm">
+          <%= link_to "Stats", shared_dashboard_path(@share_link.token), class: "text-muted transition-colors hover:text-rust" %>
+          <%= link_to "History", shared_dashboard_sessions_path(@share_link.token), class: "text-muted transition-colors hover:text-rust" %>
+        </nav>
       </div>
     </header>
 
-    <main class="mx-auto max-w-md px-4 py-6 sm:max-w-xl md:max-w-2xl">
+    <main class="mx-auto px-4 py-6 <%= content_for(:main_class).presence || "max-w-md sm:max-w-xl md:max-w-2xl" %>">
       <%= yield %>
     </main>
   </body>
