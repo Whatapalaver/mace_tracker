@@ -127,6 +127,36 @@ RSpec.describe "Stats", type: :request do
       expect(response.body).to include("Choose a shape")
     end
 
+    it "defaults shape and signature to the first available once an exercise with sessions is chosen" do
+      exercise = create(:exercise)
+      shape = create(:session_shape, :interval_work)
+      create(:session, exercise: exercise, session_shape: shape, weight_kg: 10, work_seconds: 300)
+
+      get stats_path(exercise_id: exercise.id)
+
+      expect(response.body).to include(%(selected="selected" value="#{shape.name}"))
+      expect(response.body).to include("Best pace")
+    end
+
+    it "does not override an explicitly cleared shape with the default" do
+      exercise = create(:exercise)
+      shape = create(:session_shape, :interval_work)
+      create(:session, exercise: exercise, session_shape: shape, weight_kg: 10, work_seconds: 300)
+
+      get stats_path(exercise_id: exercise.id, shape: "")
+
+      expect(response.body).not_to include(%(selected="selected" value="#{shape.name}"))
+    end
+
+    it "leaves shape and signature nil, without error, when the exercise has no sessions at all" do
+      exercise = create(:exercise)
+
+      get stats_path(exercise_id: exercise.id)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).not_to include("Choose a signature")
+    end
+
     it "shows personal bests per weight once an exercise is chosen" do
       exercise = create(:exercise)
       light = create(:session, exercise: exercise, weight_kg: 8, date: "2026-06-01")

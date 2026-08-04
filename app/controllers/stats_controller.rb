@@ -22,7 +22,14 @@ class StatsController < ApplicationController
 
     return unless @exercise
 
-    @shape = SessionShape.find_by(name: params[:shape], user_id: nil) if params[:shape].present?
+    if params.key?(:shape)
+      @shape = SessionShape.find_by(name: params[:shape], user_id: nil) if params[:shape].present?
+    else
+      # A fresh exercise selection (shape not chosen or cleared yet) defaults to the first shape
+      # that actually has sessions logged for this exercise — @session_shapes.find returns nil,
+      # not an error, when none do, so @shape stays nil and the guard below stops there safely.
+      @shape = @session_shapes.find { |shape| Session.exists?(exercise_id: @exercise.id, session_shape_id: shape.id) }
+    end
     return unless @shape
 
     # Granularity only means anything for interval_work — the other shapes have no wrapping
@@ -31,7 +38,7 @@ class StatsController < ApplicationController
     @granularity = "full" unless @shape.name == SessionShape::INTERVAL_WORK
 
     @signatures = distinct_signatures
-    @structural_value = params[:structural_value].presence
+    @structural_value = params.key?(:structural_value) ? params[:structural_value].presence : @signatures.first&.fetch(:value)
     @structural_value = nil unless @signatures.any? { |signature| signature[:value] == @structural_value }
     return unless @structural_value
 
