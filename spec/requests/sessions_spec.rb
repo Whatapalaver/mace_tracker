@@ -330,6 +330,14 @@ RSpec.describe "Sessions", type: :request do
       expect(response.body).not_to include("3(5mw+5mr)@10kg")
     end
 
+    it "shows the session's shape" do
+      create(:session, :emom)
+
+      get sessions_path
+
+      expect(response.body).to include("EMOM")
+    end
+
     it "shows a session's notes" do
       create(:session, notes: "Felt strong today")
 

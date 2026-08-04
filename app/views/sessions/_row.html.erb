@@ -1,7 +1,8 @@
 <%= turbo_frame_tag dom_id(session) do %>
-  <div class="grid grid-cols-8 items-center gap-2 border-b border-border px-3 py-2 text-sm last:border-b-0">
+  <div class="hidden grid-cols-9 items-center gap-2 border-b border-border px-3 py-2 text-sm last:border-b-0 md:grid">
     <div class="text-muted"><%= session.date.to_fs(:short) %></div>
     <div><%= session.exercise.display_name %></div>
+    <div class="text-muted"><%= session.session_shape.label %></div>
     <div class="font-mono"><%= session.weight_agnostic_signature %></div>
     <div class="font-mono"><%= session.weight_kg %></div>
     <div class="font-mono"><%= session.reps_summary %></div>
@@ -12,6 +13,31 @@
     </div>
     <div class="truncate text-muted" title="<%= session.notes %>"><%= session.notes %></div>
     <div class="flex gap-3">
+      <%= link_to "Edit", edit_session_path(session), class: "font-medium text-rust hover:text-rust-dark" %>
+      <%= button_to "Delete", session_path(session), method: :delete,
+            data: { turbo_confirm: "Delete this session and all its sets?", turbo_frame: "_top" },
+            class: "font-medium text-crimson hover:text-crimson/80" %>
+    </div>
+  </div>
+
+  <div class="border-b border-border px-3 py-3 text-sm last:border-b-0 md:hidden">
+    <div class="flex items-baseline justify-between gap-2">
+      <span class="font-medium"><%= session.exercise.display_name %></span>
+      <span class="shrink-0 text-xs text-muted"><%= session.date.to_fs(:short) %></span>
+    </div>
+    <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs text-muted">
+      <span><%= session.session_shape.label %></span>
+      <span><%= session.weight_agnostic_signature %></span>
+      <span><%= session.weight_kg %>kg</span>
+      <span>reps: <%= session.reps_summary %></span>
+      <% if session.is_benchmark? %>
+        <span class="rounded-full bg-brass-light px-2 py-0.5 font-sans font-semibold tracking-wide text-brass uppercase">Benchmark</span>
+      <% end %>
+    </div>
+    <% if session.notes.present? %>
+      <p class="mt-1 truncate text-xs text-muted"><%= session.notes %></p>
+    <% end %>
+    <div class="mt-2 flex gap-3 text-xs">
       <%= link_to "Edit", edit_session_path(session), class: "font-medium text-rust hover:text-rust-dark" %>
       <%= button_to "Delete", session_path(session), method: :delete,
             data: { turbo_confirm: "Delete this session and all its sets?", turbo_frame: "_top" },

@@ -1,31 +1,43 @@
 <%= turbo_frame_tag dom_id(session) do %>
   <%= form_with model: session, url: session_path(session), method: :patch,
-        class: "border-b border-border bg-rust-light px-3 py-2 text-sm last:border-b-0" do |form| %>
+        class: "space-y-2 border-b border-border bg-rust-light px-3 py-3 text-sm last:border-b-0" do |form| %>
     <% if session.errors.any? %>
-      <p class="mb-2 text-xs text-crimson"><%= session.errors.full_messages.to_sentence %></p>
+      <p class="text-xs text-crimson"><%= session.errors.full_messages.to_sentence %></p>
     <% end %>
-    <div class="grid grid-cols-8 items-center gap-2">
+
+    <div class="text-xs text-muted"><%= session.exercise.display_name %> &middot; <%= session.session_shape.label %></div>
+
+    <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
       <div>
-        <%= form.date_field :date, class: "w-full rounded border border-border px-1 py-0.5 text-sm" %>
+        <%= form.label :date, class: "mb-1 block text-xs font-medium text-muted" %>
+        <%= form.date_field :date, class: "w-full rounded border border-border px-2 py-1 text-sm" %>
       </div>
-      <div class="text-muted"><%= session.exercise.display_name %></div>
       <div>
+        <%= label_tag "session_signature", "Signature", class: "mb-1 block text-xs font-medium text-muted" %>
         <%= text_field_tag "session[signature]", session.weight_agnostic_signature,
-              class: "w-full rounded border border-border px-1 py-0.5 text-sm font-mono" %>
+              class: "w-full rounded border border-border px-2 py-1 text-sm font-mono" %>
       </div>
       <div>
-        <%= form.number_field :weight_kg, step: 0.5, class: "w-full rounded border border-border px-1 py-0.5 text-sm" %>
+        <%= form.label :weight_kg, "Weight", class: "mb-1 block text-xs font-medium text-muted" %>
+        <%= form.number_field :weight_kg, step: 0.5, class: "w-full rounded border border-border px-2 py-1 text-sm" %>
       </div>
       <div>
+        <%= label_tag "session_reps_list", "Reps", class: "mb-1 block text-xs font-medium text-muted" %>
         <%= text_field_tag "session[reps_list]", session.reps_summary,
-              class: "w-full rounded border border-border px-1 py-0.5 text-sm font-mono" %>
+              class: "w-full rounded border border-border px-2 py-1 text-sm font-mono" %>
       </div>
-      <div>
+    </div>
+
+    <div>
+      <%= form.label :notes, class: "mb-1 block text-xs font-medium text-muted" %>
+      <%= form.text_field :notes, class: "w-full rounded border border-border px-2 py-1 text-sm" %>
+    </div>
+
+    <div class="flex items-center justify-between pt-1">
+      <label class="flex items-center gap-2 text-xs font-medium">
         <%= form.check_box :is_benchmark, class: "accent-brass" %>
-      </div>
-      <div>
-        <%= form.text_field :notes, class: "w-full rounded border border-border px-1 py-0.5 text-sm" %>
-      </div>
+        Benchmark
+      </label>
       <div class="flex gap-3">
         <%= form.submit "Save", class: "font-medium text-rust hover:text-rust-dark" %>
         <%= link_to "Cancel", row_session_path(session), class: "font-medium text-muted" %>
