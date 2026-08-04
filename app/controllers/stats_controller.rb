@@ -9,6 +9,7 @@ class StatsController < ApplicationController
     @period = params[:period].presence || "daily"
     @stats = Progression::LifetimeStats.new(exercise: @exercise, exercise_ids: @equipment_id && @exercises.ids,
                                              period: @period)
+    @personal_bests = @exercise ? @stats.personal_bests : []
     @session_shapes = SessionShape.global_ordered
 
     return unless @exercise

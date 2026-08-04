@@ -74,6 +74,30 @@
   <% end %>
 <% end %>
 
+<% if @exercise && @personal_bests.any? %>
+  <section class="mb-6 rounded-lg border border-border bg-surface p-4 text-sm">
+    <h2 class="mb-2 text-xs font-semibold tracking-widest text-muted uppercase">Personal bests</h2>
+    <table class="w-full text-left text-sm">
+      <thead>
+        <tr class="text-xs text-muted">
+          <th class="pb-1 font-medium">Weight</th>
+          <th class="pb-1 font-medium">Max reps</th>
+          <th class="pb-1 font-medium">Date</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-border">
+        <% @personal_bests.each do |pb| %>
+          <tr>
+            <td class="py-1 font-mono"><%= pb[:weight] %>kg</td>
+            <td class="py-1 font-mono"><%= pb[:reps] %></td>
+            <td class="py-1 text-muted"><%= pb[:date].to_fs(:long) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+<% end %>
+
 <% if @series %>
   <% output_label_with_unit =
        if @output_label.match?(/pace/i)
@@ -95,4 +119,4 @@
 <% end %>
 
 <%= render "stats/lifetime_summary", stats: @stats, period: @period, period_form_url: stats_path,
-      period_hidden_params: { exercise_id: @exercise&.id, equipment_id: @equipment_id } %>
+      period_hidden_params: { exercise_id: @exercise&.id, equipment_id: @equipment_id }, exercise: @exercise %>

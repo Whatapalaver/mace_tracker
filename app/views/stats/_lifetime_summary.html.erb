@@ -1,3 +1,4 @@
+<%# locals: (stats:, period:, period_form_url:, period_hidden_params:, exercise: nil) %>
 <section class="mb-6 grid grid-cols-2 gap-3">
   <div class="rounded-lg border border-border bg-surface p-4 text-center">
     <p class="font-mono text-2xl font-semibold text-ink"><%= stats.total_reps %></p>
@@ -41,3 +42,17 @@
     <%= column_chart stats.volume_by_period, xtitle: "Date", ytitle: "Total volume (kg)", colors: [ "#a9793c" ] %>
   <% end %>
 </section>
+
+<% if exercise %>
+  <% max_reps_series = stats.max_reps_by_weight_and_period %>
+  <section class="mb-6 rounded-lg border border-border bg-surface p-4 text-sm">
+    <h2 class="mb-2 text-xs font-semibold tracking-widest text-muted uppercase">Max reps by weight</h2>
+    <% if max_reps_series.empty? %>
+      <p class="text-sm text-muted">No sets logged yet.</p>
+    <% else %>
+      <%= line_chart max_reps_series.map { |name, data| { name: name, data: data } },
+            xtitle: "Date", ytitle: "Max reps", colors: [ "#b5432b", "#a9793c", "#4b6b3a", "#6b6259" ] %>
+    <% end %>
+  </section>
+<% end %>
+

@@ -107,6 +107,38 @@ RSpec.describe "Stats", type: :request do
       expect(response.body).to include("Choose a shape")
     end
 
+    it "shows personal bests per weight once an exercise is chosen" do
+      exercise = create(:exercise)
+      light = create(:session, exercise: exercise, weight_kg: 8, date: "2026-06-01")
+      create(:session_set, session: light, set_number: 1, reps: 30)
+      heavy = create(:session, exercise: exercise, weight_kg: 10, date: "2026-07-05")
+      create(:session_set, session: heavy, set_number: 1, reps: 25)
+
+      get stats_path(exercise_id: exercise.id)
+
+      expect(response.body).to include("Personal bests")
+      expect(response.body).to include("8.0kg")
+      expect(response.body).to include("10.0kg")
+      expect(response.body).to include("30")
+      expect(response.body).to include("25")
+    end
+
+    it "does not show personal bests until an exercise is chosen" do
+      get stats_path
+
+      expect(response.body).not_to include("Personal bests")
+    end
+
+    it "shows a max-reps-by-weight chart once an exercise is chosen" do
+      exercise = create(:exercise)
+      session = create(:session, exercise: exercise, weight_kg: 10, date: "2026-07-01")
+      create(:session_set, session: session, set_number: 1, reps: 20)
+
+      get stats_path(exercise_id: exercise.id)
+
+      expect(response.body).to include("Max reps by weight")
+    end
+
     it "lists distinct signatures for the chosen exercise and shape, without baking in a weight" do
       exercise = create(:exercise)
       shape = create(:session_shape, :interval_work)

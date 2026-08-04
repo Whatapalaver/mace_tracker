@@ -24,6 +24,28 @@ module Progression
       totals_by_period { |set| (set.reps || 0) * (set.effective_weight_kg || 0) }
     end
 
+    # One series per weight — {"10kg" => {period => max_reps}} — so a chart can plot how the
+    # heaviest weight's max reps-per-set trends separately from a lighter weight's, rather than
+    # blending every weight into one misleading line.
+    def max_reps_by_weight_and_period
+      by_weight.transform_keys { |weight| "#{weight}kg" }.transform_values do |sets|
+        totals = sets.each_with_object(Hash.new(0)) do |set, hash|
+          key = period_key(set.session.date)
+          hash[key] = [ hash[key], set.reps || 0 ].max
+        end
+        fill_gaps(totals)
+      end
+    end
+
+    # The heaviest single-set rep count ever logged at each weight, and when it happened — always
+    # all-time regardless of the period toggle above, since a personal best isn't bucketed.
+    def personal_bests
+      by_weight.map do |weight, sets|
+        best = sets.max_by { |set| set.reps || 0 }
+        { weight: weight, date: best.session.date, reps: best.reps }
+      end
+    end
+
     private
 
     attr_reader :exercise, :exercise_ids, :period
@@ -36,6 +58,12 @@ module Progression
         scope = scope.where(sessions: { exercise_id: exercise_ids })
       end
       scope.order(sessions: { date: :asc })
+    end
+
+    # Groups by effective weight, dropping sets with no known weight (can't be plotted or
+    # compared per-weight) and sorting lightest-first.
+    def by_weight
+      session_sets.to_a.group_by(&:effective_weight_kg).reject { |weight, _| weight.nil? }.sort_by(&:first).to_h
     end
 
     def totals_by_period

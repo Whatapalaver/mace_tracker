@@ -133,4 +133,57 @@ RSpec.describe Progression::LifetimeStats do
       expect(stats.reps_by_period).to eq({})
     end
   end
+
+  describe "#max_reps_by_weight_and_period" do
+    it "returns one series per weight, keyed by period, holding the max reps in any single set" do
+      session = create(:session, exercise: mace, date: "2026-07-01", weight_kg: 10)
+      create(:session_set, session: session, set_number: 1, reps: 20)
+      create(:session_set, session: session, set_number: 2, reps: 30)
+      logged_set(exercise: mace, date: "2026-07-01", reps: 15, weight: 8)
+      logged_set(exercise: mace, date: "2026-07-03", reps: 25, weight: 8)
+
+      stats = described_class.new(exercise: mace)
+
+      expect(stats.max_reps_by_weight_and_period).to eq(
+        "8.0kg" => {
+          Date.new(2026, 7, 1) => 15,
+          Date.new(2026, 7, 2) => 0,
+          Date.new(2026, 7, 3) => 25
+        },
+        "10.0kg" => { Date.new(2026, 7, 1) => 30 }
+      )
+    end
+  end
+
+  describe "#personal_bests" do
+    it "returns the max reps and its date for each weight, sorted lightest first" do
+      logged_set(exercise: mace, date: "2026-07-01", reps: 20, weight: 10)
+      logged_set(exercise: mace, date: "2026-07-05", reps: 25, weight: 10)
+      logged_set(exercise: mace, date: "2026-06-01", reps: 30, weight: 8)
+
+      stats = described_class.new(exercise: mace)
+
+      expect(stats.personal_bests).to eq(
+        [
+          { weight: 8, date: Date.new(2026, 6, 1), reps: 30 },
+          { weight: 10, date: Date.new(2026, 7, 5), reps: 25 }
+        ]
+      )
+    end
+
+    it "breaks a tie by the earliest date it was achieved" do
+      logged_set(exercise: mace, date: "2026-07-05", reps: 20, weight: 10)
+      logged_set(exercise: mace, date: "2026-07-01", reps: 20, weight: 10)
+
+      stats = described_class.new(exercise: mace)
+
+      expect(stats.personal_bests).to eq([ { weight: 10, date: Date.new(2026, 7, 1), reps: 20 } ])
+    end
+
+    it "returns an empty array when nothing has been logged" do
+      stats = described_class.new(exercise: mace)
+
+      expect(stats.personal_bests).to eq([])
+    end
+  end
 end
