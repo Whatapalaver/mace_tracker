@@ -10,7 +10,8 @@
   </div>
 </section>
 
-<%= form_with url: period_form_url, method: :get, class: "mb-3", data: { turbo: false } do %>
+<%= form_with url: period_form_url, method: :get, class: "mb-3",
+      data: { turbo: false, controller: "scroll-preserving-form" } do %>
   <% period_hidden_params.each do |name, value| %>
     <%= hidden_field_tag name, value %>
   <% end %>
@@ -18,7 +19,8 @@
     <legend class="sr-only">Time period</legend>
     <% Progression::LifetimeStats::PERIODS.each do |option| %>
       <label class="flex items-center gap-1">
-        <%= radio_button_tag :period, option, period == option, class: "accent-rust", onchange: "this.form.requestSubmit()" %>
+        <%= radio_button_tag :period, option, period == option, class: "accent-rust",
+              data: { action: "change->scroll-preserving-form#submit" } %>
         <%= option.capitalize %>
       </label>
     <% end %>

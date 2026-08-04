@@ -5,12 +5,14 @@
 <p class="mb-4 text-sm text-muted"><%= @total_count %> sessions logged.</p>
 
 <% if @years.any? %>
-  <%= form_with url: sessions_path, method: :get, class: "mb-4 grid grid-cols-2 gap-3", data: { turbo: false } do %>
+  <%= form_with url: sessions_path, method: :get, class: "mb-4 grid grid-cols-2 gap-3",
+        data: { turbo: false, controller: "scroll-preserving-form" } do %>
     <div>
       <%= label_tag :year, "Year", class: "mb-1 block text-sm font-medium" %>
       <%= select_tag :year, options_for_select(@years, @year),
             include_blank: "All years",
-            class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base", onchange: "this.form.requestSubmit()" %>
+            class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base",
+            data: { action: "change->scroll-preserving-form#submit" } %>
     </div>
     <% if @year %>
       <div>
@@ -18,7 +20,8 @@
         <%= select_tag :month,
               options_for_select(@months.map { |m| [ Date::MONTHNAMES[m], m ] }, @month),
               include_blank: "All months",
-              class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base", onchange: "this.form.requestSubmit()" %>
+              class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base",
+              data: { action: "change->scroll-preserving-form#submit" } %>
       </div>
     <% end %>
   <% end %>

@@ -3,19 +3,22 @@
 <h1 class="mb-1 text-2xl font-semibold tracking-tight">Stats</h1>
 <p class="mb-6 text-sm text-muted">Browse progression by exercise and signature.</p>
 
-<%= form_with url: stats_path, method: :get, class: "mb-6 space-y-4", data: { turbo: false } do |form| %>
+<%= form_with url: stats_path, method: :get, class: "mb-6 space-y-4",
+      data: { turbo: false, controller: "scroll-preserving-form" } do |form| %>
   <div>
     <%= form.label :equipment_id, "Equipment", class: "mb-1 block text-sm font-medium" %>
     <%= form.collection_select :equipment_id, @equipment_list, :id, :name,
           { include_blank: "All equipment", selected: @equipment_id },
-          class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base", onchange: "this.form.requestSubmit()" %>
+          class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base",
+          data: { action: "change->scroll-preserving-form#submit" } %>
   </div>
 
   <div>
     <%= form.label :exercise_id, "Exercise", class: "mb-1 block text-sm font-medium" %>
     <%= form.collection_select :exercise_id, @exercises, :id, :display_name,
           { include_blank: "All exercises", selected: @exercise&.id },
-          class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base", onchange: "this.form.requestSubmit()" %>
+          class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base",
+          data: { action: "change->scroll-preserving-form#submit" } %>
   </div>
 <% end %>
 
@@ -47,7 +50,8 @@
       period_hidden_params: { exercise_id: @exercise&.id, equipment_id: @equipment_id }, exercise: @exercise %>
 
 <% if @exercise %>
-  <%= form_with url: stats_path, method: :get, class: "mb-6 space-y-4", data: { turbo: false } do |form| %>
+  <%= form_with url: stats_path, method: :get, class: "mb-6 space-y-4",
+        data: { turbo: false, controller: "scroll-preserving-form" } do |form| %>
     <%= hidden_field_tag :equipment_id, @equipment_id %>
     <%= hidden_field_tag :exercise_id, @exercise.id %>
 
@@ -56,18 +60,21 @@
       <%= select_tag :shape,
             options_for_select(@session_shapes.map { |shape| [ shape.label, shape.name ] }, @shape&.name),
             include_blank: "Choose a shape to browse progression",
-            class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base", onchange: "this.form.requestSubmit()" %>
+            class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base",
+            data: { action: "change->scroll-preserving-form#submit" } %>
     </div>
 
     <% if @shape&.name == SessionShape::INTERVAL_WORK %>
       <fieldset class="flex gap-4 text-sm">
         <legend class="sr-only">Signature granularity</legend>
         <label class="flex items-center gap-1">
-          <%= radio_button_tag :granularity, "full", @granularity == "full", class: "accent-rust", onchange: "this.form.requestSubmit()" %>
+          <%= radio_button_tag :granularity, "full", @granularity == "full", class: "accent-rust",
+                data: { action: "change->scroll-preserving-form#submit" } %>
           Full signature
         </label>
         <label class="flex items-center gap-1">
-          <%= radio_button_tag :granularity, "segment", @granularity == "segment", class: "accent-rust", onchange: "this.form.requestSubmit()" %>
+          <%= radio_button_tag :granularity, "segment", @granularity == "segment", class: "accent-rust",
+                data: { action: "change->scroll-preserving-form#submit" } %>
           Set duration only
         </label>
       </fieldset>
@@ -79,7 +86,8 @@
         <%= select_tag :structural_value,
               options_for_select(@signatures.map { |signature| [ signature[:label], signature[:value] ] }, @structural_value),
               include_blank: "Choose a signature",
-              class: "w-full rounded-md border border-ink bg-ink px-3 py-2 font-mono text-base text-paper", onchange: "this.form.requestSubmit()" %>
+              class: "w-full rounded-md border border-ink bg-ink px-3 py-2 font-mono text-base text-paper",
+              data: { action: "change->scroll-preserving-form#submit" } %>
       </div>
     <% end %>
 
@@ -89,17 +97,20 @@
           <%= label_tag :weight, "Weight", class: "mb-1 block text-sm font-medium" %>
           <%= select_tag :weight,
                 options_for_select([ [ "All weights", "" ] ] + @weights.map { |weight| [ "#{weight}kg", weight ] }, @weight),
-                class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base", onchange: "this.form.requestSubmit()" %>
+                class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base",
+                data: { action: "change->scroll-preserving-form#submit" } %>
         </div>
         <div>
           <%= label_tag :output, "Output", class: "mb-1 block text-sm font-medium" %>
           <%= select_tag :output, options_for_select(@output_labels, @output_label),
-                class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base", onchange: "this.form.requestSubmit()" %>
+                class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base",
+                data: { action: "change->scroll-preserving-form#submit" } %>
         </div>
       </div>
 
       <label class="flex items-center gap-2 text-sm font-medium">
-        <%= check_box_tag :benchmarks_only, "true", @benchmarks_only, class: "accent-brass", onchange: "this.form.requestSubmit()" %>
+        <%= check_box_tag :benchmarks_only, "true", @benchmarks_only, class: "accent-brass",
+              data: { action: "change->scroll-preserving-form#submit" } %>
         Benchmarks only
       </label>
     <% end %>
