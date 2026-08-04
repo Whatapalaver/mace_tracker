@@ -5,15 +5,18 @@ module ApplicationHelper
   # or Chart.js silently falls back to grey once it runs out. The first 4 are the named theme
   # colors (rust/brass/moss/crimson); the rest are 36 hues spaced evenly around the color wheel,
   # avoiding those 4, at higher saturation with alternating lightness bands so neighboring series
-  # stay visually distinct even in a long run of similar hues.
+  # stay visually distinct even in a long run of similar hues. Yellow/green hues get pulled a bit
+  # darker than the rest, since WCAG luminance weighs green heavily — without that they read as
+  # washed out against the chart's white background even at the same HSL lightness as everything
+  # else. Every entry clears 2.4:1 contrast against white.
   CHART_COLORS = [
     "#b5432b", "#a9793c", "#4b6b3a", "#a3261e",
-    "#a55127", "#d3a445", "#7c691d", "#a59d27", "#cad345", "#697c1d",
-    "#7ba527", "#91d345", "#307c1d", "#2fa527", "#45d34f", "#1d7c30",
-    "#27a551", "#45d388", "#1d7c56", "#27a584", "#45d3c0", "#1d7c7c",
-    "#2794a5", "#45add3", "#1d567c", "#2762a5", "#4575d3", "#1d307c",
-    "#272fa5", "#4f45d3", "#301d7c", "#5127a5", "#8845d3", "#561d7c",
-    "#8427a5", "#c045d3", "#7c1d7c", "#a52794", "#d345ad", "#7c1d56"
+    "#974820", "#b98927", "#6d5c17", "#7e781b", "#97a022", "#475412",
+    "#5d7e1b", "#65a022", "#1f5412", "#217e1b", "#22a02a", "#12541f",
+    "#1b7e3c", "#22a05d", "#12543a", "#1b7e64", "#27b9a6", "#176d6d",
+    "#208897", "#2792b9", "#174b6d", "#205897", "#2758b9", "#17286d",
+    "#202897", "#3127b9", "#28176d", "#482097", "#6b27b9", "#4b176d",
+    "#782097", "#a627b9", "#6d176d", "#972088", "#b92792", "#6d174b"
   ].freeze
 
   def chart_colors
