@@ -13,15 +13,15 @@ RSpec.describe "Stats", type: :request do
       expect(response.body).to include("200")
     end
 
-    it "defaults the period to daily and buckets reps by day" do
+    it "defaults the period to monthly and buckets reps by month" do
       session = create(:session, weight_kg: 10, date: "2026-07-01")
       create(:session_set, session: session, set_number: 1, reps: 20)
 
       get stats_path
 
-      expect(response.body).to include("2026-07-01")
-      daily_radio = response.body[/<input[^>]*value="daily"[^>]*>/]
-      expect(daily_radio).to include("checked")
+      expect(response.body).to include(Date.new(2026, 7, 1).beginning_of_month.to_s)
+      monthly_radio = response.body[/<input[^>]*value="monthly"[^>]*>/]
+      expect(monthly_radio).to include("checked")
     end
 
     it "switches to weekly buckets when period=weekly" do

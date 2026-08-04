@@ -14,7 +14,7 @@ class StatsController < ApplicationController
     @exercises = @exercises.where(equipment_id: @equipment_id) if @equipment_id
     @exercise = Exercise.find_by(id: params[:exercise_id]) || default_exercise
     @exercise = nil if @exercise && @equipment_id.present? && @exercise.equipment_id.to_s != @equipment_id
-    @period = params[:period].presence || "daily"
+    @period = params[:period].presence || "monthly"
     @stats = Progression::LifetimeStats.new(exercise: @exercise, exercise_ids: @equipment_id && @exercises.ids,
                                              period: @period)
     @personal_bests = @exercise ? @stats.personal_bests : []
