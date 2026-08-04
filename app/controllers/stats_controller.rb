@@ -1,10 +1,18 @@
 class StatsController < ApplicationController
   def show
     @equipment_list = Equipment.order(:name)
-    @equipment_id = params[:equipment_id].presence
+
+    # A fresh, filterless visit (e.g. the "Stats" nav link) defaults to Mace 10-2 rather than
+    # showing an empty page — every other entry point (the filter forms themselves) always
+    # submits equipment_id/exercise_id explicitly, even when blank, so checking the params key
+    # (not just presence) distinguishes "never chosen yet" from "explicitly cleared".
+    fresh_visit = !params.key?(:equipment_id) && !params.key?(:exercise_id)
+    default_exercise = Exercise.joins(:equipment).find_by(equipment: { name: "Mace" }, name: "10-2") if fresh_visit
+
+    @equipment_id = params[:equipment_id].presence || default_exercise&.equipment_id&.to_s
     @exercises = Exercise.order(:name)
     @exercises = @exercises.where(equipment_id: @equipment_id) if @equipment_id
-    @exercise = Exercise.find_by(id: params[:exercise_id])
+    @exercise = Exercise.find_by(id: params[:exercise_id]) || default_exercise
     @exercise = nil if @exercise && @equipment_id.present? && @exercise.equipment_id.to_s != @equipment_id
     @period = params[:period].presence || "daily"
     @stats = Progression::LifetimeStats.new(exercise: @exercise, exercise_ids: @equipment_id && @exercises.ids,

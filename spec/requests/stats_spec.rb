@@ -87,6 +87,26 @@ RSpec.describe "Stats", type: :request do
       expect(response.body).not_to include("Choose a shape")
     end
 
+    it "defaults to Mace 10-2 on a fresh, filterless visit when it exists" do
+      mace = create(:equipment, name: "Mace")
+      mace_10_2 = create(:exercise, name: "10-2", equipment: mace)
+      create(:exercise, name: "360", equipment: mace)
+
+      get stats_path
+
+      expect(response.body).to include(%(selected="selected" value="#{mace.id}"))
+      expect(response.body).to include(%(selected="selected" value="#{mace_10_2.id}"))
+    end
+
+    it "does not override an explicitly cleared equipment/exercise filter with the default" do
+      mace = create(:equipment, name: "Mace")
+      create(:exercise, name: "10-2", equipment: mace)
+
+      get stats_path(equipment_id: "", exercise_id: "")
+
+      expect(response.body).not_to include(%(selected="selected" value="#{mace.id}"))
+    end
+
     it "shows a placeholder when nothing has been logged" do
       get stats_path
 
