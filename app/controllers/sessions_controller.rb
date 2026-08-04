@@ -4,6 +4,7 @@ class SessionsController < ApplicationController
   PER_PAGE = 50
 
   before_action :set_session, only: [ :show, :edit, :update, :destroy, :row ]
+  before_action :set_exercises, only: [ :edit, :update ]
 
   def index
     # @years/@months only ever populate the filter dropdowns' options (so they only ever offer
@@ -94,6 +95,10 @@ class SessionsController < ApplicationController
     @session = Session.find(params[:id])
   end
 
+  def set_exercises
+    @exercises = Exercise.order(:name)
+  end
+
   def parse_reps_list(text)
     values = text.to_s.split(",").map(&:strip).reject(&:empty?)
     raise Progression::SessionSignature::ParseError, "At least one rep value is required" if values.empty?
@@ -104,7 +109,7 @@ class SessionsController < ApplicationController
   end
 
   def session_edit_params
-    params.expect(session: [ :date, :weight_kg, :is_benchmark, :notes ])
+    params.expect(session: [ :date, :exercise_id, :weight_kg, :is_benchmark, :notes ])
   end
 
   def confirming_sets?

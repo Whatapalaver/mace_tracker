@@ -5,16 +5,21 @@
       <p class="text-xs text-crimson"><%= session.errors.full_messages.to_sentence %></p>
     <% end %>
 
-    <div class="text-xs text-muted"><%= session.exercise.display_name %> &middot; <%= session.session_shape.label %></div>
+    <div class="text-xs text-muted"><%= session.session_shape.label %></div>
 
     <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div>
+        <%= form.label :exercise_id, "Exercise", class: "mb-1 block text-xs font-medium text-muted" %>
+        <%= form.collection_select :exercise_id, @exercises, :id, :display_name, {},
+              class: "w-full rounded border border-border px-2 py-1 text-sm" %>
+      </div>
       <div>
         <%= form.label :date, class: "mb-1 block text-xs font-medium text-muted" %>
         <%= form.date_field :date, class: "w-full rounded border border-border px-2 py-1 text-sm" %>
       </div>
       <div>
         <%= label_tag "session_signature", "Signature", class: "mb-1 block text-xs font-medium text-muted" %>
-        <%= text_field_tag "session[signature]", session.weight_agnostic_signature,
+        <%= text_field_tag "session[signature]", session.signature_edit_value,
               class: "w-full rounded border border-border px-2 py-1 text-sm font-mono" %>
       </div>
       <div>

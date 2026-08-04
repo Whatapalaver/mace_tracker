@@ -37,6 +37,21 @@ class Session < ApplicationRecord
     end
   end
 
+  # The editable form of the signature — unlike weight_agnostic_signature, always exactly what
+  # Progression::SessionSignature.parse accepts back for this shape (a bare number for
+  # fixed_reps_for_time/sets_and_reps/emom, with no "reps"/"reps/min" suffix), so pre-filling the
+  # history table's inline-edit field with this round-trips instead of failing to parse.
+  def signature_edit_value
+    case session_shape.name
+    when SessionShape::INTERVAL_WORK
+      weight_agnostic_signature
+    when SessionShape::FIXED_REPS_FOR_TIME, SessionShape::SETS_AND_REPS
+      reps.to_s
+    when SessionShape::EMOM
+      reps_per_minute.to_s
+    end
+  end
+
   # The actual reps performed in each set, in order — e.g. "184, 181, 175".
   def reps_summary
     session_sets.order(:set_number).pluck(:reps).join(", ")

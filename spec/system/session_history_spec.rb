@@ -31,6 +31,38 @@ RSpec.describe "Session history table", type: :system, js: true do
     expect(session.session_sets.order(:set_number).pluck(:reps)).to eq([ 25, 24, 23, 22, 21 ])
   end
 
+  it "saves a fixed_reps_for_time session's edit without touching the signature field" do
+    # Regression: the signature field used to pre-fill with the display text ("108 reps"), but
+    # the parser only accepts a bare number — so opening the edit row and saving unchanged
+    # crashed immediately with "Expected a whole number".
+    session = create(:session, :fixed_reps_for_time, reps: 108, weight_kg: 8)
+    create(:session_set, session: session, set_number: 1, reps: 108, duration_seconds: 240)
+
+    visit sessions_path
+    click_link "Edit"
+    click_button "Save"
+
+    expect(page).to have_current_path(sessions_path)
+    expect(page).not_to have_content("Expected a whole number")
+    session.reload
+    expect(session.reps).to eq(108)
+  end
+
+  it "changes a session's exercise via the edit row" do
+    other_exercise = create(:exercise, name: "Snatch", equipment: create(:equipment, name: "Kettlebell"))
+    session = create(:session, :fixed_reps_for_time, reps: 20)
+    create(:session_set, session: session, set_number: 1, reps: 20, duration_seconds: 60)
+
+    visit sessions_path
+    click_link "Edit"
+    select other_exercise.display_name, from: "session[exercise_id]"
+    click_button "Save"
+
+    expect(page).to have_content("Kettlebell Snatch")
+    session.reload
+    expect(session.exercise).to eq(other_exercise)
+  end
+
   it "shows a validation error without saving when the signature and reps count disagree" do
     session = create(:session, work_seconds: 300, rest_seconds: 300, sets_count: 3)
     create(:session_set, session: session, set_number: 1, reps: 20)
