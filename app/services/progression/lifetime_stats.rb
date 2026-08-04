@@ -30,13 +30,20 @@ module Progression
     # periods with no set at that weight are left out entirely rather than zero-filled — a 0
     # here would misread as "did zero reps that day" instead of "didn't lift this weight that
     # day," so the line should skip the gap, not dip to the floor.
+    # A weight with only one period point can't be drawn as a line at all — it just floats as an
+    # unconnected dot, which reads as noise when several such weights pile up — so those are
+    # dropped here; the personal-bests table is where single-record weights still show up.
     def max_reps_by_weight_and_period
-      by_weight.transform_keys { |weight| "#{weight}kg" }.transform_values do |sets|
+      series_by_weight = by_weight.transform_keys { |weight| "#{weight}kg" }.transform_values do |sets|
         sets.each_with_object({}) do |set, totals|
           key = period_key(set.session.date)
           totals[key] = [ totals[key] || 0, set.reps || 0 ].max
         end
       end
+
+      return series_by_weight if series_by_weight.size <= 1
+
+      series_by_weight.reject { |_weight, totals| totals.size <= 1 }
     end
 
     # The heaviest single-set rep count ever logged at each weight, and when it happened — always

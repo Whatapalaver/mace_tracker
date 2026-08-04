@@ -53,7 +53,7 @@
       <p class="text-sm text-muted">No sets logged yet.</p>
     <% else %>
       <%= line_chart max_reps_series.map { |name, data| { name: name, data: data } },
-            xtitle: "Date", ytitle: "Max reps", colors: [ "#b5432b", "#a9793c", "#4b6b3a", "#6b6259" ] %>
+            xtitle: "Date", ytitle: "Max reps", colors: chart_colors %>
     <% end %>
   </section>
 <% end %>

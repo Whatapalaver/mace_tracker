@@ -280,9 +280,15 @@ RSpec.describe "Stats", type: :request do
       light = create(:session, exercise: exercise, session_shape: shape,
                                 weight_kg: 8, work_seconds: 300, date: "2026-07-01")
       create(:session_set, session: light, set_number: 1, reps: 20, duration_seconds: 300)
+      light2 = create(:session, exercise: exercise, session_shape: shape,
+                                 weight_kg: 8, work_seconds: 300, date: "2026-07-15")
+      create(:session_set, session: light2, set_number: 1, reps: 18, duration_seconds: 300)
       heavy = create(:session, exercise: exercise, session_shape: shape,
                                 weight_kg: 10, work_seconds: 300, date: "2026-07-08")
       create(:session_set, session: heavy, set_number: 1, reps: 25, duration_seconds: 300)
+      heavy2 = create(:session, exercise: exercise, session_shape: shape,
+                                 weight_kg: 10, work_seconds: 300, date: "2026-07-22")
+      create(:session_set, session: heavy2, set_number: 1, reps: 22, duration_seconds: 300)
 
       get stats_path(exercise_id: exercise.id, shape: SessionShape::INTERVAL_WORK, structural_value: "300:600:5")
       chart_script = response.body.scan(/createChart[\s\S]*?;/).select { |s| s.include?("new Chartkick") }.last
@@ -303,10 +309,18 @@ RSpec.describe "Stats", type: :request do
       # misreads as a single series with the series names as x-axis categories.
       exercise = create(:exercise)
       shape = create(:session_shape, :interval_work)
-      light = create(:session, exercise: exercise, session_shape: shape, weight_kg: 8, work_seconds: 300)
+      light = create(:session, exercise: exercise, session_shape: shape, weight_kg: 8, work_seconds: 300,
+                                date: "2026-07-01")
       create(:session_set, session: light, set_number: 1, reps: 20, duration_seconds: 300)
-      heavy = create(:session, exercise: exercise, session_shape: shape, weight_kg: 10, work_seconds: 300)
+      light2 = create(:session, exercise: exercise, session_shape: shape, weight_kg: 8, work_seconds: 300,
+                                 date: "2026-07-15")
+      create(:session_set, session: light2, set_number: 1, reps: 18, duration_seconds: 300)
+      heavy = create(:session, exercise: exercise, session_shape: shape, weight_kg: 10, work_seconds: 300,
+                               date: "2026-07-08")
       create(:session_set, session: heavy, set_number: 1, reps: 25, duration_seconds: 300)
+      heavy2 = create(:session, exercise: exercise, session_shape: shape, weight_kg: 10, work_seconds: 300,
+                                 date: "2026-07-22")
+      create(:session_set, session: heavy2, set_number: 1, reps: 22, duration_seconds: 300)
 
       get stats_path(exercise_id: exercise.id, shape: SessionShape::INTERVAL_WORK, structural_value: "300:600:5")
       chart_script = response.body.scan(/createChart[\s\S]*?;/).select { |s| s.include?("new Chartkick") }.last

@@ -139,6 +139,7 @@ RSpec.describe Progression::LifetimeStats do
       session = create(:session, exercise: mace, date: "2026-07-01", weight_kg: 10)
       create(:session_set, session: session, set_number: 1, reps: 20)
       create(:session_set, session: session, set_number: 2, reps: 30)
+      logged_set(exercise: mace, date: "2026-07-05", reps: 28, weight: 10)
       logged_set(exercise: mace, date: "2026-07-01", reps: 15, weight: 8)
       logged_set(exercise: mace, date: "2026-07-03", reps: 25, weight: 8)
 
@@ -149,7 +150,10 @@ RSpec.describe Progression::LifetimeStats do
           Date.new(2026, 7, 1) => 15,
           Date.new(2026, 7, 3) => 25
         },
-        "10.0kg" => { Date.new(2026, 7, 1) => 30 }
+        "10.0kg" => {
+          Date.new(2026, 7, 1) => 30,
+          Date.new(2026, 7, 5) => 28
+        }
       )
     end
 
@@ -165,6 +169,24 @@ RSpec.describe Progression::LifetimeStats do
           Date.new(2026, 3, 1) => 15
         }
       )
+    end
+
+    it "drops a weight with only one data point when other weights have more than one" do
+      logged_set(exercise: mace, date: "2026-07-01", reps: 20, weight: 10)
+      logged_set(exercise: mace, date: "2026-07-05", reps: 22, weight: 10)
+      logged_set(exercise: mace, date: "2026-07-01", reps: 15, weight: 12) # only ever tried once
+
+      stats = described_class.new(exercise: mace)
+
+      expect(stats.max_reps_by_weight_and_period.keys).to eq([ "10.0kg" ])
+    end
+
+    it "keeps a lone weight's single data point when it's the only weight logged" do
+      logged_set(exercise: mace, date: "2026-07-01", reps: 20, weight: 10)
+
+      stats = described_class.new(exercise: mace)
+
+      expect(stats.max_reps_by_weight_and_period).to eq("10.0kg" => { Date.new(2026, 7, 1) => 20 })
     end
   end
 

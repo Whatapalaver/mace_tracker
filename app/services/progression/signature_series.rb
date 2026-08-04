@@ -24,12 +24,19 @@ module Progression
       sessions = matching_sessions
       sessions = sessions.select { |session| session.weight_kg.to_f == @weight.to_f } if @weight
 
-      sessions.group_by { |session| "#{session.weight_kg}kg" }.transform_values do |group|
+      series_by_weight = sessions.group_by { |session| "#{session.weight_kg}kg" }.transform_values do |group|
         group.each_with_object({}) do |session, series|
           value = Calculator.for(session).outputs[@output_label]
           series[session.date] = value if value
         end
       end
+
+      # A weight with a single data point can't be drawn as a line — it's just a floating dot —
+      # so it's dropped unless it's the only weight there is, in which case there's nothing else
+      # to plot and a lone dot beats an empty chart.
+      return series_by_weight if series_by_weight.size <= 1
+
+      series_by_weight.reject { |_weight, series| series.size <= 1 }
     end
 
     private

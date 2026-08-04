@@ -132,7 +132,7 @@
       <p class="text-sm text-muted">No data yet for this signature.</p>
     <% else %>
       <%= line_chart @series.map { |name, data| { name: name, data: data } },
-            xtitle: "Date", ytitle: output_label_with_unit, colors: [ "#b5432b", "#a9793c", "#4b6b3a", "#6b6259" ] %>
+            xtitle: "Date", ytitle: output_label_with_unit, colors: chart_colors %>
     <% end %>
   </section>
 <% end %>
