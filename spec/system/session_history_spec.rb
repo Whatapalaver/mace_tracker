@@ -47,6 +47,23 @@ RSpec.describe "Session history table", type: :system, js: true do
     expect(session.session_sets.count).to eq(3)
   end
 
+  it "keeps the Edit link on-screen at in-between viewport widths, not clipped by an overflowing wide table" do
+    # Regression: the desktop grid switched on at md: (768px) but the page container didn't
+    # widen enough to fit it until lg: (1024px), so between those two breakpoints the 9-column
+    # table overflowed its box and pushed the Actions column past the visible viewport — Capybara
+    # still considered the (scrolled-off) link "visible" since it wasn't display:none, so this
+    # checks its actual on-screen position instead.
+    create(:session)
+    viewport_width = 900
+    page.driver.browser.manage.window.resize_to(viewport_width, 800)
+
+    visit sessions_path
+    edit_link = find_link("Edit", visible: :visible)
+    right_edge = edit_link.native.rect.x + edit_link.native.rect.width
+
+    expect(right_edge).to be <= viewport_width
+  end
+
   it "deletes a session and all its sets from the table" do
     session = create(:session)
     create(:session_set, session: session, set_number: 1)

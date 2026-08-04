@@ -1,5 +1,5 @@
 <%= turbo_frame_tag dom_id(session) do %>
-  <div class="hidden grid-cols-9 items-center gap-2 border-b border-border px-3 py-2 text-sm last:border-b-0 md:grid">
+  <div class="hidden grid-cols-9 items-center gap-2 border-b border-border px-3 py-2 text-sm last:border-b-0 lg:grid">
     <div class="text-muted"><%= session.date.to_fs(:short) %></div>
     <div><%= session.exercise.display_name %></div>
     <div class="text-muted"><%= session.session_shape.label %></div>
@@ -20,7 +20,7 @@
     </div>
   </div>
 
-  <div class="border-b border-border px-3 py-3 text-sm last:border-b-0 md:hidden">
+  <div class="border-b border-border px-3 py-3 text-sm last:border-b-0 lg:hidden">
     <div class="flex items-baseline justify-between gap-2">
       <span class="font-medium"><%= session.exercise.display_name %></span>
       <span class="shrink-0 text-xs text-muted"><%= session.date.to_fs(:short) %></span>
