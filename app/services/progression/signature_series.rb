@@ -4,7 +4,11 @@ module Progression
   # encoded as a single "300:300:5"-style string — see ComparabilityKey), replacing the
   # interval_work-only Progression::IntervalWorkPaceSeries. Weight is off by
   # default (each distinct weight becomes its own series, e.g. "8kg"/"10kg", so a weight change
-  # over time stays visible); passing weight: locks to a single series for that weight.
+  # over time stays visible); passing weight: locks to a single series for that weight. A weight
+  # tried only once still gets its own single-point series here (unlike the lifetime "max reps by
+  # weight" chart, which drops those) — one-off weights within a specific signature are exactly
+  # the kind of outlier worth seeing, and there are usually few enough of them per signature that
+  # they don't clutter the chart the way they can across an exercise's entire history.
   # granularity: "segment" (interval_work only) widens matching to every session containing a
   # work set of the given duration, regardless of its rest/set-count structure — best/avg pace
   # per session already collapses that session's own sets, so no per-set extraction is needed.
@@ -24,19 +28,12 @@ module Progression
       sessions = matching_sessions
       sessions = sessions.select { |session| session.weight_kg.to_f == @weight.to_f } if @weight
 
-      series_by_weight = sessions.group_by { |session| "#{session.weight_kg}kg" }.transform_values do |group|
+      sessions.group_by { |session| "#{session.weight_kg}kg" }.transform_values do |group|
         group.each_with_object({}) do |session, series|
           value = Calculator.for(session).outputs[@output_label]
           series[session.date] = value if value
         end
       end
-
-      # A weight with a single data point can't be drawn as a line — it's just a floating dot —
-      # so it's dropped unless it's the only weight there is, in which case there's nothing else
-      # to plot and a lone dot beats an empty chart.
-      return series_by_weight if series_by_weight.size <= 1
-
-      series_by_weight.reject { |_weight, series| series.size <= 1 }
     end
 
     private

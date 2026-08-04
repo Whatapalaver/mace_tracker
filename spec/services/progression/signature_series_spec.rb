@@ -33,22 +33,15 @@ RSpec.describe Progression::SignatureSeries do
     expect(result["10.0kg"]).to eq(heavy1.date => 25 * 60.0 / 300, heavy2.date => 22 * 60.0 / 300)
   end
 
-  it "drops a weight with only a single session when another weight has more than one" do
+  it "keeps a weight tried only once as its own single-point series" do
     session_with_set(date: "2026-07-01", reps: 20, weight: 8)
     session_with_set(date: "2026-07-15", reps: 18, weight: 8)
-    session_with_set(date: "2026-07-08", reps: 25, weight: 10) # only ever tried once
+    once = session_with_set(date: "2026-07-08", reps: 25, weight: 10) # only ever tried once
 
     result = series_for
 
-    expect(result.keys).to eq([ "8.0kg" ])
-  end
-
-  it "keeps a single session's weight when it's the only weight logged at all" do
-    session = session_with_set(date: "2026-07-01", reps: 20, weight: 10)
-
-    result = series_for
-
-    expect(result).to eq("10.0kg" => { session.date => 20 * 60.0 / 300 })
+    expect(result.keys).to contain_exactly("8.0kg", "10.0kg")
+    expect(result["10.0kg"]).to eq(once.date => 25 * 60.0 / 300)
   end
 
   it "restricts to a single series when weight is locked" do
