@@ -347,7 +347,7 @@ RSpec.describe "Sessions", type: :request do
     end
 
     it "paginates results" do
-      30.times { |i| create(:session, date: Date.new(2026, 1, 1) + i) }
+      60.times { |i| create(:session, date: Date.new(2026, 1, 1) + i) }
 
       get sessions_path
 
@@ -363,6 +363,68 @@ RSpec.describe "Sessions", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("No sessions logged yet")
+    end
+
+    it "filters to a chosen year" do
+      create(:session, date: Date.new(2025, 6, 15))
+      create(:session, date: Date.new(2026, 3, 10))
+
+      get sessions_path(year: 2026)
+
+      expect(response.body).to include("10 Mar")
+      expect(response.body).not_to include("15 Jun")
+    end
+
+    it "filters to a chosen year and month" do
+      create(:session, date: Date.new(2026, 3, 10))
+      create(:session, date: Date.new(2026, 7, 1))
+
+      get sessions_path(year: 2026, month: 7)
+
+      expect(response.body).to include("01 Jul")
+      expect(response.body).not_to include("10 Mar")
+    end
+
+    it "ignores a month filter without a year" do
+      create(:session, date: Date.new(2026, 3, 10))
+
+      get sessions_path(month: 3)
+
+      expect(response.body).to include("10 Mar")
+    end
+
+    it "filters to zero results for a year with no sessions, rather than ignoring the filter" do
+      create(:session, date: Date.new(2026, 3, 10))
+
+      get sessions_path(year: 1999)
+
+      expect(response.body).to include("No sessions match the selected year/month")
+      expect(response.body).not_to include("10 Mar")
+    end
+
+    it "ignores an out-of-range month" do
+      create(:session, date: Date.new(2026, 3, 10))
+
+      get sessions_path(year: 2026, month: 13)
+
+      expect(response.body).to include("10 Mar")
+    end
+
+    it "shows a distinct message when filters exclude everything but sessions exist" do
+      create(:session, date: Date.new(2026, 3, 10))
+
+      get sessions_path(year: 2026, month: 1)
+
+      expect(response.body).to include("No sessions match the selected year/month")
+      expect(response.body).not_to include("No sessions logged yet")
+    end
+
+    it "does not show the month filter until a year is chosen" do
+      create(:session, date: Date.new(2026, 3, 10))
+
+      get sessions_path
+
+      expect(response.body).not_to include(">Month<")
     end
   end
 

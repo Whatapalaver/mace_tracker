@@ -1,16 +1,31 @@
 class SessionsController < ApplicationController
   include SessionShapeOptions
 
-  PER_PAGE = 25
+  PER_PAGE = 50
 
   before_action :set_session, only: [ :show, :edit, :update, :destroy, :row ]
 
   def index
-    @page = [ params[:page].to_i, 1 ].max
-    scope = Session.includes(:exercise, :session_shape, :session_sets).order(date: :desc, id: :desc)
+    # @years/@months only ever populate the filter dropdowns' options (so they only ever offer
+    # choices with actual data) — the incoming params are validated separately and more loosely,
+    # so that filtering down to a year/month with zero matching sessions still applies the filter
+    # and shows an empty result, rather than being treated as "invalid" and silently ignored.
+    @years = Session.distinct.pluck(:date).map(&:year).uniq.sort.reverse
+    @year = params[:year].presence&.to_i
+
+    @months = @year ? Session.where(date: Date.new(@year, 1, 1)..Date.new(@year, 12, 31))
+                              .distinct.pluck(:date).map(&:month).uniq.sort : []
+    @month = params[:month].presence&.to_i
+    @month = nil unless @year && (1..12).cover?(@month)
+
+    scope = Session.order(date: :desc, id: :desc)
+    scope = scope.where(date: Date.new(@year, 1, 1)..Date.new(@year, 12, 31)) if @year
+    scope = scope.where(date: Date.new(@year, @month, 1)..Date.new(@year, @month, -1)) if @year && @month
+
     @total_count = scope.count
     @total_pages = [ (@total_count / PER_PAGE.to_f).ceil, 1 ].max
-    @sessions = scope.offset((@page - 1) * PER_PAGE).limit(PER_PAGE)
+    @page = [ [ params[:page].to_i, 1 ].max, @total_pages ].min
+    @sessions = scope.includes(:exercise, :session_shape, :session_sets).offset((@page - 1) * PER_PAGE).limit(PER_PAGE)
   end
 
   def new
