@@ -10,9 +10,17 @@
 <% else %>
   <ul class="divide-y divide-border rounded-lg border border-border bg-surface">
     <% @exercises.each do |exercise| %>
-      <li class="flex items-center justify-between px-4 py-3">
+      <% session_count = exercise.sessions.count %>
+      <li class="flex items-center justify-between gap-3 px-4 py-3">
         <span><%= exercise.equipment.name %> <%= exercise.name %></span>
-        <span class="text-xs text-muted"><%= exercise.arm_label %></span>
+        <div class="flex items-center gap-3">
+          <span class="text-xs text-muted"><%= exercise.arm_label %></span>
+          <%= link_to "Edit", edit_exercise_path(exercise), class: "text-sm font-medium text-rust hover:text-rust-dark" %>
+          <%= button_to "Delete", exercise_path(exercise), method: :delete,
+                data: { turbo_confirm: session_count.zero? ? "Delete this exercise?" :
+                  "Delete this exercise? This will also delete #{pluralize(session_count, "logged session")} and all their sets. This cannot be undone." },
+                class: "text-sm font-medium text-crimson hover:text-crimson/80" %>
+        </div>
       </li>
     <% end %>
   </ul>

@@ -1,5 +1,9 @@
 class Exercise < ApplicationRecord
   belongs_to :equipment
+  # Order matters: sessions must be destroyed before benchmark_presets, since a session can
+  # reference one of this exercise's presets via benchmark_preset_id.
+  has_many :sessions, dependent: :destroy
+  has_many :benchmark_presets, dependent: :destroy
 
   enum :arm, { single: 0, double: 1, n_a: 2 }, validate: true
 

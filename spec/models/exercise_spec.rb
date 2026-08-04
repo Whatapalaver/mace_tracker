@@ -75,4 +75,21 @@ RSpec.describe Exercise, type: :model do
       expect(exercise.display_name).to eq("Mace 360 (Single arm)")
     end
   end
+
+  describe "destroying" do
+    it "cascades to its sessions and their sets" do
+      exercise = create(:exercise)
+      session = create(:session, exercise: exercise)
+      create(:session_set, session: session, set_number: 1, reps: 20)
+
+      expect { exercise.destroy }.to change(Session, :count).by(-1).and change(SessionSet, :count).by(-1)
+    end
+
+    it "cascades to its benchmark presets" do
+      exercise = create(:exercise)
+      create(:benchmark_preset, exercise: exercise)
+
+      expect { exercise.destroy }.to change(BenchmarkPreset, :count).by(-1)
+    end
+  end
 end
