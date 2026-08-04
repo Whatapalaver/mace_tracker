@@ -26,14 +26,16 @@ module Progression
 
     # One series per weight — {"10kg" => {period => max_reps}} — so a chart can plot how the
     # heaviest weight's max reps-per-set trends separately from a lighter weight's, rather than
-    # blending every weight into one misleading line.
+    # blending every weight into one misleading line. Unlike reps_by_period/volume_by_period,
+    # periods with no set at that weight are left out entirely rather than zero-filled — a 0
+    # here would misread as "did zero reps that day" instead of "didn't lift this weight that
+    # day," so the line should skip the gap, not dip to the floor.
     def max_reps_by_weight_and_period
       by_weight.transform_keys { |weight| "#{weight}kg" }.transform_values do |sets|
-        totals = sets.each_with_object(Hash.new(0)) do |set, hash|
+        sets.each_with_object({}) do |set, totals|
           key = period_key(set.session.date)
-          hash[key] = [ hash[key], set.reps || 0 ].max
+          totals[key] = [ totals[key] || 0, set.reps || 0 ].max
         end
-        fill_gaps(totals)
       end
     end
 

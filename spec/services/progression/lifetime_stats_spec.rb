@@ -147,10 +147,23 @@ RSpec.describe Progression::LifetimeStats do
       expect(stats.max_reps_by_weight_and_period).to eq(
         "8.0kg" => {
           Date.new(2026, 7, 1) => 15,
-          Date.new(2026, 7, 2) => 0,
           Date.new(2026, 7, 3) => 25
         },
         "10.0kg" => { Date.new(2026, 7, 1) => 30 }
+      )
+    end
+
+    it "does not zero-fill a period where a weight wasn't lifted, unlike reps_by_period" do
+      logged_set(exercise: mace, date: "2026-01-15", reps: 20, weight: 10)
+      logged_set(exercise: mace, date: "2026-03-15", reps: 15, weight: 10) # February skipped entirely
+
+      stats = described_class.new(exercise: mace, period: "monthly")
+
+      expect(stats.max_reps_by_weight_and_period).to eq(
+        "10.0kg" => {
+          Date.new(2026, 1, 1) => 20,
+          Date.new(2026, 3, 1) => 15
+        }
       )
     end
   end
