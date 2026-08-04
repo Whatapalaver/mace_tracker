@@ -577,6 +577,68 @@ RSpec.describe "Sessions", type: :request do
 
       expect(response).to have_http_status(:unprocessable_content)
     end
+
+    it "converts a sets_and_reps session to interval_work, parsing the signature under the new shape" do
+      sets_and_reps_shape = create(:session_shape, :sets_and_reps)
+      interval_work_shape = create(:session_shape, :interval_work)
+      session = create(:session, session_shape: sets_and_reps_shape, weight_kg: 10, reps: 1101, work_seconds: nil,
+                                  rest_seconds: nil, sets_count: nil)
+      create(:session_set, session: session, set_number: 1, reps: 1101)
+
+      patch session_path(session), params: {
+        session: { date: session.date.to_s, session_shape_id: interval_work_shape.id,
+                   signature: "30mw", weight_kg: "10", reps_list: "1101" }
+      }
+
+      expect(response).to have_http_status(:ok)
+      session.reload
+      expect(session.session_shape).to eq(interval_work_shape)
+      expect(session.work_seconds).to eq(1800)
+      expect(session.rest_seconds).to eq(0)
+      expect(session.sets_count).to eq(1)
+      expect(session.reps).to be_nil
+      expect(session.session_sets.sole.reps).to eq(1101)
+    end
+
+    it "converts an interval_work session to sets_and_reps, clearing the old interval fields" do
+      interval_work_shape = create(:session_shape, :interval_work)
+      sets_and_reps_shape = create(:session_shape, :sets_and_reps)
+      session = create(:session, session_shape: interval_work_shape, weight_kg: 10,
+                                  work_seconds: 300, rest_seconds: 300, sets_count: 3)
+      create(:session_set, session: session, set_number: 1, reps: 20)
+      create(:session_set, session: session, set_number: 2, reps: 19)
+      create(:session_set, session: session, set_number: 3, reps: 18)
+
+      patch session_path(session), params: {
+        session: { date: session.date.to_s, session_shape_id: sets_and_reps_shape.id,
+                   signature: "20", weight_kg: "10", reps_list: "20" }
+      }
+
+      expect(response).to have_http_status(:ok)
+      session.reload
+      expect(session.session_shape).to eq(sets_and_reps_shape)
+      expect(session.reps).to eq(20)
+      expect(session.work_seconds).to be_nil
+      expect(session.rest_seconds).to be_nil
+      expect(session.sets_count).to be_nil
+      expect(session.session_sets.sole.reps).to eq(20)
+    end
+
+    it "rejects a reps list that disagrees with the new shape's signature when switching shapes" do
+      sets_and_reps_shape = create(:session_shape, :sets_and_reps)
+      interval_work_shape = create(:session_shape, :interval_work)
+      session = create(:session, session_shape: sets_and_reps_shape, weight_kg: 10, reps: 1101)
+      create(:session_set, session: session, set_number: 1, reps: 1101)
+
+      patch session_path(session), params: {
+        session: { date: session.date.to_s, session_shape_id: interval_work_shape.id,
+                   signature: "3(5mw+5mr)", weight_kg: "10", reps_list: "1101" }
+      }
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("Signature implies 3 sets but 1 rep values were given")
+      expect(session.reload.session_shape).to eq(sets_and_reps_shape)
+    end
   end
 
   describe "GET /sessions/:id/row" do

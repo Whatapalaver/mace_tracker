@@ -2,8 +2,19 @@ class SessionsController < ApplicationController
   include SessionShapeOptions
   include SessionsExplorer
 
+  # Every field that only one shape's signature/reps_list actually populates — cleared for any
+  # shape that doesn't own it when an edit switches shapes, so e.g. converting a sets_and_reps
+  # session to interval_work doesn't leave a stale reps value sitting alongside the new
+  # work_seconds/rest_seconds/sets_count.
+  SHAPE_OWNED_FIELDS = {
+    SessionShape::INTERVAL_WORK => %i[work_seconds rest_seconds sets_count],
+    SessionShape::FIXED_REPS_FOR_TIME => %i[reps],
+    SessionShape::SETS_AND_REPS => %i[reps],
+    SessionShape::EMOM => %i[reps_per_minute]
+  }.freeze
+
   before_action :set_session, only: [ :show, :edit, :update, :destroy, :row ]
-  before_action :set_exercises, only: [ :edit, :update ]
+  before_action :set_edit_form_options, only: [ :edit, :update ]
 
   def index
     build_sessions_explorer
@@ -35,17 +46,19 @@ class SessionsController < ApplicationController
   end
 
   def update
+    target_shape = params.dig(:session, :session_shape_id).presence ? SessionShape.find(params[:session][:session_shape_id]) : @session.session_shape
     reps_list = parse_reps_list(params.dig(:session, :reps_list))
-    signature_attrs = Progression::SessionSignature.parse(params.dig(:session, :signature), @session.session_shape.name)
+    signature_attrs = Progression::SessionSignature.parse(params.dig(:session, :signature), target_shape.name)
 
-    if @session.session_shape.name == SessionShape::INTERVAL_WORK && signature_attrs[:sets_count] != reps_list.size
+    if target_shape.name == SessionShape::INTERVAL_WORK && signature_attrs[:sets_count] != reps_list.size
       @session.errors.add(:base,
         "Signature implies #{signature_attrs[:sets_count]} sets but #{reps_list.size} rep values were given")
       return render :edit, status: :unprocessable_content
     end
 
     ActiveRecord::Base.transaction do
-      @session.assign_attributes(session_edit_params.merge(signature_attrs))
+      @session.assign_attributes(session_edit_params.merge(cleared_fields_for(target_shape.name))
+        .merge(signature_attrs).merge(session_shape_id: target_shape.id))
       @session.save!
       @session.session_sets.destroy_all
       reps_list.each_with_index { |reps, index| @session.session_sets.create!(set_number: index + 1, reps: reps) }
@@ -75,8 +88,14 @@ class SessionsController < ApplicationController
     @session = Session.find(params[:id])
   end
 
-  def set_exercises
+  def set_edit_form_options
     @exercises = Exercise.order(:name)
+    @session_shapes = session_shapes
+  end
+
+  def cleared_fields_for(shape_name)
+    owned = SHAPE_OWNED_FIELDS.fetch(shape_name, [])
+    (SHAPE_OWNED_FIELDS.values.flatten.uniq - owned).index_with { nil }
   end
 
   def parse_reps_list(text)

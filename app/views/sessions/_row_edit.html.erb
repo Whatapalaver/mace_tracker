@@ -5,12 +5,15 @@
       <p class="text-xs text-crimson"><%= session.errors.full_messages.to_sentence %></p>
     <% end %>
 
-    <div class="text-xs text-muted"><%= session.session_shape.label %></div>
-
     <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
       <div>
         <%= form.label :exercise_id, "Exercise", class: "mb-1 block text-xs font-medium text-muted" %>
         <%= form.collection_select :exercise_id, @exercises, :id, :display_name, {},
+              class: "w-full rounded border border-border px-2 py-1 text-sm" %>
+      </div>
+      <div>
+        <%= form.label :session_shape_id, "Shape", class: "mb-1 block text-xs font-medium text-muted" %>
+        <%= form.collection_select :session_shape_id, @session_shapes, :id, :label, {},
               class: "w-full rounded border border-border px-2 py-1 text-sm" %>
       </div>
       <div>
