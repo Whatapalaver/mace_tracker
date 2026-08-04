@@ -235,12 +235,12 @@ RSpec.describe "Stats", type: :request do
       create(:session_set, session: heavy, set_number: 1, reps: 25, duration_seconds: 300)
 
       get stats_path(exercise_id: exercise.id, shape: SessionShape::INTERVAL_WORK, structural_value: "300:600:5")
-      chart_script = response.body[/createChart[\s\S]*?;/]
+      chart_script = response.body.scan(/createChart[\s\S]*?;/).select { |s| s.include?("new Chartkick") }.last
       expect(chart_script).to include('"8.0kg"', '"10.0kg"')
 
       get stats_path(exercise_id: exercise.id, shape: SessionShape::INTERVAL_WORK,
                       structural_value: "300:600:5", weight: "10")
-      chart_script = response.body[/createChart[\s\S]*?;/]
+      chart_script = response.body.scan(/createChart[\s\S]*?;/).select { |s| s.include?("new Chartkick") }.last
       expect(chart_script).to include('"10.0kg"')
       expect(chart_script).not_to include('"8.0kg"')
     end
@@ -259,8 +259,8 @@ RSpec.describe "Stats", type: :request do
       create(:session_set, session: heavy, set_number: 1, reps: 25, duration_seconds: 300)
 
       get stats_path(exercise_id: exercise.id, shape: SessionShape::INTERVAL_WORK, structural_value: "300:600:5")
-      chart_script = response.body[/createChart[\s\S]*?;/]
-      data_json = chart_script[/new Chartkick\["LineChart"\]\("chart-1", (.*), \{/, 1]
+      chart_script = response.body.scan(/createChart[\s\S]*?;/).select { |s| s.include?("new Chartkick") }.last
+      data_json = chart_script[/new Chartkick\["LineChart"\]\("chart-\d+", (.*), \{/, 1]
       data = JSON.parse(data_json)
 
       expect(data).to all(include("name", "data"))
