@@ -24,12 +24,28 @@
               data: { action: "change->scroll-preserving-form#submit" } %>
       </div>
     <% end %>
+
+    <div>
+      <%= label_tag :equipment_id, "Equipment", class: "mb-1 block text-sm font-medium" %>
+      <%= select_tag :equipment_id, options_from_collection_for_select(@equipment_list, :id, :name, @equipment_id),
+            include_blank: "All equipment",
+            class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base",
+            data: { action: "change->scroll-preserving-form#submit" } %>
+    </div>
+
+    <div>
+      <%= label_tag :exercise_id, "Exercise", class: "mb-1 block text-sm font-medium" %>
+      <%= select_tag :exercise_id, options_from_collection_for_select(@exercises, :id, :display_name, @exercise_id),
+            include_blank: "All exercises",
+            class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base",
+            data: { action: "change->scroll-preserving-form#submit" } %>
+    </div>
   <% end %>
 <% end %>
 
 <% if @sessions.empty? %>
   <p class="text-sm text-muted">
-    <%= @years.empty? ? "No sessions logged yet." : "No sessions match the selected year/month." %>
+    <%= @years.empty? ? "No sessions logged yet." : "No sessions match the selected filters." %>
   </p>
 <% else %>
   <div class="overflow-x-auto rounded-lg border border-border bg-surface">
@@ -54,13 +70,13 @@
   <% if @total_pages > 1 %>
     <nav class="mt-4 flex items-center justify-between text-sm">
       <% if @page > 1 %>
-        <%= link_to "← Previous", sessions_path(page: @page - 1, year: @year, month: @month), class: "font-medium text-rust hover:text-rust-dark" %>
+        <%= link_to "← Previous", sessions_path(page: @page - 1, year: @year, month: @month, equipment_id: @equipment_id, exercise_id: @exercise_id), class: "font-medium text-rust hover:text-rust-dark" %>
       <% else %>
         <span class="text-muted/50">← Previous</span>
       <% end %>
       <span class="text-muted">Page <%= @page %> of <%= @total_pages %></span>
       <% if @page < @total_pages %>
-        <%= link_to "Next →", sessions_path(page: @page + 1, year: @year, month: @month), class: "font-medium text-rust hover:text-rust-dark" %>
+        <%= link_to "Next →", sessions_path(page: @page + 1, year: @year, month: @month, equipment_id: @equipment_id, exercise_id: @exercise_id), class: "font-medium text-rust hover:text-rust-dark" %>
       <% else %>
         <span class="text-muted/50">Next →</span>
       <% end %>

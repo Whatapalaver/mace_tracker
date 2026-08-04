@@ -398,7 +398,7 @@ RSpec.describe "Sessions", type: :request do
 
       get sessions_path(year: 1999)
 
-      expect(response.body).to include("No sessions match the selected year/month")
+      expect(response.body).to include("No sessions match the selected filters")
       expect(response.body).not_to include("10 Mar")
     end
 
@@ -415,7 +415,7 @@ RSpec.describe "Sessions", type: :request do
 
       get sessions_path(year: 2026, month: 1)
 
-      expect(response.body).to include("No sessions match the selected year/month")
+      expect(response.body).to include("No sessions match the selected filters")
       expect(response.body).not_to include("No sessions logged yet")
     end
 
@@ -425,6 +425,60 @@ RSpec.describe "Sessions", type: :request do
       get sessions_path
 
       expect(response.body).not_to include(">Month<")
+    end
+
+    it "filters to a chosen exercise" do
+      mace_360 = create(:exercise, name: "360", equipment: create(:equipment, name: "Mace"))
+      snatch = create(:exercise, name: "Snatch", equipment: create(:equipment, name: "Kettlebell"))
+      keep = create(:session, date: Date.new(2026, 3, 10), exercise: mace_360)
+      create(:session, date: Date.new(2026, 3, 11), exercise: snatch)
+
+      get sessions_path(exercise_id: keep.exercise_id)
+
+      expect(response.body).to include("10 Mar")
+      expect(response.body).not_to include("11 Mar")
+    end
+
+    it "filters to a chosen equipment, across all its exercises" do
+      mace = create(:equipment, name: "Mace")
+      kettlebell = create(:equipment, name: "Kettlebell")
+      mace_360 = create(:exercise, name: "360", equipment: mace)
+      mace_10_2 = create(:exercise, name: "10-2", equipment: mace)
+      snatch = create(:exercise, name: "Snatch", equipment: kettlebell)
+      create(:session, date: Date.new(2026, 3, 10), exercise: mace_360)
+      create(:session, date: Date.new(2026, 3, 11), exercise: mace_10_2)
+      create(:session, date: Date.new(2026, 3, 12), exercise: snatch)
+
+      get sessions_path(equipment_id: mace.id)
+
+      expect(response.body).to include("10 Mar")
+      expect(response.body).to include("11 Mar")
+      expect(response.body).not_to include("12 Mar")
+    end
+
+    it "narrows the exercise dropdown to the chosen equipment" do
+      mace = create(:equipment, name: "Mace")
+      kettlebell = create(:equipment, name: "Kettlebell")
+      create(:exercise, name: "360", equipment: mace)
+      create(:exercise, name: "Snatch", equipment: kettlebell)
+      create(:session, date: Date.new(2026, 3, 10))
+
+      get sessions_path(equipment_id: mace.id)
+
+      expect(response.body).to include("Mace 360")
+      expect(response.body).not_to include("Kettlebell Snatch")
+    end
+
+    it "ignores an exercise filter that doesn't belong to the chosen equipment" do
+      mace = create(:equipment, name: "Mace")
+      kettlebell = create(:equipment, name: "Kettlebell")
+      mace_360 = create(:exercise, name: "360", equipment: mace)
+      snatch = create(:exercise, name: "Snatch", equipment: kettlebell)
+      create(:session, date: Date.new(2026, 3, 10), exercise: mace_360)
+
+      get sessions_path(equipment_id: mace.id, exercise_id: snatch.id)
+
+      expect(response.body).to include("10 Mar")
     end
   end
 

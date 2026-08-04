@@ -19,9 +19,18 @@ class SessionsController < ApplicationController
     @month = params[:month].presence&.to_i
     @month = nil unless @year && (1..12).cover?(@month)
 
+    @equipment_list = Equipment.order(:name)
+    @equipment_id = params[:equipment_id].presence
+    @exercises = Exercise.order(:name)
+    @exercises = @exercises.where(equipment_id: @equipment_id) if @equipment_id
+    @exercise_id = params[:exercise_id].presence
+    @exercise_id = nil if @exercise_id && !@exercises.exists?(id: @exercise_id)
+
     scope = Session.order(date: :desc, id: :desc)
     scope = scope.where(date: Date.new(@year, 1, 1)..Date.new(@year, 12, 31)) if @year
     scope = scope.where(date: Date.new(@year, @month, 1)..Date.new(@year, @month, -1)) if @year && @month
+    scope = scope.where(exercise_id: @exercise_id) if @exercise_id
+    scope = scope.joins(:exercise).where(exercise: { equipment_id: @equipment_id }) if @equipment_id && !@exercise_id
 
     @total_count = scope.count
     @total_pages = [ (@total_count / PER_PAGE.to_f).ceil, 1 ].max
