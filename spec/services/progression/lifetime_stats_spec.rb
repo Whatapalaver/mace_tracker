@@ -191,17 +191,17 @@ RSpec.describe Progression::LifetimeStats do
   end
 
   describe "#personal_bests" do
-    it "returns the max reps and its date for each weight, sorted lightest first" do
+    it "returns the max reps and its date for each weight, sorted heaviest first" do
       logged_set(exercise: mace, date: "2026-07-01", reps: 20, weight: 10)
       logged_set(exercise: mace, date: "2026-07-05", reps: 25, weight: 10)
-      logged_set(exercise: mace, date: "2026-06-01", reps: 30, weight: 8)
+      logged_set(exercise: mace, date: "2026-06-01", reps: 35, weight: 8) # 8*35=280 beats 10*25=250
 
       stats = described_class.new(exercise: mace)
 
       expect(stats.personal_bests).to eq(
         [
-          { weight: 8, date: Date.new(2026, 6, 1), reps: 30 },
-          { weight: 10, date: Date.new(2026, 7, 5), reps: 25 }
+          { weight: 10, date: Date.new(2026, 7, 5), reps: 25 },
+          { weight: 8, date: Date.new(2026, 6, 1), reps: 35 }
         ]
       )
     end
@@ -219,6 +219,44 @@ RSpec.describe Progression::LifetimeStats do
       stats = described_class.new(exercise: mace)
 
       expect(stats.personal_bests).to eq([])
+    end
+
+    it "drops a lighter weight whose volume is exceeded by a heavier weight's" do
+      logged_set(exercise: mace, date: "2026-07-01", reps: 30, weight: 10) # volume 300
+      logged_set(exercise: mace, date: "2026-06-01", reps: 20, weight: 8) # volume 160, exceeded
+
+      stats = described_class.new(exercise: mace)
+
+      expect(stats.personal_bests).to eq([ { weight: 10, date: Date.new(2026, 7, 1), reps: 30 } ])
+    end
+
+    it "keeps a lighter weight whose volume exactly ties a heavier weight's" do
+      logged_set(exercise: mace, date: "2026-07-01", reps: 20, weight: 10) # volume 200
+      logged_set(exercise: mace, date: "2026-06-01", reps: 25, weight: 8) # volume 200, not exceeded
+
+      stats = described_class.new(exercise: mace)
+
+      expect(stats.personal_bests).to eq(
+        [
+          { weight: 10, date: Date.new(2026, 7, 1), reps: 20 },
+          { weight: 8, date: Date.new(2026, 6, 1), reps: 25 }
+        ]
+      )
+    end
+
+    it "compares each weight against the best volume among all heavier weights, not just the one directly above it" do
+      logged_set(exercise: mace, date: "2026-05-01", reps: 10, weight: 12) # volume 120
+      logged_set(exercise: mace, date: "2026-06-01", reps: 20, weight: 10) # volume 200
+      logged_set(exercise: mace, date: "2026-07-01", reps: 15, weight: 8) # volume 120, exceeded by 10kg's 200
+
+      stats = described_class.new(exercise: mace)
+
+      expect(stats.personal_bests).to eq(
+        [
+          { weight: 12, date: Date.new(2026, 5, 1), reps: 10 },
+          { weight: 10, date: Date.new(2026, 6, 1), reps: 20 }
+        ]
+      )
     end
   end
 end

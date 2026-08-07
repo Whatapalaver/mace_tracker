@@ -48,10 +48,21 @@ module Progression
 
     # The heaviest single-set rep count ever logged at each weight, and when it happened — always
     # all-time regardless of the period toggle above, since a personal best isn't bucketed.
+    # Heaviest weight first. A lighter weight's entry is dropped once some heavier weight's record
+    # already matches or outdoes it on total volume (weight x reps) — at that point the lighter
+    # record isn't a distinct milestone, just a strictly-worse-or-tied version of a record you
+    # already hold at a heavier weight.
     def personal_bests
-      by_weight.map do |weight, sets|
+      bests_heaviest_first = by_weight.map do |weight, sets|
         best = sets.max_by { |set| set.reps || 0 }
-        { weight: weight, date: best.session.date, reps: best.reps }
+        { weight: weight, date: best.session.date, reps: best.reps, volume: weight * (best.reps || 0) }
+      end.reverse
+
+      max_volume_so_far = 0
+      bests_heaviest_first.filter_map do |entry|
+        kept = entry[:volume] >= max_volume_so_far
+        max_volume_so_far = [ max_volume_so_far, entry[:volume] ].max
+        entry.except(:volume) if kept
       end
     end
 

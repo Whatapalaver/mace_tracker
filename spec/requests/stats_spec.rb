@@ -160,7 +160,7 @@ RSpec.describe "Stats", type: :request do
     it "shows personal bests per weight once an exercise is chosen" do
       exercise = create(:exercise)
       light = create(:session, exercise: exercise, weight_kg: 8, date: "2026-06-01")
-      create(:session_set, session: light, set_number: 1, reps: 30)
+      create(:session_set, session: light, set_number: 1, reps: 35) # 8*35=280 beats 10*25=250
       heavy = create(:session, exercise: exercise, weight_kg: 10, date: "2026-07-05")
       create(:session_set, session: heavy, set_number: 1, reps: 25)
 
@@ -169,7 +169,7 @@ RSpec.describe "Stats", type: :request do
       expect(response.body).to include("Personal bests")
       expect(response.body).to include("8.0kg")
       expect(response.body).to include("10.0kg")
-      expect(response.body).to include("30")
+      expect(response.body).to include("35")
       expect(response.body).to include("25")
     end
 
