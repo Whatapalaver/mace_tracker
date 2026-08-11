@@ -14,7 +14,7 @@ module Progression
   # per session already collapses that session's own sets, so no per-set extraction is needed.
   class SignatureSeries
     def initialize(exercise:, session_shape:, structural_value:, output_label:, weight: nil,
-                   benchmarks_only: false, granularity: "full")
+                   benchmarks_only: false, granularity: "full", tool: nil)
       @exercise = exercise
       @session_shape = session_shape
       @structural_value = structural_value
@@ -22,6 +22,7 @@ module Progression
       @weight = weight.presence
       @benchmarks_only = benchmarks_only
       @granularity = granularity
+      @tool = tool
     end
 
     def to_h
@@ -42,6 +43,7 @@ module Progression
       criteria = ComparabilityKey.decode_structural_value(@session_shape.name, @structural_value, granularity: @granularity)
       scope = Session.where(exercise_id: @exercise.id, session_shape_id: @session_shape.id).where(criteria)
       scope = scope.where(is_benchmark: true) if @benchmarks_only
+      scope = scope.where(tool_id: @tool.id) if @tool
       scope.includes(:session_sets).order(:date).to_a
     end
   end

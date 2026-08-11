@@ -48,6 +48,15 @@
             class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
     </div>
 
+    <% if Tool.exists? %>
+      <div>
+        <%= form.label :tool_id, "Tool (optional)", class: "mb-1 block text-sm font-medium" %>
+        <%= form.select :tool_id, grouped_options_for_select(Tool.grouped_options, form.object.tool_id),
+              { include_blank: "Not specified" },
+              class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
+      </div>
+    <% end %>
+
     <div>
       <%= form.label :date, class: "mb-1 block text-sm font-medium" %>
       <%= form.date_field :date, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>

@@ -4,8 +4,8 @@ RSpec.describe Progression::LifetimeStats do
   let(:mace) { create(:exercise, name: "360", equipment: create(:equipment, name: "Mace")) }
   let(:kettlebell) { create(:exercise, name: "Swing", equipment: create(:equipment, name: "Kettlebell")) }
 
-  def logged_set(exercise:, date:, reps:, weight:)
-    session = create(:session, exercise: exercise, date: date, weight_kg: weight)
+  def logged_set(exercise:, date:, reps:, weight:, tool: nil)
+    session = create(:session, exercise: exercise, date: date, weight_kg: weight, tool: tool)
     create(:session_set, session: session, set_number: 1, reps: reps, weight_kg: nil)
   end
 
@@ -35,6 +35,30 @@ RSpec.describe Progression::LifetimeStats do
 
       expect(stats.total_reps).to eq(20)
       expect(stats.total_volume).to eq(200)
+    end
+  end
+
+  describe "filtered by tool" do
+    it "only counts sets logged with that tool" do
+      eryx = create(:tool, name: "Eryx Adjustable", equipment: mace.equipment)
+      wrecking_ball = create(:tool, name: "Wrecking Ball", equipment: mace.equipment)
+      logged_set(exercise: mace, date: "2026-07-01", reps: 20, weight: 10, tool: eryx)
+      logged_set(exercise: mace, date: "2026-07-02", reps: 15, weight: 10, tool: wrecking_ball)
+
+      stats = described_class.new(exercise: mace, tool: eryx)
+
+      expect(stats.total_reps).to eq(20)
+    end
+
+    it "combines with exercise_ids scoping (equipment-wide, one specific tool)" do
+      kettlebell_snatch = create(:exercise, name: "Snatch", equipment: kettlebell.equipment)
+      eryx = create(:tool, name: "Eryx Adjustable", equipment: mace.equipment)
+      logged_set(exercise: mace, date: "2026-07-01", reps: 20, weight: 10, tool: eryx)
+      logged_set(exercise: kettlebell_snatch, date: "2026-07-02", reps: 15, weight: 16)
+
+      stats = described_class.new(exercise_ids: [ mace.id, kettlebell_snatch.id ], tool: eryx)
+
+      expect(stats.total_reps).to eq(20)
     end
   end
 

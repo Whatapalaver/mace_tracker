@@ -44,6 +44,24 @@ RSpec.describe "Sessions", type: :request do
       expect(response.body).to include("Start from a saved preset")
       expect(response.body).to include("Monthly 3x5")
     end
+
+    it "offers a tool picker once at least one tool is registered" do
+      create(:exercise)
+      create(:tool, name: "Eryx Adjustable")
+
+      get new_session_path
+
+      expect(response.body).to include("Tool (optional)")
+      expect(response.body).to include("Eryx Adjustable")
+    end
+
+    it "hides the tool picker until a tool is registered" do
+      create(:exercise)
+
+      get new_session_path
+
+      expect(response.body).not_to include("Tool (optional)")
+    end
   end
 
   describe "POST /sessions" do
@@ -82,6 +100,33 @@ RSpec.describe "Sessions", type: :request do
         expect(session.session_sets.count).to eq(3)
         expect(session.session_sets.order(:set_number).pluck(:reps)).to eq([ 20, 19, 18 ])
         expect(response).to redirect_to(session_path(session))
+      end
+
+      it "saves the chosen tool alongside the session" do
+        tool = create(:tool, equipment: exercise.equipment)
+        params = {
+          date: "2026-07-30", exercise_id: exercise.id, tool_id: tool.id, session_shape_id: interval_work_shape.id,
+          weight_kg: "10", work_seconds: "300", rest_seconds: "300", sets_count: "1",
+          session_sets_attributes: { "0" => { set_number: "1", duration_seconds: "300", reps: "20" } }
+        }
+
+        post sessions_path, params: { session: params }
+
+        expect(Session.last.tool).to eq(tool)
+      end
+
+      it "rejects a tool that belongs to different equipment than the exercise" do
+        mismatched_tool = create(:tool, equipment: create(:equipment, name: "Kettlebell"))
+        params = {
+          date: "2026-07-30", exercise_id: exercise.id, tool_id: mismatched_tool.id,
+          session_shape_id: interval_work_shape.id,
+          weight_kg: "10", work_seconds: "300", rest_seconds: "300", sets_count: "1",
+          session_sets_attributes: { "0" => { set_number: "1", duration_seconds: "300", reps: "20" } }
+        }
+
+        expect { post sessions_path, params: { session: params } }.not_to change(Session, :count)
+
+        expect(response).to have_http_status(:unprocessable_content)
       end
 
       it "re-renders the form with an error for an invalid formula" do
@@ -480,6 +525,31 @@ RSpec.describe "Sessions", type: :request do
 
       expect(response.body).to include("10 Mar")
     end
+
+    it "filters to a chosen tool via the grouped equipment/tool select" do
+      mace = create(:equipment, name: "Mace")
+      exercise = create(:exercise, equipment: mace)
+      eryx = create(:tool, name: "Eryx Adjustable", equipment: mace)
+      wrecking_ball = create(:tool, name: "Wrecking Ball", equipment: mace)
+      create(:session, date: Date.new(2026, 3, 10), exercise: exercise, tool: eryx)
+      create(:session, date: Date.new(2026, 3, 11), exercise: exercise, tool: wrecking_ball)
+
+      get sessions_path(equipment_id: "tool-#{eryx.id}")
+
+      expect(response.body).to include("10 Mar")
+      expect(response.body).not_to include("11 Mar")
+    end
+
+    it "shows the tool grouped under its equipment in the filter select" do
+      mace = create(:equipment, name: "Mace")
+      create(:tool, name: "Eryx Adjustable", equipment: mace)
+      create(:session, date: Date.new(2026, 3, 10))
+
+      get sessions_path
+
+      expect(response.body).to include("All Mace")
+      expect(response.body).to include("Eryx Adjustable")
+    end
   end
 
   describe "GET /sessions/:id/edit" do
@@ -538,6 +608,33 @@ RSpec.describe "Sessions", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(session.reload.notes).to eq("New note")
+    end
+
+    it "updates the session's tool" do
+      session = create(:session, work_seconds: 300, rest_seconds: 0, sets_count: 1)
+      create(:session_set, session: session, set_number: 1, reps: 20)
+      tool = create(:tool, equipment: session.exercise.equipment)
+
+      patch session_path(session), params: {
+        session: { date: session.date.to_s, signature: session.weight_agnostic_signature,
+                   weight_kg: session.weight_kg, reps_list: "20", tool_id: tool.id }
+      }
+
+      expect(response).to have_http_status(:ok)
+      expect(session.reload.tool).to eq(tool)
+    end
+
+    it "rejects a tool that doesn't match the session's exercise equipment" do
+      session = create(:session, work_seconds: 300, rest_seconds: 0, sets_count: 1)
+      create(:session_set, session: session, set_number: 1, reps: 20)
+      mismatched_tool = create(:tool, equipment: create(:equipment, name: "Kettlebell"))
+
+      patch session_path(session), params: {
+        session: { date: session.date.to_s, signature: session.weight_agnostic_signature,
+                   weight_kg: session.weight_kg, reps_list: "20", tool_id: mismatched_tool.id }
+      }
+
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "updates the session's date" do

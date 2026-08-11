@@ -2,7 +2,12 @@
 <%= turbo_frame_tag dom_id(session) do %>
   <div class="hidden <%= read_only ? "grid-cols-8" : "grid-cols-9" %> items-center gap-2 border-b border-border px-3 py-2 text-sm last:border-b-0 lg:grid">
     <div class="text-muted"><%= session.date.to_fs(:short) %></div>
-    <div><%= session.exercise.display_name %></div>
+    <div>
+      <%= session.exercise.display_name %>
+      <% if session.tool %>
+        <span class="block text-xs text-muted"><%= session.tool.name %></span>
+      <% end %>
+    </div>
     <div class="text-muted"><%= session.session_shape.label %></div>
     <div class="font-mono"><%= session.weight_agnostic_signature %></div>
     <div class="font-mono"><%= session.weight_kg %></div>
@@ -29,6 +34,9 @@
       <span class="shrink-0 text-xs text-muted"><%= session.date.to_fs(:short) %></span>
     </div>
     <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs text-muted">
+      <% if session.tool %>
+        <span><%= session.tool.name %></span>
+      <% end %>
       <span><%= session.session_shape.label %></span>
       <span><%= session.weight_agnostic_signature %></span>
       <span><%= session.weight_kg %>kg</span>

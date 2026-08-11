@@ -34,6 +34,14 @@
         <%= text_field_tag "session[reps_list]", session.reps_summary,
               class: "w-full rounded border border-border px-2 py-1 text-sm font-mono" %>
       </div>
+      <% if Tool.exists? %>
+        <div>
+          <%= form.label :tool_id, "Tool", class: "mb-1 block text-xs font-medium text-muted" %>
+          <%= form.select :tool_id, grouped_options_for_select(Tool.grouped_options, session.tool_id),
+                { include_blank: "Not specified" },
+                class: "w-full rounded border border-border px-2 py-1 text-sm" %>
+        </div>
+      <% end %>
     </div>
 
     <div>

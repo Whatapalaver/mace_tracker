@@ -108,7 +108,7 @@ class SessionsController < ApplicationController
   end
 
   def session_edit_params
-    params.expect(session: [ :date, :exercise_id, :weight_kg, :is_benchmark, :notes ])
+    params.expect(session: [ :date, :exercise_id, :tool_id, :weight_kg, :is_benchmark, :notes ])
   end
 
   def confirming_sets?
@@ -208,7 +208,7 @@ class SessionsController < ApplicationController
   end
 
   def session_params
-    params.expect(session: [ :date, :exercise_id, :session_shape_id, :benchmark_preset_id, :is_benchmark,
+    params.expect(session: [ :date, :exercise_id, :tool_id, :session_shape_id, :benchmark_preset_id, :is_benchmark,
                              :formula, :weight_kg, :work_seconds, :rest_seconds,
                              :sets_count, :reps, :reps_per_minute, :notes,
                              session_sets_attributes: [ [ :set_number, :duration_seconds, :reps ] ] ])

@@ -1,0 +1,28 @@
+<% content_for :title, "Tools" %>
+
+<div class="mb-4 flex items-center justify-between">
+  <h1 class="text-2xl font-semibold tracking-tight">Tools</h1>
+  <%= link_to "Add tool", new_tool_path, class: "text-sm font-medium text-rust hover:text-rust-dark" %>
+</div>
+
+<% if @tools.empty? %>
+  <p class="text-sm text-muted">
+    No tools yet. Add the specific mace/kettlebell/etc. you train with to tag sessions with it.
+  </p>
+<% else %>
+  <ul class="divide-y divide-border rounded-lg border border-border bg-surface">
+    <% @tools.each do |tool| %>
+      <% session_count = tool.sessions.count %>
+      <li class="flex items-center justify-between gap-3 px-4 py-3">
+        <span><%= tool.equipment.name %>: <%= tool.name %></span>
+        <div class="flex items-center gap-3">
+          <%= link_to "Edit", edit_tool_path(tool), class: "text-sm font-medium text-rust hover:text-rust-dark" %>
+          <%= button_to "Delete", tool_path(tool), method: :delete,
+                data: { turbo_confirm: session_count.zero? ? "Delete this tool?" :
+                  "Delete this tool? It'll be cleared from #{pluralize(session_count, "logged session")} — those sessions themselves are kept." },
+                class: "text-sm font-medium text-crimson hover:text-crimson/80" %>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

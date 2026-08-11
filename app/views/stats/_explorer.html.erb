@@ -9,8 +9,8 @@
         data: { turbo: false, controller: "scroll-preserving-form" } do |form| %>
     <div>
       <%= form.label :equipment_id, "Equipment", class: "mb-1 block text-sm font-medium" %>
-      <%= form.collection_select :equipment_id, @equipment_list, :id, :name,
-            { include_blank: "All equipment", selected: @equipment_id },
+      <%= form.select :equipment_id, grouped_options_for_select(Equipment.filter_options, @equipment_filter),
+            { include_blank: "All equipment" },
             class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base",
             data: { action: "change->scroll-preserving-form#submit" } %>
     </div>
@@ -50,12 +50,12 @@
 <% end %>
 
 <%= render "stats/lifetime_summary", stats: @stats, period: @period, period_form_url: url,
-      period_hidden_params: { exercise_id: @exercise&.id, equipment_id: @equipment_id }, exercise: @exercise %>
+      period_hidden_params: { exercise_id: @exercise&.id, equipment_id: @equipment_filter }, exercise: @exercise %>
 
 <% if @exercise %>
   <%= form_with url: url, method: :get, class: "mb-6 space-y-4",
         data: { turbo: false, controller: "scroll-preserving-form" } do |form| %>
-    <%= hidden_field_tag :equipment_id, @equipment_id %>
+    <%= hidden_field_tag :equipment_id, @equipment_filter %>
     <%= hidden_field_tag :exercise_id, @exercise.id %>
 
     <div>

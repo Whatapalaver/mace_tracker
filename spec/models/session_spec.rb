@@ -27,6 +27,30 @@ RSpec.describe Session, type: :model do
       expect(session).not_to be_valid
     end
 
+    describe "tool" do
+      it { is_expected.to belong_to(:tool).optional }
+
+      it "is valid with no tool at all" do
+        session = build(:session, tool: nil)
+        expect(session).to be_valid
+      end
+
+      it "is valid when the tool belongs to the same equipment as the exercise" do
+        equipment = create(:equipment)
+        session = build(:session, exercise: create(:exercise, equipment: equipment),
+                                   tool: create(:tool, equipment: equipment))
+        expect(session).to be_valid
+      end
+
+      it "is invalid when the tool belongs to different equipment than the exercise" do
+        session = build(:session, exercise: create(:exercise, equipment: create(:equipment, name: "Mace")),
+                                   tool: create(:tool, equipment: create(:equipment, name: "Kettlebell")))
+
+        expect(session).not_to be_valid
+        expect(session.errors[:tool]).to include("must be a piece of Mace equipment")
+      end
+    end
+
     context "interval_work" do
       it "requires weight_kg, work_seconds, rest_seconds, and sets_count" do
         session = build(:session, weight_kg: nil, work_seconds: nil,

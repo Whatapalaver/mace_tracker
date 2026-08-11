@@ -13,6 +13,8 @@ Rails.application.routes.draw do
 
   resources :equipment, only: [ :index, :new, :create ]
 
+  resources :tools, only: [ :index, :new, :create, :edit, :update, :destroy ]
+
   resources :benchmark_presets, only: [ :index, :new, :create ]
 
   resources :sessions, only: [ :index, :new, :create, :show, :edit, :update, :destroy ] do

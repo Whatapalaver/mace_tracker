@@ -32,8 +32,13 @@ module SessionsExplorer
       @exercise_id = locked_exercise.id
       scope = scope.where(exercise_id: @exercise_id)
     else
-      @equipment_list = Equipment.order(:name)
-      @equipment_id = params[:equipment_id].presence
+      # @equipment_filter is the raw value of the combined equipment/tool <select> (e.g. "3" for
+      # "all of this equipment" or "tool-7" for one specific tool) — kept separate from the
+      # resolved @equipment_id/@tool so hidden fields and pagination links can round-trip
+      # whichever the visitor actually picked instead of collapsing a tool choice back to just
+      # its equipment.
+      @equipment_filter = params[:equipment_id].presence
+      @equipment_id, @tool = Tool.resolve_filter_param(@equipment_filter)
       @exercises = Exercise.order(:name)
       @exercises = @exercises.where(equipment_id: @equipment_id) if @equipment_id
       @exercise_id = params[:exercise_id].presence
@@ -41,11 +46,12 @@ module SessionsExplorer
 
       scope = scope.where(exercise_id: @exercise_id) if @exercise_id
       scope = scope.joins(:exercise).where(exercise: { equipment_id: @equipment_id }) if @equipment_id && !@exercise_id
+      scope = scope.where(tool_id: @tool.id) if @tool
     end
 
     @total_count = scope.count
     @total_pages = [ (@total_count / PER_PAGE.to_f).ceil, 1 ].max
     @page = [ [ params[:page].to_i, 1 ].max, @total_pages ].min
-    @sessions = scope.includes(:exercise, :session_shape, :session_sets).offset((@page - 1) * PER_PAGE).limit(PER_PAGE)
+    @sessions = scope.includes(:exercise, :session_shape, :session_sets, :tool).offset((@page - 1) * PER_PAGE).limit(PER_PAGE)
   end
 end

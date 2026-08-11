@@ -1,0 +1,33 @@
+<% content_for :title, "Edit Tool" %>
+
+<h1 class="mb-4 text-2xl font-semibold tracking-tight">Edit tool</h1>
+
+<%= form_with model: @tool, class: "space-y-4" do |form| %>
+  <% if @tool.errors.any? %>
+    <div class="rounded-md border border-crimson/20 bg-crimson-light px-3 py-2 text-sm text-crimson">
+      <ul class="list-inside list-disc">
+        <% @tool.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :equipment_id, "Equipment", class: "mb-1 block text-sm font-medium" %>
+    <%= form.collection_select :equipment_id, @equipment, :id, :name, { prompt: "Select equipment" },
+          class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
+  </div>
+
+  <div>
+    <%= form.label :name, "Tool name", class: "mb-1 block text-sm font-medium" %>
+    <%= form.text_field :name, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
+  </div>
+
+  <div>
+    <%= form.label :notes, class: "mb-1 block text-sm font-medium" %>
+    <%= form.text_area :notes, rows: 3, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
+  </div>
+
+  <%= form.submit "Save changes", class: "w-full rounded-md bg-rust py-3 text-base font-semibold text-paper transition-colors hover:bg-rust-dark" %>
+<% end %>

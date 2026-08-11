@@ -107,6 +107,35 @@ RSpec.describe "Stats", type: :request do
       expect(response.body).not_to include(%(selected="selected" value="#{mace.id}"))
     end
 
+    it "narrows totals to a specific tool when chosen via the grouped equipment/tool select" do
+      mace = create(:equipment, name: "Mace")
+      exercise = create(:exercise, equipment: mace)
+      eryx = create(:tool, name: "Eryx Adjustable", equipment: mace)
+      wrecking_ball = create(:tool, name: "Wrecking Ball", equipment: mace)
+      eryx_session = create(:session, exercise: exercise, tool: eryx, weight_kg: 10)
+      create(:session_set, session: eryx_session, set_number: 1, reps: 20)
+      wrecking_ball_session = create(:session, exercise: exercise, tool: wrecking_ball, weight_kg: 10)
+      create(:session_set, session: wrecking_ball_session, set_number: 1, reps: 15)
+
+      get stats_path(equipment_id: "tool-#{eryx.id}")
+
+      expect(response.body).to include("20")
+      expect(response.body).not_to include("35") # combined total, would appear if not filtered
+    end
+
+    it "narrows the exercise dropdown to the tool's equipment when a specific tool is chosen" do
+      mace = create(:equipment, name: "Mace")
+      kettlebell = create(:equipment, name: "Kettlebell")
+      create(:exercise, name: "360", equipment: mace)
+      create(:exercise, name: "Swing", equipment: kettlebell)
+      eryx = create(:tool, name: "Eryx Adjustable", equipment: mace)
+
+      get stats_path(equipment_id: "tool-#{eryx.id}")
+
+      expect(response.body).to include("Mace 360")
+      expect(response.body).not_to include("Kettlebell Swing")
+    end
+
     it "shows a placeholder when nothing has been logged" do
       get stats_path
 

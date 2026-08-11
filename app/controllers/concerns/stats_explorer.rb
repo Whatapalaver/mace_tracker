@@ -13,8 +13,6 @@ module StatsExplorer
     if @exercise_locked
       @exercise = locked_exercise
     else
-      @equipment_list = Equipment.order(:name)
-
       # A fresh, filterless visit (e.g. the "Stats" nav link) defaults to Mace 10-2 rather than
       # showing an empty page — every other entry point (the filter forms themselves) always
       # submits equipment_id/exercise_id explicitly, even when blank, so checking the params key
@@ -22,7 +20,13 @@ module StatsExplorer
       fresh_visit = !params.key?(:equipment_id) && !params.key?(:exercise_id)
       default_exercise = Exercise.joins(:equipment).find_by(equipment: { name: "Mace" }, name: "10-2") if fresh_visit
 
-      @equipment_id = params[:equipment_id].presence || default_exercise&.equipment_id&.to_s
+      # @equipment_filter is the raw value of the combined equipment/tool <select> (e.g. "3" for
+      # "all of this equipment" or "tool-7" for one specific tool) — kept separate from the
+      # resolved @equipment_id/@tool so hidden fields and pagination links can round-trip
+      # whichever the visitor actually picked instead of collapsing a tool choice back to just
+      # its equipment.
+      @equipment_filter = params[:equipment_id].presence || default_exercise&.equipment_id&.to_s
+      @equipment_id, @tool = Tool.resolve_filter_param(@equipment_filter)
       @exercises = Exercise.order(:name)
       @exercises = @exercises.where(equipment_id: @equipment_id) if @equipment_id
       @exercise = Exercise.find_by(id: params[:exercise_id]) || default_exercise
@@ -32,7 +36,7 @@ module StatsExplorer
     @period = params[:period].presence || "monthly"
     @stats = Progression::LifetimeStats.new(exercise: @exercise,
                                              exercise_ids: !@exercise_locked && @equipment_id && @exercises.ids,
-                                             period: @period)
+                                             tool: @tool, period: @period)
     @personal_bests = @exercise ? @stats.personal_bests : []
     @session_shapes = SessionShape.global_ordered
 
@@ -67,7 +71,7 @@ module StatsExplorer
 
     @series = Progression::SignatureSeries.new(
       exercise: @exercise, session_shape: @shape, structural_value: @structural_value, granularity: @granularity,
-      output_label: @output_label, weight: @weight, benchmarks_only: @benchmarks_only
+      output_label: @output_label, weight: @weight, benchmarks_only: @benchmarks_only, tool: @tool
     ).to_h
   end
 

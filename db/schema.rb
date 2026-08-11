@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_03_202732) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_11_131848) do
   create_table "benchmark_presets", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "exercise_id", null: false
@@ -86,6 +86,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_03_202732) do
     t.decimal "rpe_session", precision: 3, scale: 1
     t.integer "session_shape_id", null: false
     t.integer "sets_count"
+    t.integer "tool_id"
     t.datetime "updated_at", null: false
     t.decimal "weight_kg", precision: 5, scale: 2
     t.integer "work_seconds"
@@ -93,6 +94,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_03_202732) do
     t.index ["date"], name: "index_sessions_on_date"
     t.index ["exercise_id"], name: "index_sessions_on_exercise_id"
     t.index ["session_shape_id"], name: "index_sessions_on_session_shape_id"
+    t.index ["tool_id"], name: "index_sessions_on_tool_id"
   end
 
   create_table "share_links", force: :cascade do |t|
@@ -104,6 +106,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_03_202732) do
     t.index ["token"], name: "index_share_links_on_token", unique: true
   end
 
+  create_table "tools", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "equipment_id", null: false
+    t.string "name", null: false
+    t.text "notes"
+    t.datetime "updated_at", null: false
+    t.integer "user_id"
+    t.index ["equipment_id", "name", "user_id"], name: "index_tools_on_equipment_id_and_name_and_user_id", unique: true
+    t.index ["equipment_id"], name: "index_tools_on_equipment_id"
+  end
+
   add_foreign_key "benchmark_presets", "exercises"
   add_foreign_key "benchmark_presets", "session_shapes"
   add_foreign_key "exercises", "equipment"
@@ -111,4 +124,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_03_202732) do
   add_foreign_key "sessions", "benchmark_presets"
   add_foreign_key "sessions", "exercises"
   add_foreign_key "sessions", "session_shapes"
+  add_foreign_key "sessions", "tools"
+  add_foreign_key "tools", "equipment"
 end

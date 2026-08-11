@@ -77,6 +77,23 @@ RSpec.describe "SharedDashboards", type: :request do
       expect(selects.grep(/name="exercise_id"/)).to be_empty
     end
 
+    it "lets an unscoped visitor filter by a specific tool via the shared stats page" do
+      mace = create(:equipment, name: "Mace")
+      exercise = create(:exercise, equipment: mace)
+      eryx = create(:tool, name: "Eryx Adjustable", equipment: mace)
+      wrecking_ball = create(:tool, name: "Wrecking Ball", equipment: mace)
+      eryx_session = create(:session, exercise: exercise, tool: eryx, weight_kg: 10)
+      create(:session_set, session: eryx_session, set_number: 1, reps: 20)
+      wrecking_ball_session = create(:session, exercise: exercise, tool: wrecking_ball, weight_kg: 10)
+      create(:session_set, session: wrecking_ball_session, set_number: 1, reps: 15)
+      share_link = create(:share_link)
+
+      get shared_dashboard_path(token: share_link.token, equipment_id: "tool-#{eryx.id}")
+
+      expect(response.body).to include("20")
+      expect(response.body).not_to include("35")
+    end
+
     it "lets a visitor browse shape/signature progression, same as the owner's stats page" do
       exercise = create(:exercise, name: "360", equipment: create(:equipment, name: "Mace"))
       shape = create(:session_shape, :interval_work)
@@ -119,6 +136,21 @@ RSpec.describe "SharedDashboards", type: :request do
       expect(response.body).to include("Mace 360")
       expect(response.body).not_to include("Kettlebell Swing")
       expect(response.body).not_to include(">Equipment<")
+    end
+
+    it "supports filtering by a specific tool via the grouped equipment/tool select" do
+      mace = create(:equipment, name: "Mace")
+      exercise = create(:exercise, equipment: mace)
+      eryx = create(:tool, name: "Eryx Adjustable", equipment: mace)
+      wrecking_ball = create(:tool, name: "Wrecking Ball", equipment: mace)
+      create(:session, exercise: exercise, tool: eryx, date: Date.new(2026, 3, 10))
+      create(:session, exercise: exercise, tool: wrecking_ball, date: Date.new(2026, 3, 11))
+      share_link = create(:share_link)
+
+      get shared_dashboard_sessions_path(token: share_link.token, equipment_id: "tool-#{eryx.id}")
+
+      expect(response.body).to include("10 Mar")
+      expect(response.body).not_to include("11 Mar")
     end
 
     it "supports the year/month filters, same as the owner's history page" do

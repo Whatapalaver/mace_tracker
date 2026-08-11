@@ -25,7 +25,7 @@
     <% unless @exercise_locked %>
       <div>
         <%= label_tag :equipment_id, "Equipment", class: "mb-1 block text-sm font-medium" %>
-        <%= select_tag :equipment_id, options_from_collection_for_select(@equipment_list, :id, :name, @equipment_id),
+        <%= select_tag :equipment_id, grouped_options_for_select(Equipment.filter_options, @equipment_filter),
               include_blank: "All equipment",
               class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base",
               data: { action: "change->scroll-preserving-form#submit" } %>

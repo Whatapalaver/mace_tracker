@@ -12,10 +12,10 @@ RSpec.describe Progression::SignatureSeries do
     ).to_h
   end
 
-  def session_with_set(date:, reps:, weight:, work_seconds: 300, is_benchmark: false)
+  def session_with_set(date:, reps:, weight:, work_seconds: 300, is_benchmark: false, tool: nil)
     session = create(:session, exercise: exercise, session_shape: interval_work_shape, date: date,
                                 weight_kg: weight, work_seconds: work_seconds,
-                                is_benchmark: is_benchmark)
+                                is_benchmark: is_benchmark, tool: tool)
     create(:session_set, session: session, set_number: 1, reps: reps, duration_seconds: work_seconds)
     session
   end
@@ -42,6 +42,17 @@ RSpec.describe Progression::SignatureSeries do
 
     expect(result.keys).to contain_exactly("8.0kg", "10.0kg")
     expect(result["10.0kg"]).to eq(once.date => 25 * 60.0 / 300)
+  end
+
+  it "restricts to sessions logged with a specific tool when tool is given" do
+    eryx = create(:tool, name: "Eryx Adjustable", equipment: exercise.equipment)
+    wrecking_ball = create(:tool, name: "Wrecking Ball", equipment: exercise.equipment)
+    eryx_session = session_with_set(date: "2026-07-01", reps: 20, weight: 10, tool: eryx)
+    session_with_set(date: "2026-07-08", reps: 25, weight: 10, tool: wrecking_ball)
+
+    result = series_for(tool: eryx)
+
+    expect(result["10.0kg"]).to eq(eryx_session.date => 20 * 60.0 / 300)
   end
 
   it "restricts to a single series when weight is locked" do

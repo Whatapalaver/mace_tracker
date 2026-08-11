@@ -3,6 +3,7 @@ class Session < ApplicationRecord
 
   belongs_to :exercise
   belongs_to :benchmark_preset, optional: true
+  belongs_to :tool, optional: true
   has_many :session_sets, dependent: :destroy
   accepts_nested_attributes_for :session_sets
 
@@ -13,6 +14,7 @@ class Session < ApplicationRecord
 
   validates :date, presence: true
   validates :rpe_session, numericality: { greater_than: 0 }, allow_nil: true
+  validate :tool_matches_exercise_equipment
 
   before_validation :derive_is_benchmark
 
@@ -61,5 +63,11 @@ class Session < ApplicationRecord
 
   def derive_is_benchmark
     self.is_benchmark = true if benchmark_preset_id.present?
+  end
+
+  def tool_matches_exercise_equipment
+    return unless tool && exercise
+
+    errors.add(:tool, "must be a piece of #{exercise.equipment.name} equipment") if tool.equipment_id != exercise.equipment_id
   end
 end
