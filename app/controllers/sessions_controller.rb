@@ -121,7 +121,8 @@ class SessionsController < ApplicationController
   # shape/signature and rebuilds session_sets from scratch. Returns false (with errors added to
   # @session) instead of raising, so both callers can re-render their own template on failure.
   def persist_signature_and_sets!(target_shape:, signature_attrs:, reps_list_text:)
-    reps_list = Progression::RepsList.parse(reps_list_text)
+    expected_count = signature_attrs[:sets_count] if target_shape.name == SessionShape::INTERVAL_WORK
+    reps_list = Progression::RepsList.parse(reps_list_text, expected_count: expected_count)
 
     if target_shape.name == SessionShape::INTERVAL_WORK && signature_attrs[:sets_count] != reps_list.size
       @session.errors.add(:base,

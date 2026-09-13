@@ -59,5 +59,38 @@ RSpec.describe Progression::RepsList do
     it "raises on a malformed weight suffix" do
       expect { described_class.parse("200@") }.to raise_error(Progression::RepsList::ParseError)
     end
+
+    describe "expected_count" do
+      it "repeats a single entry to fill every set when a multi-set count is expected" do
+        entries = described_class.parse("7", expected_count: 50)
+
+        expect(entries.size).to eq(50)
+        expect(entries.uniq).to eq([ Progression::RepsList::Entry.new(reps: 7, weight_kg: nil) ])
+      end
+
+      it "repeats a single weight-overridden entry too" do
+        entries = described_class.parse("7@6", expected_count: 3)
+
+        expect(entries).to eq(Array.new(3, Progression::RepsList::Entry.new(reps: 7, weight_kg: 6.0)))
+      end
+
+      it "does not expand a genuine multi-entry list, even if its length still disagrees" do
+        entries = described_class.parse("7, 8", expected_count: 50)
+
+        expect(entries.size).to eq(2)
+      end
+
+      it "does not expand a single entry when expected_count is 1" do
+        entries = described_class.parse("7", expected_count: 1)
+
+        expect(entries.size).to eq(1)
+      end
+
+      it "does not expand when expected_count is nil" do
+        entries = described_class.parse("7")
+
+        expect(entries.size).to eq(1)
+      end
+    end
   end
 end

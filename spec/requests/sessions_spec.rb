@@ -160,6 +160,18 @@ RSpec.describe "Sessions", type: :request do
         expect(response).to have_http_status(:unprocessable_content)
         expect(response.body).to include("Signature implies 3 sets but 2 rep values were given")
       end
+
+      it "repeats a single reps value across every set of a many-set interval (Viking Warrior style)" do
+        params = { date: "2026-07-30", exercise_id: exercise.id, signature: "50(15w+15r)",
+                   weight_kg: "10", reps_list: "7" }
+
+        expect { post sessions_path, params: { session: params } }.to change(Session, :count).by(1)
+
+        session = Session.last
+        expect(session.sets_count).to eq(50)
+        expect(session.session_sets.count).to eq(50)
+        expect(session.session_sets.pluck(:reps).uniq).to eq([ 7 ])
+      end
     end
 
     context "sets_and_reps (inferred fallback for a bare number)" do
@@ -625,6 +637,20 @@ RSpec.describe "Sessions", type: :request do
       expect(session.reload.session_sets.count).to eq(3)
     end
 
+    it "repeats a single reps value across every set when editing a many-set interval" do
+      session = create(:session, work_seconds: 15, rest_seconds: 15, sets_count: 50)
+      create(:session_set, session: session, set_number: 1, reps: 20)
+
+      patch session_path(session), params: {
+        session: { signature: "50(15w+15r)", weight_kg: session.weight_kg, reps_list: "7" }
+      }
+
+      expect(response).to have_http_status(:ok)
+      session.reload
+      expect(session.session_sets.count).to eq(50)
+      expect(session.session_sets.pluck(:reps).uniq).to eq([ 7 ])
+    end
+
     it "rejects invalid signature notation" do
       session = create(:session)
       create(:session_set, session: session, set_number: 1, reps: 20)
@@ -688,13 +714,15 @@ RSpec.describe "Sessions", type: :request do
       session = create(:session, session_shape: sets_and_reps_shape, weight_kg: 10, reps: 1101)
       create(:session_set, session: session, set_number: 1, reps: 1101)
 
+      # Two values against an implied 3 sets — genuinely mismatched, not the "one value repeats
+      # to fill every set" shorthand (which only kicks in for a single reps entry).
       patch session_path(session), params: {
         session: { date: session.date.to_s, session_shape_id: interval_work_shape.id,
-                   signature: "3(5mw+5mr)", weight_kg: "10", reps_list: "1101" }
+                   signature: "3(5mw+5mr)", weight_kg: "10", reps_list: "1101, 1100" }
       }
 
       expect(response).to have_http_status(:unprocessable_content)
-      expect(response.body).to include("Signature implies 3 sets but 1 rep values were given")
+      expect(response.body).to include("Signature implies 3 sets but 2 rep values were given")
       expect(session.reload.session_shape).to eq(sets_and_reps_shape)
     end
   end
