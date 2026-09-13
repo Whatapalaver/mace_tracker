@@ -7,6 +7,8 @@ module Progression
     class ParseError < StandardError; end
 
     def self.parse(text, shape_name)
+      raise ParseError, "can't be blank" if text.blank?
+
       case shape_name
       when SessionShape::INTERVAL_WORK
         result = IntervalFormula.parse_without_weight(text)
@@ -40,6 +42,8 @@ module Progression
     # textually identical to sets_and_reps's — they're only reachable through the log form's
     # explicit "different shape" section, which calls .parse directly with a known shape_name.
     def self.parse_inferred(text)
+      raise ParseError, "can't be blank" if text.blank?
+
       result = IntervalFormula.parse_without_weight(text)
       [ SessionShape::INTERVAL_WORK,
         { work_seconds: result.work_seconds, rest_seconds: result.rest_seconds, sets_count: result.sets_count } ]

@@ -151,6 +151,17 @@ RSpec.describe "Sessions", type: :request do
         expect(response.body).to include("Log Session")
       end
 
+      it "shows a clear error when the signature is left blank, not the interval parser's internal wording" do
+        params = { date: "2026-07-30", exercise_id: exercise.id, signature: "",
+                   weight_kg: "10", reps_list: "20" }
+
+        post sessions_path, params: { session: params }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include("Signature can&#39;t be blank")
+        expect(response.body).not_to include("Input cannot be empty")
+      end
+
       it "rejects a reps list whose length disagrees with the signature's implied set count" do
         params = { date: "2026-07-30", exercise_id: exercise.id, signature: "3(5mw+5mr)",
                    weight_kg: "10", reps_list: "20, 19" }

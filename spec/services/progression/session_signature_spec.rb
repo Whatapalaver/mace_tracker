@@ -31,6 +31,13 @@ RSpec.describe Progression::SessionSignature do
       expect { described_class.parse("abc", SessionShape::FIXED_REPS_FOR_TIME) }
         .to raise_error(Progression::SessionSignature::ParseError)
     end
+
+    it "raises a clear blank-field message rather than the interval parser's internal wording" do
+      expect { described_class.parse("", SessionShape::INTERVAL_WORK) }
+        .to raise_error(Progression::SessionSignature::ParseError, "can't be blank")
+      expect { described_class.parse("   ", SessionShape::SETS_AND_REPS) }
+        .to raise_error(Progression::SessionSignature::ParseError, "can't be blank")
+    end
   end
 
   describe ".parse_inferred" do
@@ -63,6 +70,11 @@ RSpec.describe Progression::SessionSignature do
     it "raises for text that is neither valid interval notation nor a whole number" do
       expect { described_class.parse_inferred("not anything") }
         .to raise_error(Progression::SessionSignature::ParseError)
+    end
+
+    it "raises a clear blank-field message rather than the interval parser's internal wording" do
+      expect { described_class.parse_inferred("") }
+        .to raise_error(Progression::SessionSignature::ParseError, "can't be blank")
     end
   end
 end
