@@ -74,6 +74,9 @@
     <div>
       <%= form.label :weight_kg, "Weight (kg)", class: "mb-1 block text-sm font-medium" %>
       <%= form.number_field :weight_kg, step: 0.1, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
+      <p class="mt-2 text-xs text-muted">
+        Every set below has its own <code class="font-mono text-ink">@weight</code>? You can leave this blank.
+      </p>
     </div>
 
     <div>

@@ -198,6 +198,28 @@ RSpec.describe "Sessions", type: :request do
         expect(session.session_sets.order(:set_number).map(&:effective_weight_kg)).to eq([ 6.0, 6.0, 8.0 ])
       end
 
+      it "allows leaving the session-level weight blank when every set has its own override" do
+        params = { date: "2026-07-30", exercise_id: exercise.id, signature: "20",
+                   weight_kg: "", reps_list: "20@10, 20@12, 25@14, 15@16, 20@15" }
+
+        expect { post sessions_path, params: { session: params } }.to change(Session, :count).by(1)
+
+        session = Session.last
+        expect(session.session_sets.order(:set_number).map(&:effective_weight_kg)).to eq(
+          [ 10.0, 12.0, 14.0, 16.0, 15.0 ]
+        )
+      end
+
+      it "rejects a blank session-level weight when at least one set has no override" do
+        params = { date: "2026-07-30", exercise_id: exercise.id, signature: "20",
+                   weight_kg: "", reps_list: "20@10, 20" }
+
+        expect { post sessions_path, params: { session: params } }.not_to change(Session, :count)
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body.scan("Weight kg can&#39;t be blank").size).to eq(1)
+      end
+
       it "re-renders the form with an error when the signature is neither notation nor a number" do
         params = { date: "2026-07-30", exercise_id: exercise.id, signature: "not anything",
                    weight_kg: "10", reps_list: "20" }
@@ -581,6 +603,21 @@ RSpec.describe "Sessions", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(session.reload.notes).to eq("New note")
+    end
+
+    it "allows leaving the session-level weight blank when every set has its own override" do
+      session = create(:session, work_seconds: 300, rest_seconds: 0, sets_count: 2)
+      create(:session_set, session: session, set_number: 1, reps: 20)
+      create(:session_set, session: session, set_number: 2, reps: 20)
+
+      patch session_path(session), params: {
+        session: { date: session.date.to_s, signature: session.weight_agnostic_signature,
+                   weight_kg: "", reps_list: "20@10, 25@12" }
+      }
+
+      expect(response).to have_http_status(:ok)
+      session.reload
+      expect(session.session_sets.order(:set_number).map(&:effective_weight_kg)).to eq([ 10.0, 12.0 ])
     end
 
     it "updates the session's tool" do

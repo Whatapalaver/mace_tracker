@@ -130,8 +130,18 @@ class SessionsController < ApplicationController
       return false
     end
 
+    shared_params = session_shared_params
+    # The session-level weight is only ever a fallback (SessionSet#effective_weight_kg only uses
+    # it when a set's own weight is nil) — so when every set already carries its own override and
+    # the top-level field was left blank, there's nothing meaningful to require there. Defaulting
+    # it to the first set's weight satisfies the shape's presence validation without ever actually
+    # being used by any set.
+    if shared_params[:weight_kg].blank? && reps_list.all? { |entry| entry.weight_kg.present? }
+      shared_params = shared_params.merge(weight_kg: reps_list.first.weight_kg)
+    end
+
     ActiveRecord::Base.transaction do
-      @session.assign_attributes(session_shared_params.merge(cleared_fields_for(target_shape.name))
+      @session.assign_attributes(shared_params.merge(cleared_fields_for(target_shape.name))
         .merge(signature_attrs).merge(session_shape_id: target_shape.id))
       @session.save!
       @session.session_sets.destroy_all
@@ -141,8 +151,9 @@ class SessionsController < ApplicationController
     end
 
     true
-  rescue ActiveRecord::RecordInvalid => e
-    @session.errors.add(:base, e.record.errors.full_messages.to_sentence)
+  rescue ActiveRecord::RecordInvalid
+    # e.record is @session itself, so its errors are already exactly what failed validation —
+    # nothing to add on top.
     false
   end
 
