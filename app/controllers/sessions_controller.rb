@@ -21,7 +21,9 @@ class SessionsController < ApplicationController
   end
 
   def new
-    @session = Session.new(date: Date.current)
+    # Lets "Log another" on the show page carry the date forward, so logging several exercises
+    # for the same day doesn't mean re-picking the date each time.
+    @session = Session.new(date: params[:date].presence || Date.current)
     prefill_from_benchmark_preset
     @exercises = Exercise.order(:name)
     @advanced_session_shapes = advanced_session_shapes

@@ -82,6 +82,31 @@ RSpec.describe "Sessions", type: :request do
 
       expect(response.body).not_to include("Tool (optional)")
     end
+
+    it "defaults the date field to today when no date param is given" do
+      create(:exercise)
+
+      get new_session_path
+
+      expect(response.body).to include(%(value="#{Date.current}" type="date"))
+    end
+
+    it "pre-fills the date field from a date param, for logging another session the same day" do
+      create(:exercise)
+
+      get new_session_path(date: "2026-03-10")
+
+      expect(response.body).to include(%(value="2026-03-10" type="date"))
+    end
+
+    it "uses a plain text input for weight, not a number spinner" do
+      create(:exercise)
+
+      get new_session_path
+
+      expect(response.body).to include(%(inputmode="decimal"))
+      expect(response.body).not_to match(/type="number"[^>]*name="session\[weight_kg\]"/)
+    end
   end
 
   describe "POST /sessions" do
@@ -362,6 +387,15 @@ RSpec.describe "Sessions", type: :request do
       get session_path(session)
 
       expect(response.body).to include("View progression")
+    end
+
+    it "offers a \"Log another\" link that carries the session's date forward" do
+      session = create(:session, date: Date.new(2026, 3, 10))
+
+      get session_path(session)
+
+      expect(response.body).to include("Log another")
+      expect(response.body).to include(new_session_path(date: session.date))
     end
   end
 

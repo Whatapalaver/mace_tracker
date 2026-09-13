@@ -8,6 +8,9 @@
   <% end %>
 </p>
 
+<%= link_to "Log another for #{@session.date.to_fs(:short)} →", new_session_path(date: @session.date),
+      class: "mb-6 inline-block rounded-md bg-rust px-4 py-2 text-sm font-semibold text-paper transition-colors hover:bg-rust-dark" %>
+
 <div class="mb-6 rounded-md bg-ink px-3 py-3 font-mono text-lg tracking-wide text-paper">
   <% if @session.session_shape.name == SessionShape::INTERVAL_WORK %>
     <%= Progression::IntervalFormula.render(@session) %>
