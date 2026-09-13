@@ -32,4 +32,37 @@ RSpec.describe Progression::SessionSignature do
         .to raise_error(Progression::SessionSignature::ParseError)
     end
   end
+
+  describe ".parse_inferred" do
+    it "infers interval_work from interval notation" do
+      shape_name, attrs = described_class.parse_inferred("3(5mw+5mr)")
+
+      expect(shape_name).to eq(SessionShape::INTERVAL_WORK)
+      expect(attrs).to eq(work_seconds: 300, rest_seconds: 300, sets_count: 3)
+    end
+
+    it "infers interval_work from a single unwrapped segment" do
+      shape_name, attrs = described_class.parse_inferred("5mw")
+
+      expect(shape_name).to eq(SessionShape::INTERVAL_WORK)
+      expect(attrs).to eq(work_seconds: 300, rest_seconds: 0, sets_count: 1)
+    end
+
+    it "falls back to sets_and_reps for a bare number" do
+      shape_name, attrs = described_class.parse_inferred("100")
+
+      expect(shape_name).to eq(SessionShape::SETS_AND_REPS)
+      expect(attrs).to eq(reps: 100)
+    end
+
+    it "raises with the interval parser's own error message for a near-miss interval formula" do
+      expect { described_class.parse_inferred("5(5mw") }
+        .to raise_error(Progression::SessionSignature::ParseError, /parenthes/i)
+    end
+
+    it "raises for text that is neither valid interval notation nor a whole number" do
+      expect { described_class.parse_inferred("not anything") }
+        .to raise_error(Progression::SessionSignature::ParseError)
+    end
+  end
 end

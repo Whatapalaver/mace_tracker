@@ -27,5 +27,28 @@ module Progression
     rescue ArgumentError, TypeError
       raise ParseError, "Expected a whole number"
     end
+
+    # Infers interval_work vs sets_and_reps from bare signature text with no shape chosen up
+    # front — used by the primary log-session form, which has no shape picker at all. Tries the
+    # real interval grammar first; success means interval_work, and the parsed attrs come along
+    # for free. Any failure falls back to sets_and_reps — safe by construction, not coincidence,
+    # since every segment in IntervalNotation::Parser's grammar requires a trailing w/r type
+    # letter, so a bare integer can never be misread as interval notation. On a genuine typo
+    # (e.g. "5(5mw"), the interval parser's own error is more diagnostic than the generic "expected
+    # a whole number" would be, so that's what surfaces.
+    # fixed_reps_for_time/emom are deliberately never inferred here — their bare notation is
+    # textually identical to sets_and_reps's — they're only reachable through the log form's
+    # explicit "different shape" section, which calls .parse directly with a known shape_name.
+    def self.parse_inferred(text)
+      result = IntervalFormula.parse_without_weight(text)
+      [ SessionShape::INTERVAL_WORK,
+        { work_seconds: result.work_seconds, rest_seconds: result.rest_seconds, sets_count: result.sets_count } ]
+    rescue IntervalFormula::ParseError => interval_error
+      begin
+        [ SessionShape::SETS_AND_REPS, { reps: parse_number(text) } ]
+      rescue ParseError
+        raise ParseError, interval_error.message
+      end
+    end
   end
 end

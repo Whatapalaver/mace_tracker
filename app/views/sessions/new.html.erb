@@ -1,7 +1,7 @@
 <% content_for :title, "Log Session" %>
 
 <h1 class="mb-1 text-2xl font-semibold tracking-tight">Log session</h1>
-<p class="mb-6 text-sm text-muted">Enter the formula for what you did — sets get built from it.</p>
+<p class="mb-6 text-sm text-muted">Enter the shape (if there is one) and the reps you did — one save, no review step.</p>
 
 <% if @session.benchmark_preset_id.present? %>
   <p class="mb-4 rounded-md border border-brass/30 bg-brass-light px-3 py-2 text-sm text-brass">
@@ -62,30 +62,54 @@
       <%= form.date_field :date, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
     </div>
 
-    <fieldset>
-      <legend class="mb-1 text-sm font-medium">Shape</legend>
-      <div class="space-y-2">
-        <% @session_shapes.each do |shape| %>
-          <label class="flex items-center gap-2 rounded-md border border-border px-3 py-2 has-[:checked]:border-rust has-[:checked]:bg-rust-light">
-            <%= form.radio_button :session_shape_id, shape.id,
-                  class: "accent-rust",
-                  checked: form.object.session_shape_id == shape.id ||
-                    (form.object.session_shape_id.nil? && shape.name == SessionShape::INTERVAL_WORK) %>
-            <%= shape.label %>
-          </label>
-        <% end %>
-      </div>
-    </fieldset>
-
     <div>
-      <%= form.label :formula, "Formula", class: "mb-1 block text-xs font-semibold tracking-widest text-muted uppercase" %>
-      <%= form.text_field :formula, placeholder: "5(5mw+5mr)@10kg",
+      <%= form.label :signature, "Shape", class: "mb-1 block text-xs font-semibold tracking-widest text-muted uppercase" %>
+      <%= form.text_field :signature, placeholder: "5(5mw+5mr), 5mw, or 100",
             class: "w-full rounded-md border border-ink bg-ink px-3 py-3 font-mono text-lg tracking-wide text-paper placeholder-paper/30 focus:outline-none focus:ring-2 focus:ring-rust" %>
       <p class="mt-2 text-xs text-muted">
-        Interval work: <code class="font-mono text-ink">N(Xmw+Ymr)@Wkg</code> — e.g. <code class="font-mono text-ink">5(5mw+5mr)@10kg</code>.
-        Fixed reps for time / EMOM / Sets & reps: <code class="font-mono text-ink">N(X@Wkg)</code> — e.g. <code class="font-mono text-ink">5(108@10kg)</code>.
+        Interval work: <code class="font-mono text-ink">Xmw+Ymr</code>, repeated as <code class="font-mono text-ink">N(Xmw+Ymr)</code> — e.g. <code class="font-mono text-ink">5mw</code> for one 5-minute set, <code class="font-mono text-ink">5(5mw+5mr)</code> for five. No clean shape? A single number here (e.g. your first set's reps) still labels the session for comparison — it doesn't have to match every set below.
       </p>
     </div>
+
+    <div>
+      <%= form.label :weight_kg, "Weight (kg)", class: "mb-1 block text-sm font-medium" %>
+      <%= form.number_field :weight_kg, step: 0.1, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
+    </div>
+
+    <div>
+      <%= form.label :reps_list, "Reps", class: "mb-1 block text-sm font-medium" %>
+      <%= form.text_field :reps_list, placeholder: "200, 189, 199, 201, 200",
+            class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base font-mono" %>
+      <p class="mt-2 text-xs text-muted">
+        One value per set, comma-separated. A set at a different weight? Override it inline: <code class="font-mono text-ink">100@6, 100@6, 50@8</code>.
+      </p>
+    </div>
+
+    <details class="rounded-md border border-border p-3 text-sm"<%= " open" if @advanced_shape_open %>>
+      <summary class="cursor-pointer font-medium text-muted">Logging fixed reps for time or EMOM instead?</summary>
+      <div class="mt-3 space-y-3">
+        <fieldset>
+          <legend class="mb-1 text-sm font-medium">Shape</legend>
+          <div class="space-y-2">
+            <% @advanced_session_shapes.each do |shape| %>
+              <label class="flex items-center gap-2 rounded-md border border-border px-3 py-2 has-[:checked]:border-rust has-[:checked]:bg-rust-light">
+                <%= form.radio_button :session_shape_id, shape.id, class: "accent-rust" %>
+                <%= shape.label %>
+              </label>
+            <% end %>
+          </div>
+        </fieldset>
+
+        <div>
+          <%= form.label :formula, "Formula", class: "mb-1 block text-xs font-semibold tracking-widest text-muted uppercase" %>
+          <%= form.text_field :formula, placeholder: "5(108@10kg)",
+                class: "w-full rounded-md border border-ink bg-ink px-3 py-3 font-mono text-lg tracking-wide text-paper placeholder-paper/30 focus:outline-none focus:ring-2 focus:ring-rust" %>
+          <p class="mt-2 text-xs text-muted">
+            <code class="font-mono text-ink">N(X@Wkg)</code> — e.g. <code class="font-mono text-ink">5(108@10kg)</code>. You'll get a chance to fine-tune each set's reps (and, for fixed reps for time, how long it took) on the next screen.
+          </p>
+        </div>
+      </div>
+    </details>
 
     <label class="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium has-[:checked]:border-brass has-[:checked]:bg-brass-light">
       <%= form.check_box :is_benchmark, class: "accent-brass" %>
@@ -97,6 +121,6 @@
       <%= form.text_area :notes, rows: 2, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-base" %>
     </div>
 
-    <%= form.submit "Continue", class: "w-full rounded-md bg-rust py-3 text-base font-semibold text-paper transition-colors hover:bg-rust-dark" %>
+    <%= form.submit "Save session", class: "w-full rounded-md bg-rust py-3 text-base font-semibold text-paper transition-colors hover:bg-rust-dark" %>
   <% end %>
 <% end %>

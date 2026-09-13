@@ -68,18 +68,24 @@
     </div>
 
     <% if @shape&.name == SessionShape::INTERVAL_WORK %>
-      <fieldset class="flex gap-4 text-sm">
+      <fieldset class="text-sm">
         <legend class="sr-only">Signature granularity</legend>
-        <label class="flex items-center gap-1">
-          <%= radio_button_tag :granularity, "full", @granularity == "full", class: "accent-rust",
-                data: { action: "change->scroll-preserving-form#submit" } %>
-          Full signature
-        </label>
-        <label class="flex items-center gap-1">
-          <%= radio_button_tag :granularity, "segment", @granularity == "segment", class: "accent-rust",
-                data: { action: "change->scroll-preserving-form#submit" } %>
-          Set duration only
-        </label>
+        <p class="mb-1 text-xs text-muted">
+          Comparing a specific session (e.g. 5 sets of 5 minutes)? Use "Exact signature." Want to see every
+          5-minute effort ever logged, however many sets it was part of? Switch to "By set duration."
+        </p>
+        <div class="flex gap-4">
+          <label class="flex items-center gap-1">
+            <%= radio_button_tag :granularity, "full", @granularity == "full", class: "accent-rust",
+                  data: { action: "change->scroll-preserving-form#submit" } %>
+            Exact signature
+          </label>
+          <label class="flex items-center gap-1">
+            <%= radio_button_tag :granularity, "segment", @granularity == "segment", class: "accent-rust",
+                  data: { action: "change->scroll-preserving-form#submit" } %>
+            By set duration
+          </label>
+        </div>
       </fieldset>
     <% end %>
 

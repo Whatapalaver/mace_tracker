@@ -12,6 +12,11 @@ class Session < ApplicationRecord
   # get derived from it and saved.
   attr_accessor :formula
 
+  # Transient — the primary one-step log/edit flow's weight-agnostic signature (e.g.
+  # "5(5mw+5mr)") and comma-separated reps list (e.g. "200, 189, 199"), carried through the log
+  # form the same way :formula is; never persisted directly, only what they're parsed into.
+  attr_accessor :signature, :reps_list
+
   validates :date, presence: true
   validates :rpe_session, numericality: { greater_than: 0 }, allow_nil: true
   validate :tool_matches_exercise_equipment
@@ -57,6 +62,20 @@ class Session < ApplicationRecord
   # The actual reps performed in each set, in order — e.g. "184, 181, 175".
   def reps_summary
     session_sets.order(:set_number).pluck(:reps).join(", ")
+  end
+
+  # The editable form of the reps list — round-trips through Progression::RepsList.parse. Bare
+  # reps for a set whose weight is nil or matches the session's own weight_kg (i.e. it just
+  # inherits); "<reps>@<weight>" only for a set that actually overrides it, so a uniform-weight
+  # session round-trips as a plain list and only genuinely mixed-weight sessions show the suffix.
+  def reps_list_edit_value
+    session_sets.order(:set_number).map do |set|
+      if set.weight_kg.present? && set.weight_kg != weight_kg
+        "#{set.reps}@#{set.weight_kg.to_i}"
+      else
+        set.reps.to_s
+      end
+    end.join(", ")
   end
 
   private

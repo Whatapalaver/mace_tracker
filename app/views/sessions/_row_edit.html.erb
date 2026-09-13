@@ -31,7 +31,7 @@
       </div>
       <div>
         <%= label_tag "session_reps_list", "Reps", class: "mb-1 block text-xs font-medium text-muted" %>
-        <%= text_field_tag "session[reps_list]", session.reps_summary,
+        <%= text_field_tag "session[reps_list]", session.reps_list_edit_value,
               class: "w-full rounded border border-border px-2 py-1 text-sm font-mono" %>
       </div>
       <% if Tool.exists? %>

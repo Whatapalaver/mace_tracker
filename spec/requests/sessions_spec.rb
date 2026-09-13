@@ -8,7 +8,17 @@ RSpec.describe "Sessions", type: :request do
       get new_session_path
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("Interval work", "Fixed reps for time", "EMOM")
+      expect(response.body).to include("Shape", "Reps")
+      expect(response.body).to include("Fixed reps for time", "EMOM")
+    end
+
+    it "does not show interval_work/sets_and_reps as explicit shape choices — they're inferred" do
+      create(:exercise)
+
+      get new_session_path
+
+      expect(response.body).not_to include(">Interval work<")
+      expect(response.body).not_to include(">Sets &amp; reps<")
     end
 
     it "prompts to add an exercise first when none exist" do
@@ -27,13 +37,23 @@ RSpec.describe "Sessions", type: :request do
       expect(response.body).to include("Starting from benchmark preset:", "Monthly 3x5")
     end
 
-    it "pre-fills the formula field by rendering the preset's plan back into notation" do
+    it "pre-fills the signature and weight fields by rendering the preset's plan back into notation" do
       preset = create(:benchmark_preset, weight_kg: 10, work_seconds: 300,
                                           rest_seconds: 300, sets_count: 5)
 
       get new_session_path(benchmark_preset_id: preset.id)
 
-      expect(response.body).to include("5(5mw+5mr)@10kg")
+      expect(response.body).to include(%(value="5(5mw+5mr)" name="session[signature]"))
+      expect(response.body).to include(%(value="10.0" name="session[weight_kg]"))
+    end
+
+    it "pre-fills the legacy formula field and opens the advanced section for a fixed_reps_for_time/emom preset" do
+      preset = create(:benchmark_preset, :emom, weight_kg: 10, reps_per_minute: 20)
+
+      get new_session_path(benchmark_preset_id: preset.id)
+
+      expect(response.body).to include("1(20@10kg)")
+      expect(response.body).to match(/<details[^>]* open[^>]*>/)
     end
 
     it "lists existing presets in a picker" do
@@ -66,49 +86,45 @@ RSpec.describe "Sessions", type: :request do
 
   describe "POST /sessions" do
     let(:exercise) { create(:exercise) }
-    let(:interval_work_shape) { create(:session_shape, :interval_work) }
     let(:fixed_reps_for_time_shape) { create(:session_shape, :fixed_reps_for_time) }
     let(:emom_shape) { create(:session_shape, :emom) }
 
-    context "interval_work" do
-      it "parses the formula and renders a review step without saving yet" do
-        expect {
-          post sessions_path, params: { session: {
-            date: "2026-07-30", exercise_id: exercise.id, session_shape_id: interval_work_shape.id,
-            formula: "5(5mw+5mr)@10kg"
-          } }
-        }.not_to change(Session, :count)
-
-        expect(response).to have_http_status(:ok)
-        expect(response.body).to include("Set 1", "300s")
-      end
-
-      it "creates the session and its sets once the review is confirmed" do
-        params = {
-          date: "2026-07-30", exercise_id: exercise.id, session_shape_id: interval_work_shape.id,
-          weight_kg: "10", work_seconds: "300", rest_seconds: "300", sets_count: "3",
-          session_sets_attributes: {
-            "0" => { set_number: "1", duration_seconds: "300", reps: "20" },
-            "1" => { set_number: "2", duration_seconds: "300", reps: "19" },
-            "2" => { set_number: "3", duration_seconds: "300", reps: "18" }
-          }
-        }
+    # The primary one-step flow: no session_shape_id, no formula — shape is inferred from the
+    # signature text and the session saves immediately with no review step.
+    context "interval_work (inferred from signature)" do
+      it "creates the session and its sets immediately from a signature and reps list" do
+        params = { date: "2026-07-30", exercise_id: exercise.id, signature: "3(5mw+5mr)",
+                   weight_kg: "10", reps_list: "20, 19, 18" }
 
         expect { post sessions_path, params: { session: params } }.to change(Session, :count).by(1)
 
         session = Session.last
-        expect(session.session_sets.count).to eq(3)
+        expect(session.session_shape.name).to eq(SessionShape::INTERVAL_WORK)
+        expect(session.work_seconds).to eq(300)
+        expect(session.rest_seconds).to eq(300)
+        expect(session.sets_count).to eq(3)
         expect(session.session_sets.order(:set_number).pluck(:reps)).to eq([ 20, 19, 18 ])
         expect(response).to redirect_to(session_path(session))
       end
 
+      it "infers interval_work from a bare single-set signature like 5mw, with no wrapping N(...)" do
+        params = { date: "2026-07-30", exercise_id: exercise.id, signature: "5mw",
+                   weight_kg: "10", reps_list: "200" }
+
+        post sessions_path, params: { session: params }
+
+        session = Session.last
+        expect(session.session_shape.name).to eq(SessionShape::INTERVAL_WORK)
+        expect(session.work_seconds).to eq(300)
+        expect(session.rest_seconds).to eq(0)
+        expect(session.sets_count).to eq(1)
+        expect(session.session_sets.sole.reps).to eq(200)
+      end
+
       it "saves the chosen tool alongside the session" do
         tool = create(:tool, equipment: exercise.equipment)
-        params = {
-          date: "2026-07-30", exercise_id: exercise.id, tool_id: tool.id, session_shape_id: interval_work_shape.id,
-          weight_kg: "10", work_seconds: "300", rest_seconds: "300", sets_count: "1",
-          session_sets_attributes: { "0" => { set_number: "1", duration_seconds: "300", reps: "20" } }
-        }
+        params = { date: "2026-07-30", exercise_id: exercise.id, tool_id: tool.id, signature: "5mw",
+                   weight_kg: "10", reps_list: "20" }
 
         post sessions_path, params: { session: params }
 
@@ -117,86 +133,66 @@ RSpec.describe "Sessions", type: :request do
 
       it "rejects a tool that belongs to different equipment than the exercise" do
         mismatched_tool = create(:tool, equipment: create(:equipment, name: "Kettlebell"))
-        params = {
-          date: "2026-07-30", exercise_id: exercise.id, tool_id: mismatched_tool.id,
-          session_shape_id: interval_work_shape.id,
-          weight_kg: "10", work_seconds: "300", rest_seconds: "300", sets_count: "1",
-          session_sets_attributes: { "0" => { set_number: "1", duration_seconds: "300", reps: "20" } }
-        }
+        params = { date: "2026-07-30", exercise_id: exercise.id, tool_id: mismatched_tool.id,
+                   signature: "5mw", weight_kg: "10", reps_list: "20" }
 
         expect { post sessions_path, params: { session: params } }.not_to change(Session, :count)
 
         expect(response).to have_http_status(:unprocessable_content)
       end
 
-      it "re-renders the form with an error for an invalid formula" do
-        post sessions_path, params: { session: {
-          date: "2026-07-30", exercise_id: exercise.id, session_shape_id: interval_work_shape.id,
-          formula: "not a formula"
-        } }
+      it "re-renders the form with an error for invalid signature notation" do
+        params = { date: "2026-07-30", exercise_id: exercise.id, signature: "5(5mw",
+                   weight_kg: "10", reps_list: "20" }
+
+        post sessions_path, params: { session: params }
 
         expect(response).to have_http_status(:unprocessable_content)
         expect(response.body).to include("Log Session")
       end
 
-      it "re-renders the form when the formula is missing its weight suffix" do
-        post sessions_path, params: { session: {
-          date: "2026-07-30", exercise_id: exercise.id, session_shape_id: interval_work_shape.id,
-          formula: "5(5mw+5mr)"
-        } }
+      it "rejects a reps list whose length disagrees with the signature's implied set count" do
+        params = { date: "2026-07-30", exercise_id: exercise.id, signature: "3(5mw+5mr)",
+                   weight_kg: "10", reps_list: "20, 19" }
+
+        expect { post sessions_path, params: { session: params } }.not_to change(Session, :count)
 
         expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include("Signature implies 3 sets but 2 rep values were given")
+      end
+    end
+
+    context "sets_and_reps (inferred fallback for a bare number)" do
+      it "creates the session and its sets immediately from a bare reps signature and reps list" do
+        params = { date: "2026-07-30", exercise_id: exercise.id, signature: "24",
+                   weight_kg: "10", reps_list: "24, 24, 22, 20" }
+
+        expect { post sessions_path, params: { session: params } }.to change(Session, :count).by(1)
+
+        session = Session.last
+        expect(session.session_shape.name).to eq(SessionShape::SETS_AND_REPS)
+        expect(session.reps).to eq(24)
+        expect(session.session_sets.order(:set_number).pluck(:reps)).to eq([ 24, 24, 22, 20 ])
+        expect(session.session_sets.pluck(:duration_seconds).uniq).to eq([ nil ])
       end
 
-      it "suggests a matching preset on the review step without attaching it automatically" do
-        preset = create(:benchmark_preset, name: "5 x 5", exercise: exercise, session_shape: interval_work_shape,
-                                            weight_kg: 10, work_seconds: 300,
-                                            rest_seconds: 300, sets_count: 5)
-
-        post sessions_path, params: { session: {
-          date: "2026-07-30", exercise_id: exercise.id, session_shape_id: interval_work_shape.id,
-          formula: "5(5mw+5mr)@10kg"
-        } }
-
-        expect(response.body).to include("Matches preset")
-        expect(response.body).to include("5 x 5")
-        expect(response.body).to include(%(name="session[benchmark_preset_id]" id="session_benchmark_preset_id" value="#{preset.id}"))
-      end
-
-      it "does not suggest a preset when nothing matches" do
-        create(:benchmark_preset, exercise: exercise, session_shape: interval_work_shape,
-                                   weight_kg: 12, work_seconds: 300,
-                                   rest_seconds: 300, sets_count: 5)
-
-        post sessions_path, params: { session: {
-          date: "2026-07-30", exercise_id: exercise.id, session_shape_id: interval_work_shape.id,
-          formula: "5(5mw+5mr)@10kg"
-        } }
-
-        expect(response.body).not_to include("Matches preset")
-      end
-
-      it "attaches the suggested preset when the checkbox is checked on confirm" do
-        preset = create(:benchmark_preset, exercise: exercise, session_shape: interval_work_shape,
-                                            weight_kg: 10, work_seconds: 300,
-                                            rest_seconds: 300, sets_count: 3)
-
-        params = {
-          date: "2026-07-30", exercise_id: exercise.id, session_shape_id: interval_work_shape.id,
-          benchmark_preset_id: preset.id,
-          weight_kg: "10", work_seconds: "300", rest_seconds: "300", sets_count: "3",
-          session_sets_attributes: {
-            "0" => { set_number: "1", duration_seconds: "300", reps: "20" },
-            "1" => { set_number: "2", duration_seconds: "300", reps: "19" },
-            "2" => { set_number: "3", duration_seconds: "300", reps: "18" }
-          }
-        }
+      it "supports a per-set weight override in the reps list" do
+        params = { date: "2026-07-30", exercise_id: exercise.id, signature: "100",
+                   weight_kg: "6", reps_list: "100@6, 100@6, 50@8" }
 
         post sessions_path, params: { session: params }
 
         session = Session.last
-        expect(session.benchmark_preset).to eq(preset)
-        expect(session.is_benchmark).to eq(true)
+        expect(session.session_sets.order(:set_number).map(&:effective_weight_kg)).to eq([ 6.0, 6.0, 8.0 ])
+      end
+
+      it "re-renders the form with an error when the signature is neither notation nor a number" do
+        params = { date: "2026-07-30", exercise_id: exercise.id, signature: "not anything",
+                   weight_kg: "10", reps_list: "20" }
+
+        post sessions_path, params: { session: params }
+
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
 
@@ -270,41 +266,6 @@ RSpec.describe "Sessions", type: :request do
         session = Session.last
         expect(session.benchmark_preset).to eq(preset)
         expect(session.is_benchmark).to eq(true)
-      end
-    end
-
-    context "sets_and_reps" do
-      let(:sets_and_reps_shape) { create(:session_shape, :sets_and_reps) }
-
-      it "parses the formula and renders a review step with reps pre-filled, no duration field" do
-        post sessions_path, params: { session: {
-          date: "2026-07-30", exercise_id: exercise.id, session_shape_id: sets_and_reps_shape.id,
-          formula: "4(24@10kg)"
-        } }
-
-        expect(response).to have_http_status(:ok)
-        expect(response.body).to include('value="24"')
-        expect(response.body).not_to include('placeholder="seconds"')
-        expect(response.body).not_to include("session_sets_attributes][0][duration_seconds]")
-      end
-
-      it "creates the session and its sets once the review is confirmed" do
-        params = {
-          date: "2026-07-30", exercise_id: exercise.id, session_shape_id: sets_and_reps_shape.id,
-          weight_kg: "10", reps: "24",
-          session_sets_attributes: {
-            "0" => { set_number: "1", reps: "24" },
-            "1" => { set_number: "2", reps: "24" },
-            "2" => { set_number: "3", reps: "22" },
-            "3" => { set_number: "4", reps: "20" }
-          }
-        }
-
-        expect { post sessions_path, params: { session: params } }.to change(Session, :count).by(1)
-
-        session = Session.last
-        expect(session.session_sets.order(:set_number).pluck(:reps)).to eq([ 24, 24, 22, 20 ])
-        expect(session.session_sets.pluck(:duration_seconds).uniq).to eq([ nil ])
       end
     end
   end
