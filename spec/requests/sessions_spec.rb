@@ -199,6 +199,28 @@ RSpec.describe "Sessions", type: :request do
         expect(session.session_sets.pluck(:duration_seconds).uniq).to eq([ nil ])
       end
 
+      it "defaults Reps to the signature's own number for a single-set session when Reps is left blank" do
+        params = { date: "2026-07-30", exercise_id: exercise.id, signature: "200",
+                   weight_kg: "10", reps_list: "" }
+
+        expect { post sessions_path, params: { session: params } }.to change(Session, :count).by(1)
+
+        session = Session.last
+        expect(session.reps).to eq(200)
+        expect(session.session_sets.sole.reps).to eq(200)
+      end
+
+      it "still uses an explicitly given Reps value over the signature's number" do
+        params = { date: "2026-07-30", exercise_id: exercise.id, signature: "24",
+                   weight_kg: "10", reps_list: "20" }
+
+        post sessions_path, params: { session: params }
+
+        session = Session.last
+        expect(session.reps).to eq(24)
+        expect(session.session_sets.sole.reps).to eq(20)
+      end
+
       it "supports a per-set weight override in the reps list" do
         params = { date: "2026-07-30", exercise_id: exercise.id, signature: "100",
                    weight_kg: "6", reps_list: "100@6, 100@6, 50@8" }
@@ -629,6 +651,20 @@ RSpec.describe "Sessions", type: :request do
       expect(response).to have_http_status(:ok)
       session.reload
       expect(session.session_sets.order(:set_number).map(&:effective_weight_kg)).to eq([ 10.0, 12.0 ])
+    end
+
+    it "defaults Reps to the signature's own number for sets_and_reps when Reps is left blank" do
+      session = create(:session, :sets_and_reps, reps: 24)
+      create(:session_set, session: session, set_number: 1, reps: 24)
+
+      patch session_path(session), params: {
+        session: { date: session.date.to_s, signature: "200", weight_kg: session.weight_kg, reps_list: "" }
+      }
+
+      expect(response).to have_http_status(:ok)
+      session.reload
+      expect(session.reps).to eq(200)
+      expect(session.session_sets.sole.reps).to eq(200)
     end
 
     it "updates the session's tool" do

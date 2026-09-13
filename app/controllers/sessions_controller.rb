@@ -121,6 +121,14 @@ class SessionsController < ApplicationController
   # shape/signature and rebuilds session_sets from scratch. Returns false (with errors added to
   # @session) instead of raising, so both callers can re-render their own template on failure.
   def persist_signature_and_sets!(target_shape:, signature_attrs:, reps_list_text:)
+    # A bare-number signature (sets_and_reps) already says how many reps the one set was — if the
+    # Reps field was left blank entirely, that same number is the obvious default rather than
+    # making the user type it twice. Only kicks in when Reps is blank outright; anything actually
+    # typed there is used as given, even if it disagrees with the signature.
+    if reps_list_text.blank? && target_shape.name == SessionShape::SETS_AND_REPS
+      reps_list_text = signature_attrs[:reps].to_s
+    end
+
     expected_count = signature_attrs[:sets_count] if target_shape.name == SessionShape::INTERVAL_WORK
     reps_list = Progression::RepsList.parse(reps_list_text, expected_count: expected_count)
 
